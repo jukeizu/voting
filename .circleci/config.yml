@@ -1,0 +1,15 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: golang:1.11
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pkg-sum-{{ checksum "go.sum" }}
+      - run: make
+      - save_cache:
+          key: pkg-sum-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg"
