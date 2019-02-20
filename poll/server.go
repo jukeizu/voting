@@ -44,5 +44,10 @@ func (s Server) Options(ctx context.Context, req *pollpb.OptionsRequest) (*pollp
 }
 
 func (s Server) End(ctx context.Context, req *pollpb.EndPollRequest) (*pollpb.EndPollReply, error) {
-	return nil, nil
+	err := s.repository.EndPoll(req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pollpb.EndPollReply{Id: req.Id}, nil
 }

@@ -19,6 +19,7 @@ type Repository interface {
 	CreatePoll(*pollpb.CreatePollRequest) (*pollpb.Poll, error)
 	Poll(*pollpb.PollRequest) (*pollpb.Poll, error)
 	Options(pollId string) ([]*pollpb.Option, error)
+	EndPoll(pollId string) error
 }
 
 type repository struct {
@@ -107,7 +108,7 @@ func (r *repository) Poll(req *pollpb.PollRequest) (*pollpb.Poll, error) {
 
 	poll := pollpb.Poll{}
 
-	err := r.Db.QueryRow(q, req.PollId).Scan(
+	err := r.Db.QueryRow(q, req.Id).Scan(
 		&poll.Id,
 		&poll.Title,
 		&poll.CreatorId,
@@ -118,7 +119,7 @@ func (r *repository) Poll(req *pollpb.PollRequest) (*pollpb.Poll, error) {
 		return nil, err
 	}
 
-	options, err := r.Options(req.PollId)
+	options, err := r.Options(req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -156,6 +157,14 @@ func (r *repository) Options(pollId string) ([]*pollpb.Option, error) {
 	}
 
 	return options, nil
+}
+
+func (r *repository) EndPoll(pollId string) error {
+	q := `UPDATE poll SET hasEnded = true WHERE id = $1`
+
+	_, err := r.Db.Exec(q, pollId)
+
+	return err
 }
 
 func (r *repository) createOption(pollId string, option pollpb.Option) (*pollpb.Option, error) {

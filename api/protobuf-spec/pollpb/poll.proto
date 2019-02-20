@@ -27,7 +27,7 @@ message Option {
 }
 
 message PollRequest {
-    string pollId = 1;
+    string id = 1;
 }
 
 message PollReply {
@@ -52,10 +52,10 @@ message OptionsReply {
 }
 
 message EndPollRequest {
-    string pollId = 1;
+    string id = 1;
     string userId = 2;
 }
 
 message EndPollReply {
-    Poll poll = 1;
+    string id = 1;
 }
