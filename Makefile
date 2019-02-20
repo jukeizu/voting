@@ -1,6 +1,6 @@
 TAG=$(shell git describe --tags --always)
 VERSION=$(TAG:v%=%)
-REPO=jukeizu/poll
+REPO=jukeizu/voting
 GO=GO111MODULE=on go
 BUILD=GOARCH=amd64 $(GO) build -ldflags="-s -w -X main.Version=$(VERSION)" 
 PROTOFILES=$(wildcard api/protobuf-spec/*/*.proto)
@@ -17,10 +17,10 @@ test:
 	$(GO) test -v -race ./...
 
 build:
-	$(BUILD) -o bin/poll-$(VERSION) .
+	$(BUILD) -o bin/voting-$(VERSION) .
 
 build-linux:
-	CGO_ENABLED=0 GOOS=linux $(BUILD) -a -installsuffix cgo -o bin/poll .
+	CGO_ENABLED=0 GOOS=linux $(BUILD) -a -installsuffix cgo -o bin/voting .
 
 docker-build:
 	docker build -t $(REPO):$(VERSION) .
