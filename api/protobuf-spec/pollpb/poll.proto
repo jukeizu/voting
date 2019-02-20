@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package pollpb;
+
+service Polls {
+    rpc Create(CreatePollRequest) returns (CreatePollReply) {}
+    rpc Poll(PollRequest) returns (PollReply) {}
+    rpc Options(OptionsRequest) returns (OptionsReply) {}
+    rpc End(EndPollRequest) returns (EndPollReply) {}
+}
+
+message CreatePollRequest {
+    string creatorId = 1;
+    string title = 2;
+    int32 allowedUniqueVotes = 3;
+    repeated Option options = 4;
+}
+
+message CreatePollReply {
+    Poll poll = 1;
+}
+
+message Option {
+    string id = 1;
+    string pollId = 2;
+    string content = 3;
+}
+
+message PollRequest {
+    string pollId = 1;
+}
+
+message PollReply {
+    Poll poll = 1;
+}
+
+message Poll {
+    string id = 1;
+    string title = 2;
+    string creatorId = 3;
+    int32 allowedUniqueVotes = 4;
+    bool hasEnded = 5;
+    repeated Option options = 6;
+}
+
+message OptionsRequest {
+    string pollId = 1;
+}
+
+message OptionsReply {
+    repeated Option options = 1;
+}
+
+message EndPollRequest {
+    string pollId = 1;
+    string userId = 2;
+}
+
+message EndPollReply {
+    Poll poll = 1;
+}
