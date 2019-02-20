@@ -57,5 +57,5 @@ message EndPollRequest {
 }
 
 message EndPollReply {
-    string id = 1;
+    Poll poll = 1;
 }

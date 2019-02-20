@@ -26,7 +26,7 @@ func (s Server) Create(ctx context.Context, req *pollpb.CreatePollRequest) (*pol
 }
 
 func (s Server) Poll(ctx context.Context, req *pollpb.PollRequest) (*pollpb.PollReply, error) {
-	poll, err := s.repository.Poll(req)
+	poll, err := s.repository.Poll(req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -44,10 +44,10 @@ func (s Server) Options(ctx context.Context, req *pollpb.OptionsRequest) (*pollp
 }
 
 func (s Server) End(ctx context.Context, req *pollpb.EndPollRequest) (*pollpb.EndPollReply, error) {
-	err := s.repository.EndPoll(req.Id)
+	poll, err := s.repository.EndPoll(req.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pollpb.EndPollReply{Id: req.Id}, nil
+	return &pollpb.EndPollReply{Poll: poll}, nil
 }

@@ -17,9 +17,9 @@ const (
 type Repository interface {
 	Migrate() error
 	CreatePoll(*pollpb.CreatePollRequest) (*pollpb.Poll, error)
-	Poll(*pollpb.PollRequest) (*pollpb.Poll, error)
+	Poll(id string) (*pollpb.Poll, error)
 	Options(pollId string) ([]*pollpb.Option, error)
-	EndPoll(pollId string) error
+	EndPoll(id string) (*pollpb.Poll, error)
 }
 
 type repository struct {
@@ -98,7 +98,7 @@ func (r *repository) CreatePoll(req *pollpb.CreatePollRequest) (*pollpb.Poll, er
 	return &poll, err
 }
 
-func (r *repository) Poll(req *pollpb.PollRequest) (*pollpb.Poll, error) {
+func (r *repository) Poll(id string) (*pollpb.Poll, error) {
 	q := `SELECT id, 
 		title, 
 		creatorId, 
@@ -108,7 +108,7 @@ func (r *repository) Poll(req *pollpb.PollRequest) (*pollpb.Poll, error) {
 
 	poll := pollpb.Poll{}
 
-	err := r.Db.QueryRow(q, req.Id).Scan(
+	err := r.Db.QueryRow(q, id).Scan(
 		&poll.Id,
 		&poll.Title,
 		&poll.CreatorId,
@@ -119,7 +119,7 @@ func (r *repository) Poll(req *pollpb.PollRequest) (*pollpb.Poll, error) {
 		return nil, err
 	}
 
-	options, err := r.Options(req.Id)
+	options, err := r.Options(id)
 	if err != nil {
 		return nil, err
 	}
@@ -159,12 +159,15 @@ func (r *repository) Options(pollId string) ([]*pollpb.Option, error) {
 	return options, nil
 }
 
-func (r *repository) EndPoll(pollId string) error {
+func (r *repository) EndPoll(pollId string) (*pollpb.Poll, error) {
 	q := `UPDATE poll SET hasEnded = true WHERE id = $1`
 
 	_, err := r.Db.Exec(q, pollId)
+	if err != nil {
+		return nil, err
+	}
 
-	return err
+	return r.Poll(pollId)
 }
 
 func (r *repository) createOption(pollId string, option pollpb.Option) (*pollpb.Option, error) {
