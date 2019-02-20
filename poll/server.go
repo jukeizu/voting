@@ -2,6 +2,7 @@ package poll
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jukeizu/voting/api/protobuf-spec/pollpb"
 	"github.com/rs/zerolog"
@@ -44,7 +45,16 @@ func (s Server) Options(ctx context.Context, req *pollpb.OptionsRequest) (*pollp
 }
 
 func (s Server) End(ctx context.Context, req *pollpb.EndPollRequest) (*pollpb.EndPollReply, error) {
-	poll, err := s.repository.EndPoll(req.Id)
+	poll, err := s.repository.Poll(req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.UserId != poll.CreatorId {
+		return nil, errors.New("Only the poll creator may end the poll.")
+	}
+
+	poll, err = s.repository.EndPoll(req.Id)
 	if err != nil {
 		return nil, err
 	}
