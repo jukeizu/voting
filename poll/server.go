@@ -26,7 +26,12 @@ func (s Server) Create(ctx context.Context, req *pollpb.CreatePollRequest) (*pol
 }
 
 func (s Server) Poll(ctx context.Context, req *pollpb.PollRequest) (*pollpb.PollReply, error) {
-	return nil, nil
+	poll, err := s.repository.Poll(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pollpb.PollReply{Poll: poll}, nil
 }
 
 func (s Server) Options(ctx context.Context, req *pollpb.OptionsRequest) (*pollpb.OptionsReply, error) {

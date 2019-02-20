@@ -8,7 +8,6 @@ import (
 	"github.com/jukeizu/voting/poll/migrations"
 	_ "github.com/lib/pq"
 	"github.com/shawntoffel/gossage"
-	"github.com/ventu-io/go-shortid"
 )
 
 const (
@@ -18,6 +17,8 @@ const (
 type Repository interface {
 	Migrate() error
 	CreatePoll(*pollpb.CreatePollRequest) (*pollpb.Poll, error)
+	Poll(*pollpb.PollRequest) (*pollpb.Poll, error)
+	Options(pollId string) ([]*pollpb.Option, error)
 }
 
 type repository struct {
@@ -62,10 +63,7 @@ func (r *repository) Migrate() error {
 }
 
 func (r *repository) CreatePoll(req *pollpb.CreatePollRequest) (*pollpb.Poll, error) {
-	q := `INSERT INTO poll (
-			title, 
-			creatorId, 
-			allowedUniqueVotes)
+	q := `INSERT INTO poll (title, creatorId, allowedUniqueVotes)
 		VALUES ($1, $2, $3)
 		RETURNING
 			id,
@@ -76,11 +74,7 @@ func (r *repository) CreatePoll(req *pollpb.CreatePollRequest) (*pollpb.Poll, er
 
 	poll := pollpb.Poll{}
 
-	err := r.Db.QueryRow(q,
-		req.Title,
-		req.CreatorId,
-		req.AllowedUniqueVotes,
-	).Scan(
+	err := r.Db.QueryRow(q, req.Title, req.CreatorId, req.AllowedUniqueVotes).Scan(
 		&poll.Id,
 		&poll.Title,
 		&poll.CreatorId,
@@ -103,6 +97,67 @@ func (r *repository) CreatePoll(req *pollpb.CreatePollRequest) (*pollpb.Poll, er
 	return &poll, err
 }
 
+func (r *repository) Poll(req *pollpb.PollRequest) (*pollpb.Poll, error) {
+	q := `SELECT id, 
+		title, 
+		creatorId, 
+		allowedUniqueVotes, 
+		hasEnded
+	FROM poll WHERE id = $1`
+
+	poll := pollpb.Poll{}
+
+	err := r.Db.QueryRow(q, req.PollId).Scan(
+		&poll.Id,
+		&poll.Title,
+		&poll.CreatorId,
+		&poll.AllowedUniqueVotes,
+		&poll.HasEnded,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	options, err := r.Options(req.PollId)
+	if err != nil {
+		return nil, err
+	}
+
+	poll.Options = options
+
+	return &poll, nil
+}
+
+func (r *repository) Options(pollId string) ([]*pollpb.Option, error) {
+	options := []*pollpb.Option{}
+
+	q := `SELECT id, pollid, content
+		FROM option
+		WHERE pollid = $1`
+
+	rows, err := r.Db.Query(q, pollId)
+	if err != nil {
+		return options, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		option := pollpb.Option{}
+		err := rows.Scan(
+			&option.Id,
+			&option.PollId,
+			&option.Content,
+		)
+		if err != nil {
+			return options, err
+		}
+
+		options = append(options, &option)
+	}
+
+	return options, nil
+}
+
 func (r *repository) createOption(pollId string, option pollpb.Option) (*pollpb.Option, error) {
 	q := `INSERT INTO option (pollid, content) VALUES ($1, $2) RETURNING id, pollid, content`
 
@@ -118,8 +173,4 @@ func (r *repository) createOption(pollId string, option pollpb.Option) (*pollpb.
 	)
 
 	return &o, err
-}
-
-func generateShortId() (string, error) {
-	return shortid.Generate()
 }
