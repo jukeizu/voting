@@ -58,4 +58,6 @@ message EndPollRequest {
 
 message EndPollReply {
     Poll poll = 1;
+    bool success = 2;
+    string reason = 3;
 }

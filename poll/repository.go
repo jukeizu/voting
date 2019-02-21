@@ -18,6 +18,7 @@ type Repository interface {
 	Migrate() error
 	CreatePoll(*pollpb.CreatePollRequest) (*pollpb.Poll, error)
 	Poll(id string) (*pollpb.Poll, error)
+	PollCreator(id string) (string, error)
 	Options(pollId string) ([]*pollpb.Option, error)
 	EndPoll(id string) (*pollpb.Poll, error)
 }
@@ -127,6 +128,19 @@ func (r *repository) Poll(id string) (*pollpb.Poll, error) {
 	poll.Options = options
 
 	return &poll, nil
+}
+
+func (r *repository) PollCreator(id string) (string, error) {
+	q := `SELECT creatorId FROM poll WHERE id = $1`
+
+	creator := ""
+
+	err := r.Db.QueryRow(q, id).Scan(&creator)
+	if err != nil {
+		return "", err
+	}
+
+	return creator, nil
 }
 
 func (r *repository) Options(pollId string) ([]*pollpb.Option, error) {
