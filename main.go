@@ -72,15 +72,15 @@ func main() {
 	}
 
 	if flagMigrate {
+		gossage.Logger = func(format string, a ...interface{}) {
+			msg := fmt.Sprintf(format, a...)
+			logger.Info().Str("component", "migrator").Msg(msg)
+		}
+
 		pollRepository, err := poll.NewRepository(dbAddress)
 		if err != nil {
 			logger.Error().Err(err).Caller().Msg("could not create poll repository")
 			os.Exit(1)
-		}
-
-		gossage.Logger = func(format string, a ...interface{}) {
-			msg := fmt.Sprintf(format, a...)
-			logger.Info().Str("component", "migrator").Msg(msg)
 		}
 
 		err = pollRepository.Migrate()
