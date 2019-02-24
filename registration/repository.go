@@ -15,7 +15,7 @@ const (
 
 type Repository interface {
 	Migrate() error
-	SaveUser(externalId, username string) (*registrationpb.User, error)
+	RegisterVoter(externalId, username string, canVote bool) (*registrationpb.Voter, error)
 }
 
 type repository struct {
@@ -48,7 +48,7 @@ func (r *repository) Migrate() error {
 		return err
 	}
 
-	err = g.RegisterMigrations(migrations.CreateTableUser20190221024754{})
+	err = g.RegisterMigrations(migrations.CreateTableVoter20190221024754{})
 	if err != nil {
 		return err
 	}
@@ -56,24 +56,25 @@ func (r *repository) Migrate() error {
 	return g.Up()
 }
 
-func (r *repository) SaveUser(externalId string, username string) (*registrationpb.User, error) {
-	q := `INSERT into user (externalId, username, canVote)
-	VALUES ($1, $2)
+func (r *repository) RegisterVoter(externalId string, username string, canVote bool) (*registrationpb.Voter, error) {
+	q := `INSERT into voter (externalId, username, canVote)
+	VALUES ($1, $2, $3)
 	ON CONFLICT (externalId) 
 	DO UPDATE SET username = excluded.username, updated = NOW()
 	RETURNING id, externalId, username, canvote`
 
-	user := registrationpb.User{}
+	voter := registrationpb.Voter{}
 
 	err := r.Db.QueryRow(q,
 		externalId,
 		username,
+		canVote,
 	).Scan(
-		&user.Id,
-		&user.ExternalId,
-		&user.Username,
-		&user.CanVote,
+		&voter.Id,
+		&voter.ExternalId,
+		&voter.Username,
+		&voter.CanVote,
 	)
 
-	return &user, err
+	return &voter, err
 }

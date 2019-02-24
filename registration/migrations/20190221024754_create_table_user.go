@@ -4,15 +4,15 @@ import (
 	"database/sql"
 )
 
-type CreateTableUser20190221024754 struct{}
+type CreateTableVoter20190221024754 struct{}
 
-func (m CreateTableUser20190221024754) Version() string {
-	return "20190221024754_CreateTableUser"
+func (m CreateTableVoter20190221024754) Version() string {
+	return "20190221024754_CreateTableVoter"
 }
 
-func (m CreateTableUser20190221024754) Up(tx *sql.Tx) error {
+func (m CreateTableVoter20190221024754) Up(tx *sql.Tx) error {
 	_, err := tx.Exec(`
-		CREATE TABLE IF NOT EXISTS user (
+		CREATE TABLE IF NOT EXISTS voter (
 			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
 			externalId STRING UNIQUE NOT NULL DEFAULT '',
 			username STRING NOT NULL DEFAULT '',
@@ -24,7 +24,7 @@ func (m CreateTableUser20190221024754) Up(tx *sql.Tx) error {
 	return err
 }
 
-func (m CreateTableUser20190221024754) Down(tx *sql.Tx) error {
-	_, err := tx.Exec(`DROP TABLE user`)
+func (m CreateTableVoter20190221024754) Down(tx *sql.Tx) error {
+	_, err := tx.Exec(`DROP TABLE voter`)
 	return err
 }

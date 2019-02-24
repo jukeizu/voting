@@ -12,7 +12,9 @@ import (
 	"github.com/cheapRoc/grpc-zerolog"
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
 	"github.com/jukeizu/voting/api/protobuf-spec/pollpb"
+	"github.com/jukeizu/voting/api/protobuf-spec/registrationpb"
 	"github.com/jukeizu/voting/poll"
+	"github.com/jukeizu/voting/registration"
 	"github.com/oklog/run"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
@@ -88,6 +90,18 @@ func main() {
 			logger.Error().Err(err).Caller().Msg("could not migrate poll repository")
 			os.Exit(1)
 		}
+
+		registrationRepository, err := registration.NewRepository(dbAddress)
+		if err != nil {
+			logger.Error().Err(err).Caller().Msg("could not create registration repository")
+			os.Exit(1)
+		}
+
+		err = registrationRepository.Migrate()
+		if err != nil {
+			logger.Error().Err(err).Caller().Msg("could not migrate registration repository")
+			os.Exit(1)
+		}
 	}
 
 	g := run.Group{}
@@ -99,11 +113,21 @@ func main() {
 			os.Exit(1)
 		}
 
+		registrationRepository, err := registration.NewRepository(dbAddress)
+		if err != nil {
+			logger.Error().Err(err).Caller().Msg("could not create registration repository")
+			os.Exit(1)
+		}
+
 		grpcServer := newGrpcServer(logger)
 		server := NewServer(logger, grpcServer)
 
 		pollServer := poll.NewServer(logger, pollRepository)
 		pollpb.RegisterPollsServer(grpcServer, pollServer)
+
+		registrationServer := registration.NewServer(logger, registrationRepository)
+		registrationpb.RegisterRegistrationServer(grpcServer, registrationServer)
+
 		grpcAddr := ":" + grpcPort
 
 		g.Add(func() error {

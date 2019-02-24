@@ -3,19 +3,19 @@ syntax = "proto3";
 package registrationpb;
 
 service Registration {
-    rpc RegisterUser(RegisterUserRequest) returns (RegisterUserReply) {}
+    rpc RegisterVoter(RegisterVoterRequest) returns (RegisterVoterReply) {}
 }
 
-message RegisterUserRequest {
+message RegisterVoterRequest {
     string externalId = 1;
     string username = 2;
 }
 
-message RegisterUserReply {
-    User user = 1;
+message RegisterVoterReply {
+    Voter voter = 1;
 }
 
-message User {
+message Voter {
     string id = 1;
     string externalId = 2;
     string username = 3;
