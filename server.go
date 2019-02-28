@@ -1,8 +1,12 @@
 package main
 
 import (
+	"context"
 	"net"
 
+	"github.com/jukeizu/voting/api/protobuf-spec/registrationpb"
+	"github.com/jukeizu/voting/persistence"
+	"github.com/jukeizu/voting/registration"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 )
@@ -10,10 +14,39 @@ import (
 type Server struct {
 	logger     zerolog.Logger
 	grpcServer *grpc.Server
+	repository persistence.Repository
 }
 
-func NewServer(logger zerolog.Logger, grpcServer *grpc.Server) Server {
-	return Server{logger, grpcServer}
+func NewServer(logger zerolog.Logger, grpcServer *grpc.Server, repository persistence.Repository) Server {
+	return Server{logger, grpcServer, repository}
+}
+
+func (s Server) RegisterVoter(ctx context.Context, req *registrationpb.RegisterVoterRequest) (*registrationpb.RegisterVoterReply, error) {
+	request := registration.RegisterVoterRequest{
+		ExternalId: req.ExternalId,
+		Username:   req.Username,
+	}
+
+	handler := registration.NewRegisterVoterCommandHandler(s.logger, s.repository)
+	voter, err := handler.Handle(request)
+
+	if err != nil {
+		return nil, err
+	}
+
+	s.logger.Info().
+		Str("externalId", voter.ExternalId).
+		Str("username", voter.Username).
+		Msg("registered voter")
+
+	replyVoter := registrationpb.Voter{
+		Id:         voter.Id,
+		ExternalId: voter.ExternalId,
+		Username:   voter.Username,
+		CanVote:    voter.CanVote,
+	}
+
+	return &registrationpb.RegisterVoterReply{Voter: &replyVoter}, nil
 }
 
 func (s Server) Start(addr string) error {

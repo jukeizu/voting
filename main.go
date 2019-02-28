@@ -11,10 +11,8 @@ import (
 
 	"github.com/cheapRoc/grpc-zerolog"
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
-	"github.com/jukeizu/voting/api/protobuf-spec/pollpb"
 	"github.com/jukeizu/voting/api/protobuf-spec/registrationpb"
-	"github.com/jukeizu/voting/poll"
-	"github.com/jukeizu/voting/registration"
+	"github.com/jukeizu/voting/persistence"
 	"github.com/oklog/run"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
@@ -79,19 +77,7 @@ func main() {
 			logger.Info().Str("component", "migrator").Msg(msg)
 		}
 
-		pollRepository, err := poll.NewRepository(dbAddress)
-		if err != nil {
-			logger.Error().Err(err).Caller().Msg("could not create poll repository")
-			os.Exit(1)
-		}
-
-		err = pollRepository.Migrate()
-		if err != nil {
-			logger.Error().Err(err).Caller().Msg("could not migrate poll repository")
-			os.Exit(1)
-		}
-
-		registrationRepository, err := registration.NewRepository(dbAddress)
+		registrationRepository, err := persistence.NewRepository(dbAddress)
 		if err != nil {
 			logger.Error().Err(err).Caller().Msg("could not create registration repository")
 			os.Exit(1)
@@ -105,28 +91,17 @@ func main() {
 	}
 
 	g := run.Group{}
-
 	if flagServer {
-		pollRepository, err := poll.NewRepository(dbAddress)
-		if err != nil {
-			logger.Error().Err(err).Caller().Msg("could not create poll repository")
-			os.Exit(1)
-		}
-
-		registrationRepository, err := registration.NewRepository(dbAddress)
+		registrationRepository, err := persistence.NewRepository(dbAddress)
 		if err != nil {
 			logger.Error().Err(err).Caller().Msg("could not create registration repository")
 			os.Exit(1)
 		}
 
 		grpcServer := newGrpcServer(logger)
-		server := NewServer(logger, grpcServer)
+		server := NewServer(logger, grpcServer, registrationRepository)
 
-		pollServer := poll.NewServer(logger, pollRepository)
-		pollpb.RegisterPollsServer(grpcServer, pollServer)
-
-		registrationServer := registration.NewServer(logger, registrationRepository)
-		registrationpb.RegisterRegistrationServer(grpcServer, registrationServer)
+		registrationpb.RegisterRegistrationServer(grpcServer, server)
 
 		grpcAddr := ":" + grpcPort
 

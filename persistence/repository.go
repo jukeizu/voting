@@ -1,11 +1,12 @@
-package registration
+package persistence
 
 import (
 	"database/sql"
 	"fmt"
 
-	"github.com/jukeizu/voting/api/protobuf-spec/registrationpb"
-	"github.com/jukeizu/voting/registration/migrations"
+	"github.com/jukeizu/voting/domain/entities"
+	"github.com/jukeizu/voting/persistence/migrations"
+	_ "github.com/lib/pq"
 	"github.com/shawntoffel/gossage"
 )
 
@@ -15,7 +16,7 @@ const (
 
 type Repository interface {
 	Migrate() error
-	RegisterVoter(externalId, username string, canVote bool) (*registrationpb.Voter, error)
+	RegisterVoter(externalId, username string, canVote bool) (*entities.Voter, error)
 }
 
 type repository struct {
@@ -56,14 +57,14 @@ func (r *repository) Migrate() error {
 	return g.Up()
 }
 
-func (r *repository) RegisterVoter(externalId string, username string, canVote bool) (*registrationpb.Voter, error) {
+func (r *repository) RegisterVoter(externalId string, username string, canVote bool) (*entities.Voter, error) {
 	q := `INSERT into voter (externalId, username, canVote)
 	VALUES ($1, $2, $3)
 	ON CONFLICT (externalId) 
 	DO UPDATE SET username = excluded.username, updated = NOW()
 	RETURNING id, externalId, username, canvote`
 
-	voter := registrationpb.Voter{}
+	voter := entities.Voter{}
 
 	err := r.Db.QueryRow(q,
 		externalId,
