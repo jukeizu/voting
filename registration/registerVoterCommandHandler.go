@@ -21,5 +21,15 @@ func NewRegisterVoterCommandHandler(logger zerolog.Logger, repository persistenc
 }
 
 func (h RegisterVoterCommandHandler) Handle(req RegisterVoterRequest) (*entities.Voter, error) {
-	return h.repository.RegisterVoter(req.ExternalId, req.Username, true)
+	voter, err := h.repository.RegisterVoter(req.ExternalId, req.Username, true)
+	if err != nil {
+		return nil, err
+	}
+
+	h.logger.Info().
+		Str("externalId", voter.ExternalId).
+		Str("username", voter.Username).
+		Msg("registered voter")
+
+	return voter, nil
 }

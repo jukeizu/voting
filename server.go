@@ -29,15 +29,9 @@ func (s Server) RegisterVoter(ctx context.Context, req *registrationpb.RegisterV
 
 	handler := registration.NewRegisterVoterCommandHandler(s.logger, s.repository)
 	voter, err := handler.Handle(request)
-
 	if err != nil {
 		return nil, err
 	}
-
-	s.logger.Info().
-		Str("externalId", voter.ExternalId).
-		Str("username", voter.Username).
-		Msg("registered voter")
 
 	replyVoter := registrationpb.Voter{
 		Id:         voter.Id,
