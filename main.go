@@ -168,10 +168,12 @@ func newGrpcServer(logger zerolog.Logger) *grpc.Server {
 func newMediator(logger zerolog.Logger, repository persistence.Repository) mediator.Mediator {
 	registerVoterCommandHandler := registration.NewRegisterVoterCommandHandler(logger, repository)
 	createPollCommandHandler := polls.NewCreatePollCommandHandler(logger, repository)
+	pollQueryHandler := polls.NewPollQueryHandler(logger, repository)
 
 	mediator := mediator.New(
 		registerVoterCommandHandler,
 		createPollCommandHandler,
+		pollQueryHandler,
 	)
 
 	return mediator
