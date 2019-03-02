@@ -12,7 +12,9 @@ import (
 	"github.com/cheapRoc/grpc-zerolog"
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
 	"github.com/jukeizu/voting/api/protobuf-spec/registrationpb"
+	"github.com/jukeizu/voting/mediator"
 	"github.com/jukeizu/voting/persistence"
+	"github.com/jukeizu/voting/registration"
 	"github.com/oklog/run"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
@@ -92,14 +94,17 @@ func main() {
 
 	g := run.Group{}
 	if flagServer {
-		registrationRepository, err := persistence.NewRepository(dbAddress)
+		repository, err := persistence.NewRepository(dbAddress)
 		if err != nil {
 			logger.Error().Err(err).Caller().Msg("could not create registration repository")
 			os.Exit(1)
 		}
 
+		registerVoterCommandHandler := registration.NewRegisterVoterCommandHandler(logger, repository)
+		mediator := mediator.New(registerVoterCommandHandler)
+
 		grpcServer := newGrpcServer(logger)
-		server := NewServer(logger, grpcServer, registrationRepository)
+		server := NewServer(logger, grpcServer, mediator)
 
 		registrationpb.RegisterRegistrationServer(grpcServer, server)
 
