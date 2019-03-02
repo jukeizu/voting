@@ -14,6 +14,7 @@ import (
 	"github.com/jukeizu/voting/api/protobuf-spec/registrationpb"
 	"github.com/jukeizu/voting/mediator"
 	"github.com/jukeizu/voting/persistence"
+	"github.com/jukeizu/voting/polls"
 	"github.com/jukeizu/voting/registration"
 	"github.com/oklog/run"
 	"github.com/rs/xid"
@@ -100,8 +101,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		registerVoterCommandHandler := registration.NewRegisterVoterCommandHandler(logger, repository)
-		mediator := mediator.New(registerVoterCommandHandler)
+		mediator := newMediator(logger, repository)
 
 		grpcServer := newGrpcServer(logger)
 		server := NewServer(logger, grpcServer, mediator)
@@ -157,4 +157,16 @@ func newGrpcServer(logger zerolog.Logger) *grpc.Server {
 	)
 
 	return grpcServer
+}
+
+func newMediator(logger zerolog.Logger, repository persistence.Repository) mediator.Mediator {
+	registerVoterCommandHandler := registration.NewRegisterVoterCommandHandler(logger, repository)
+	createPollCommandHandler := polls.NewCreatePollCommandHandler(logger, repository)
+
+	mediator := mediator.New(
+		registerVoterCommandHandler,
+		createPollCommandHandler,
+	)
+
+	return mediator
 }
