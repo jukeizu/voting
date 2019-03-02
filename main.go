@@ -11,6 +11,7 @@ import (
 
 	"github.com/cheapRoc/grpc-zerolog"
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
+	"github.com/jukeizu/voting/api/protobuf-spec/pollpb"
 	"github.com/jukeizu/voting/api/protobuf-spec/registrationpb"
 	"github.com/jukeizu/voting/mediator"
 	"github.com/jukeizu/voting/persistence"
@@ -109,6 +110,9 @@ func main() {
 
 		registrationServer := server.NewRegistrationServer(mediator)
 		registrationpb.RegisterRegistrationServer(grpcServer, registrationServer)
+
+		pollsServer := server.NewPollsServer(mediator)
+		pollpb.RegisterPollsServer(grpcServer, pollsServer)
 
 		grpcAddr := ":" + grpcPort
 
