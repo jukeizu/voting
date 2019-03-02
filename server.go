@@ -28,7 +28,7 @@ func (s Server) RegisterVoter(ctx context.Context, req *registrationpb.RegisterV
 		Username:   req.Username,
 	}
 
-	voter, err := s.voterRequest(request)
+	voter, err := s.handleVoterRequest(request)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (s Server) Stop() {
 	s.grpcServer.GracefulStop()
 }
 
-func (s Server) voterRequest(req interface{}) (*registrationpb.Voter, error) {
+func (s Server) handleVoterRequest(req interface{}) (*registrationpb.Voter, error) {
 	resp, err := s.mediator.Send(req)
 	if err != nil {
 		return nil, err
