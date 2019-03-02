@@ -8,24 +8,24 @@ import (
 )
 
 type Server struct {
-	logger     zerolog.Logger
-	repository Repository
+	logger   zerolog.Logger
+	mediator Mediator
 }
 
-func NewServer(logger zerolog.Logger, repository Repository) Server {
-	return Server{logger, repository}
+func NewServer(logger zerolog.Logger, mediator Mediator) Server {
+	return Server{logger, mediator}
 }
 
 func (s Server) RegisterVoter(ctx context.Context, req *registrationpb.RegisterVoterRequest) (*registrationpb.RegisterVoterReply, error) {
-	voter, err := s.repository.RegisterVoter(req.ExternalId, req.Username, true)
+	resp, err := s.mediator.Send(req)
 	if err != nil {
 		return nil, err
 	}
 
-	s.logger.Info().
-		Str("externalId", voter.ExternalId).
-		Str("username", voter.Username).
-		Msg("registered voter")
+	reply, ok := resp.(*registrationpb.RegisterVoterReply)
+	if !ok {
+		return nil, nil
+	}
 
-	return &registrationpb.RegisterVoterReply{Voter: voter}, nil
+	return reply, nil
 }

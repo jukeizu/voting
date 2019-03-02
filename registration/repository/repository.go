@@ -1,11 +1,11 @@
-package registration
+package repository
 
 import (
 	"database/sql"
 	"fmt"
 
 	"github.com/jukeizu/voting/api/protobuf-spec/registrationpb"
-	"github.com/jukeizu/voting/registration/migrations"
+	"github.com/jukeizu/voting/registration/repository/migrations"
 	"github.com/shawntoffel/gossage"
 )
 

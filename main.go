@@ -15,6 +15,8 @@ import (
 	"github.com/jukeizu/voting/api/protobuf-spec/registrationpb"
 	"github.com/jukeizu/voting/poll"
 	"github.com/jukeizu/voting/registration"
+	registrationmediator "github.com/jukeizu/voting/registration/mediator"
+	registrationrepository "github.com/jukeizu/voting/registration/repository"
 	"github.com/oklog/run"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
@@ -91,7 +93,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		registrationRepository, err := registration.NewRepository(dbAddress)
+		registrationRepository, err := registrationrepository.NewRepository(dbAddress)
 		if err != nil {
 			logger.Error().Err(err).Caller().Msg("could not create registration repository")
 			os.Exit(1)
@@ -113,7 +115,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		registrationRepository, err := registration.NewRepository(dbAddress)
+		registrationRepository, err := registrationrepository.NewRepository(dbAddress)
 		if err != nil {
 			logger.Error().Err(err).Caller().Msg("could not create registration repository")
 			os.Exit(1)
@@ -125,6 +127,7 @@ func main() {
 		pollServer := poll.NewServer(logger, pollRepository)
 		pollpb.RegisterPollsServer(grpcServer, pollServer)
 
+		registrationMediator := registrationmediator.New()
 		registrationServer := registration.NewServer(logger, registrationRepository)
 		registrationpb.RegisterRegistrationServer(grpcServer, registrationServer)
 
