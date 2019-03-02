@@ -11,17 +11,20 @@ type Mediator struct {
 	registerVoterCommandHandler Handler
 	createPollCommandHandler    Handler
 	pollQueryHandler            Handler
+	optionsQueryHandler         Handler
 }
 
 func New(
 	registerVoterCommandHandler Handler,
 	createPollCommandHandler Handler,
 	pollQueryHandler Handler,
+	optionsQueryHandler Handler,
 ) Mediator {
 	return Mediator{
 		registerVoterCommandHandler,
 		createPollCommandHandler,
 		pollQueryHandler,
+		optionsQueryHandler,
 	}
 }
 
@@ -33,6 +36,8 @@ func (m Mediator) Send(req interface{}) (interface{}, error) {
 		return m.createPollCommandHandler.Handle(req)
 	case *pollpb.PollRequest:
 		return m.pollQueryHandler.Handle(req)
+	case *pollpb.OptionsRequest:
+		return m.optionsQueryHandler.Handle(req)
 	default:
 		return nil, fmt.Errorf("mediator: unsupported request type: %T", t)
 	}

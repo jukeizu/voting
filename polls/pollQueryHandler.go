@@ -25,7 +25,7 @@ func (h PollQueryHandler) Handle(request interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	pbPoll := mapToPb(poll)
+	pbPoll := mapToPbPoll(poll)
 
 	return &pollpb.PollReply{Poll: pbPoll}, nil
 }

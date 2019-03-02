@@ -5,7 +5,7 @@ import (
 	"github.com/jukeizu/voting/domain/entities"
 )
 
-func mapToPb(poll *entities.Poll) *pollpb.Poll {
+func mapToPbPoll(poll *entities.Poll) *pollpb.Poll {
 	pbPoll := &pollpb.Poll{
 		Id:                 poll.Id,
 		Title:              poll.Title,
@@ -14,15 +14,23 @@ func mapToPb(poll *entities.Poll) *pollpb.Poll {
 		HasEnded:           poll.HasEnded,
 	}
 
-	for _, option := range poll.Options {
+	pbPoll.Options = mapToPbOptions(poll.Options)
+
+	return pbPoll
+}
+
+func mapToPbOptions(options []entities.Option) []*pollpb.Option {
+	pbOptions := []*pollpb.Option{}
+
+	for _, option := range options {
 		pbOption := &pollpb.Option{
 			Id:      option.Id,
 			PollId:  option.PollId,
 			Content: option.Content,
 		}
 
-		pbPoll.Options = append(pbPoll.Options, pbOption)
+		pbOptions = append(pbOptions, pbOption)
 	}
 
-	return pbPoll
+	return pbOptions
 }

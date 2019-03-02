@@ -47,7 +47,7 @@ func (h CreatePollCommandHandler) Handle(request interface{}) (interface{}, erro
 		Int32("allowedUniqueVotes", poll.AllowedUniqueVotes).
 		Msg("poll created")
 
-	pbPoll := mapToPb(poll)
+	pbPoll := mapToPbPoll(poll)
 
 	return &pollpb.CreatePollReply{Poll: pbPoll}, nil
 }

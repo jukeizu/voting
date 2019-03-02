@@ -169,11 +169,13 @@ func newMediator(logger zerolog.Logger, repository persistence.Repository) media
 	registerVoterCommandHandler := registration.NewRegisterVoterCommandHandler(logger, repository)
 	createPollCommandHandler := polls.NewCreatePollCommandHandler(logger, repository)
 	pollQueryHandler := polls.NewPollQueryHandler(logger, repository)
+	optionsQueryHandler := polls.NewOptionsQueryHandler(logger, repository)
 
 	mediator := mediator.New(
 		registerVoterCommandHandler,
 		createPollCommandHandler,
 		pollQueryHandler,
+		optionsQueryHandler,
 	)
 
 	return mediator
