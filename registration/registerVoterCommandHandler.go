@@ -1,15 +1,10 @@
 package registration
 
 import (
-	"github.com/jukeizu/voting/domain/entities"
+	"github.com/jukeizu/voting/api/protobuf-spec/registrationpb"
 	"github.com/jukeizu/voting/persistence"
 	"github.com/rs/zerolog"
 )
-
-type RegisterVoterRequest struct {
-	ExternalId string
-	Username   string
-}
 
 type RegisterVoterCommandHandler struct {
 	logger     zerolog.Logger
@@ -20,7 +15,7 @@ func NewRegisterVoterCommandHandler(logger zerolog.Logger, repository persistenc
 	return RegisterVoterCommandHandler{logger, repository}
 }
 
-func (h RegisterVoterCommandHandler) Handle(req RegisterVoterRequest) (*entities.Voter, error) {
+func (h RegisterVoterCommandHandler) Handle(req *registrationpb.RegisterVoterRequest) (*registrationpb.RegisterVoterReply, error) {
 	voter, err := h.repository.RegisterVoter(req.ExternalId, req.Username, true)
 	if err != nil {
 		return nil, err
@@ -31,5 +26,14 @@ func (h RegisterVoterCommandHandler) Handle(req RegisterVoterRequest) (*entities
 		Str("username", voter.Username).
 		Msg("registered voter")
 
-	return voter, nil
+	reply := registrationpb.RegisterVoterReply{
+		Voter: &registrationpb.Voter{
+			Id:         voter.Id,
+			ExternalId: voter.ExternalId,
+			Username:   voter.Username,
+			CanVote:    voter.CanVote,
+		},
+	}
+
+	return &reply, nil
 }
