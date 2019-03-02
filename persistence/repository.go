@@ -11,12 +11,17 @@ import (
 )
 
 const (
-	DatabaseName = "registration"
+	DatabaseName = "voting"
 )
 
 type Repository interface {
 	Migrate() error
 	RegisterVoter(externalId, username string, canVote bool) (*entities.Voter, error)
+	CreatePoll(poll entities.Poll) (*entities.Poll, error)
+	Poll(id string) (*entities.Poll, error)
+	PollCreator(id string) (string, error)
+	Options(pollId string) ([]entities.Option, error)
+	EndPoll(id string) (*entities.Poll, error)
 }
 
 type repository struct {
@@ -49,7 +54,11 @@ func (r *repository) Migrate() error {
 		return err
 	}
 
-	err = g.RegisterMigrations(migrations.CreateTableVoter20190221024754{})
+	err = g.RegisterMigrations(
+		migrations.CreateTableVoter20190221024754{},
+		migrations.CreateTablePoll20190219024013{},
+		migrations.CreateTableOption20190220043255{},
+	)
 	if err != nil {
 		return err
 	}
@@ -78,4 +87,141 @@ func (r *repository) RegisterVoter(externalId string, username string, canVote b
 	)
 
 	return &voter, err
+}
+
+func (r *repository) CreatePoll(req entities.Poll) (*entities.Poll, error) {
+	q := `INSERT INTO poll (title, creatorId, allowedUniqueVotes)
+		VALUES ($1, $2, $3)
+		RETURNING
+			id,
+			title,
+			creatorId,
+			allowedUniqueVotes,
+			hasEnded`
+
+	poll := entities.Poll{}
+
+	err := r.Db.QueryRow(q, req.Title, req.CreatorId, req.AllowedUniqueVotes).Scan(
+		&poll.Id,
+		&poll.Title,
+		&poll.CreatorId,
+		&poll.AllowedUniqueVotes,
+		&poll.HasEnded,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, option := range req.Options {
+		o, err := r.createOption(poll.Id, option)
+		if err != nil {
+			return nil, err
+		}
+
+		poll.Options = append(poll.Options, o)
+	}
+
+	return &poll, err
+}
+
+func (r *repository) Poll(id string) (*entities.Poll, error) {
+	q := `SELECT id, 
+		title, 
+		creatorId, 
+		allowedUniqueVotes, 
+		hasEnded
+	FROM poll WHERE id = $1`
+
+	poll := entities.Poll{}
+
+	err := r.Db.QueryRow(q, id).Scan(
+		&poll.Id,
+		&poll.Title,
+		&poll.CreatorId,
+		&poll.AllowedUniqueVotes,
+		&poll.HasEnded,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	options, err := r.Options(id)
+	if err != nil {
+		return nil, err
+	}
+
+	poll.Options = options
+
+	return &poll, nil
+}
+
+func (r *repository) PollCreator(id string) (string, error) {
+	q := `SELECT creatorId FROM poll WHERE id = $1`
+
+	creator := ""
+
+	err := r.Db.QueryRow(q, id).Scan(&creator)
+	if err != nil {
+		return "", err
+	}
+
+	return creator, nil
+}
+
+func (r *repository) Options(pollId string) ([]entities.Option, error) {
+	options := []entities.Option{}
+
+	q := `SELECT id, pollid, content
+		FROM option
+		WHERE pollid = $1`
+
+	rows, err := r.Db.Query(q, pollId)
+	if err != nil {
+		return options, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		option := entities.Option{}
+		err := rows.Scan(
+			&option.Id,
+			&option.PollId,
+			&option.Content,
+		)
+		if err != nil {
+			return options, err
+		}
+
+		options = append(options, option)
+	}
+
+	return options, nil
+}
+
+func (r *repository) EndPoll(id string) (*entities.Poll, error) {
+	q := `UPDATE poll SET hasEnded = true WHERE id = $1`
+
+	_, err := r.Db.Exec(q, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.Poll(id)
+}
+
+func (r *repository) createOption(pollId string, option entities.Option) (entities.Option, error) {
+	q := `INSERT INTO option (pollid, content) VALUES ($1, $2) RETURNING id, pollid, content`
+
+	o := entities.Option{}
+
+	err := r.Db.QueryRow(q,
+		pollId,
+		option.Content,
+	).Scan(
+		&o.Id,
+		&o.PollId,
+		&o.Content,
+	)
+
+	return o, err
 }
