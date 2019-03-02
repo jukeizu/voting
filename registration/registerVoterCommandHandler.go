@@ -2,16 +2,15 @@ package registration
 
 import (
 	"github.com/jukeizu/voting/api/protobuf-spec/registrationpb"
-	"github.com/jukeizu/voting/persistence"
 	"github.com/rs/zerolog"
 )
 
 type RegisterVoterCommandHandler struct {
 	logger     zerolog.Logger
-	repository persistence.Repository
+	repository Repository
 }
 
-func NewRegisterVoterCommandHandler(logger zerolog.Logger, repository persistence.Repository) RegisterVoterCommandHandler {
+func NewRegisterVoterCommandHandler(logger zerolog.Logger, repository Repository) RegisterVoterCommandHandler {
 	return RegisterVoterCommandHandler{logger, repository}
 }
 

@@ -3,16 +3,15 @@ package polls
 import (
 	"github.com/jukeizu/voting/api/protobuf-spec/pollpb"
 	"github.com/jukeizu/voting/domain/entities"
-	"github.com/jukeizu/voting/persistence"
 	"github.com/rs/zerolog"
 )
 
 type CreatePollCommandHandler struct {
 	logger     zerolog.Logger
-	repository persistence.Repository
+	repository Repository
 }
 
-func NewCreatePollCommandHandler(logger zerolog.Logger, repository persistence.Repository) CreatePollCommandHandler {
+func NewCreatePollCommandHandler(logger zerolog.Logger, repository Repository) CreatePollCommandHandler {
 	return CreatePollCommandHandler{logger, repository}
 }
 

@@ -16,6 +16,7 @@ import (
 	"github.com/jukeizu/voting/persistence"
 	"github.com/jukeizu/voting/polls"
 	"github.com/jukeizu/voting/registration"
+	"github.com/jukeizu/voting/server"
 	"github.com/oklog/run"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
@@ -104,16 +105,17 @@ func main() {
 		mediator := newMediator(logger, repository)
 
 		grpcServer := newGrpcServer(logger)
-		server := NewServer(logger, grpcServer, mediator)
+		s := server.NewServer(logger, grpcServer)
 
-		registrationpb.RegisterRegistrationServer(grpcServer, server)
+		registrationServer := server.NewRegistrationServer(mediator)
+		registrationpb.RegisterRegistrationServer(grpcServer, registrationServer)
 
 		grpcAddr := ":" + grpcPort
 
 		g.Add(func() error {
-			return server.Start(grpcAddr)
+			return s.Start(grpcAddr)
 		}, func(error) {
-			server.Stop()
+			s.Stop()
 		})
 	}
 

@@ -14,17 +14,7 @@ const (
 	DatabaseName = "voting"
 )
 
-type Repository interface {
-	Migrate() error
-	RegisterVoter(externalId, username string, canVote bool) (*entities.Voter, error)
-	CreatePoll(poll entities.Poll) (*entities.Poll, error)
-	Poll(id string) (*entities.Poll, error)
-	PollCreator(id string) (string, error)
-	Options(pollId string) ([]entities.Option, error)
-	EndPoll(id string) (*entities.Poll, error)
-}
-
-type repository struct {
+type Repository struct {
 	Db *sql.DB
 }
 
@@ -33,17 +23,17 @@ func NewRepository(url string) (Repository, error) {
 
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
-		return nil, err
+		return Repository{}, err
 	}
 
-	r := repository{
+	r := Repository{
 		Db: db,
 	}
 
-	return &r, nil
+	return r, nil
 }
 
-func (r *repository) Migrate() error {
+func (r Repository) Migrate() error {
 	_, err := r.Db.Exec(`CREATE DATABASE IF NOT EXISTS ` + DatabaseName)
 	if err != nil {
 		return err
@@ -66,7 +56,7 @@ func (r *repository) Migrate() error {
 	return g.Up()
 }
 
-func (r *repository) RegisterVoter(externalId string, username string, canVote bool) (*entities.Voter, error) {
+func (r Repository) RegisterVoter(externalId string, username string, canVote bool) (*entities.Voter, error) {
 	q := `INSERT into voter (externalId, username, canVote)
 	VALUES ($1, $2, $3)
 	ON CONFLICT (externalId) 
@@ -89,7 +79,7 @@ func (r *repository) RegisterVoter(externalId string, username string, canVote b
 	return &voter, err
 }
 
-func (r *repository) CreatePoll(req entities.Poll) (*entities.Poll, error) {
+func (r Repository) CreatePoll(req entities.Poll) (*entities.Poll, error) {
 	q := `INSERT INTO poll (title, creatorId, allowedUniqueVotes)
 		VALUES ($1, $2, $3)
 		RETURNING
@@ -124,7 +114,7 @@ func (r *repository) CreatePoll(req entities.Poll) (*entities.Poll, error) {
 	return &poll, err
 }
 
-func (r *repository) Poll(id string) (*entities.Poll, error) {
+func (r Repository) Poll(id string) (*entities.Poll, error) {
 	q := `SELECT id, 
 		title, 
 		creatorId, 
@@ -155,7 +145,7 @@ func (r *repository) Poll(id string) (*entities.Poll, error) {
 	return &poll, nil
 }
 
-func (r *repository) PollCreator(id string) (string, error) {
+func (r Repository) PollCreator(id string) (string, error) {
 	q := `SELECT creatorId FROM poll WHERE id = $1`
 
 	creator := ""
@@ -168,7 +158,7 @@ func (r *repository) PollCreator(id string) (string, error) {
 	return creator, nil
 }
 
-func (r *repository) Options(pollId string) ([]entities.Option, error) {
+func (r Repository) Options(pollId string) ([]entities.Option, error) {
 	options := []entities.Option{}
 
 	q := `SELECT id, pollid, content
@@ -198,7 +188,7 @@ func (r *repository) Options(pollId string) ([]entities.Option, error) {
 	return options, nil
 }
 
-func (r *repository) EndPoll(id string) (*entities.Poll, error) {
+func (r Repository) EndPoll(id string) (*entities.Poll, error) {
 	q := `UPDATE poll SET hasEnded = true WHERE id = $1`
 
 	_, err := r.Db.Exec(q, id)
@@ -209,7 +199,7 @@ func (r *repository) EndPoll(id string) (*entities.Poll, error) {
 	return r.Poll(id)
 }
 
-func (r *repository) createOption(pollId string, option entities.Option) (entities.Option, error) {
+func (r Repository) createOption(pollId string, option entities.Option) (entities.Option, error) {
 	q := `INSERT INTO option (pollid, content) VALUES ($1, $2) RETURNING id, pollid, content`
 
 	o := entities.Option{}
