@@ -15,7 +15,12 @@ func NewCreatePollCommandHandler(logger zerolog.Logger, repository Repository) C
 	return CreatePollCommandHandler{logger, repository}
 }
 
-func (h CreatePollCommandHandler) Handle(req *pollpb.CreatePollRequest) (*pollpb.CreatePollReply, error) {
+func (h CreatePollCommandHandler) Handle(request interface{}) (interface{}, error) {
+	req, ok := request.(*pollpb.CreatePollRequest)
+	if !ok {
+		return nil, nil
+	}
+
 	entity := entities.Poll{
 		CreatorId:          req.CreatorId,
 		Title:              req.Title,

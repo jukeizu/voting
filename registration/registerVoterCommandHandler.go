@@ -14,7 +14,12 @@ func NewRegisterVoterCommandHandler(logger zerolog.Logger, repository Repository
 	return RegisterVoterCommandHandler{logger, repository}
 }
 
-func (h RegisterVoterCommandHandler) Handle(req *registrationpb.RegisterVoterRequest) (*registrationpb.RegisterVoterReply, error) {
+func (h RegisterVoterCommandHandler) Handle(request interface{}) (interface{}, error) {
+	req, ok := request.(*registrationpb.RegisterVoterRequest)
+	if !ok {
+		return nil, nil
+	}
+
 	voter, err := h.repository.RegisterVoter(req.ExternalId, req.Username, true)
 	if err != nil {
 		return nil, err
