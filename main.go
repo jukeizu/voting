@@ -11,10 +11,7 @@ import (
 
 	"github.com/cheapRoc/grpc-zerolog"
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
-	"github.com/jukeizu/voting/api/protobuf-spec/pollpb"
-	"github.com/jukeizu/voting/api/protobuf-spec/registrationpb"
-	"github.com/jukeizu/voting/poll"
-	"github.com/jukeizu/voting/registration"
+	"github.com/jukeizu/voting/internal/startup"
 	"github.com/oklog/run"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
@@ -73,31 +70,31 @@ func main() {
 		flagHandler = true
 	}
 
+	registrationStartup, err := startup.NewRegistrationStartup(logger, dbAddress)
+	if err != nil {
+		logger.Error().Err(err).Caller().Msg("could not startup registration")
+		os.Exit(1)
+	}
+
+	pollStartup, err := startup.NewPollStartup(logger, dbAddress)
+	if err != nil {
+		logger.Error().Err(err).Caller().Msg("could not startup poll")
+		os.Exit(1)
+	}
+
 	if flagMigrate {
 		gossage.Logger = func(format string, a ...interface{}) {
 			msg := fmt.Sprintf(format, a...)
 			logger.Info().Str("component", "migrator").Msg(msg)
 		}
 
-		pollRepository, err := poll.NewRepository(dbAddress)
-		if err != nil {
-			logger.Error().Err(err).Caller().Msg("could not create poll repository")
-			os.Exit(1)
-		}
-
-		err = pollRepository.Migrate()
+		err = pollStartup.Migrate()
 		if err != nil {
 			logger.Error().Err(err).Caller().Msg("could not migrate poll repository")
 			os.Exit(1)
 		}
 
-		registrationRepository, err := registration.NewRepository(dbAddress)
-		if err != nil {
-			logger.Error().Err(err).Caller().Msg("could not create registration repository")
-			os.Exit(1)
-		}
-
-		err = registrationRepository.Migrate()
+		err = registrationStartup.Migrate()
 		if err != nil {
 			logger.Error().Err(err).Caller().Msg("could not migrate registration repository")
 			os.Exit(1)
@@ -109,8 +106,8 @@ func main() {
 	if flagServer {
 		grpcServer := newGrpcServer(logger)
 
-		registerRegistrationServer(logger, grpcServer, dbAddress)
-		registerPollServer(logger, grpcServer, dbAddress)
+		registrationStartup.RegisterServer(grpcServer)
+		pollStartup.RegisterServer(grpcServer)
 
 		server := NewServer(logger, grpcServer)
 
@@ -163,28 +160,4 @@ func newGrpcServer(logger zerolog.Logger) *grpc.Server {
 	)
 
 	return grpcServer
-}
-
-func registerRegistrationServer(logger zerolog.Logger, grpcServer *grpc.Server, dbAddress string) {
-	registrationRepository, err := registration.NewRepository(dbAddress)
-	if err != nil {
-		logger.Error().Err(err).Caller().Msg("could not create registration repository")
-		os.Exit(1)
-	}
-
-	registerVoterCommandHandler := registration.NewRegisterVoterCommandHandler(logger, registrationRepository)
-	registrationServer := registration.NewServer(registerVoterCommandHandler)
-	registrationpb.RegisterRegistrationServer(grpcServer, registrationServer)
-}
-
-func registerPollServer(logger zerolog.Logger, grpcServer *grpc.Server, dbAddress string) {
-	pollRepository, err := poll.NewRepository(dbAddress)
-	if err != nil {
-		logger.Error().Err(err).Caller().Msg("could not create poll repository")
-		os.Exit(1)
-	}
-
-	pollServer := poll.NewServer(logger, pollRepository)
-	pollpb.RegisterPollsServer(grpcServer, pollServer)
-
 }
