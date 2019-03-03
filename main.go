@@ -107,27 +107,12 @@ func main() {
 	g := run.Group{}
 
 	if flagServer {
-		pollRepository, err := poll.NewRepository(dbAddress)
-		if err != nil {
-			logger.Error().Err(err).Caller().Msg("could not create poll repository")
-			os.Exit(1)
-		}
-
-		registrationRepository, err := registration.NewRepository(dbAddress)
-		if err != nil {
-			logger.Error().Err(err).Caller().Msg("could not create registration repository")
-			os.Exit(1)
-		}
-
 		grpcServer := newGrpcServer(logger)
+
+		registerRegistrationServer(logger, grpcServer, dbAddress)
+		registerPollServer(logger, grpcServer, dbAddress)
+
 		server := NewServer(logger, grpcServer)
-
-		pollServer := poll.NewServer(logger, pollRepository)
-		pollpb.RegisterPollsServer(grpcServer, pollServer)
-
-		registerVoterCommandHandler := registration.NewRegisterVoterCommandHandler(logger, registrationRepository)
-		registrationServer := registration.NewServer(registerVoterCommandHandler)
-		registrationpb.RegisterRegistrationServer(grpcServer, registrationServer)
 
 		grpcAddr := ":" + grpcPort
 
@@ -178,4 +163,28 @@ func newGrpcServer(logger zerolog.Logger) *grpc.Server {
 	)
 
 	return grpcServer
+}
+
+func registerRegistrationServer(logger zerolog.Logger, grpcServer *grpc.Server, dbAddress string) {
+	registrationRepository, err := registration.NewRepository(dbAddress)
+	if err != nil {
+		logger.Error().Err(err).Caller().Msg("could not create registration repository")
+		os.Exit(1)
+	}
+
+	registerVoterCommandHandler := registration.NewRegisterVoterCommandHandler(logger, registrationRepository)
+	registrationServer := registration.NewServer(registerVoterCommandHandler)
+	registrationpb.RegisterRegistrationServer(grpcServer, registrationServer)
+}
+
+func registerPollServer(logger zerolog.Logger, grpcServer *grpc.Server, dbAddress string) {
+	pollRepository, err := poll.NewRepository(dbAddress)
+	if err != nil {
+		logger.Error().Err(err).Caller().Msg("could not create poll repository")
+		os.Exit(1)
+	}
+
+	pollServer := poll.NewServer(logger, pollRepository)
+	pollpb.RegisterPollsServer(grpcServer, pollServer)
+
 }

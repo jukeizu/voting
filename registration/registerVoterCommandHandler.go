@@ -5,10 +5,6 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type RegisterVoterReply interface {
-	Handle(*registrationpb.RegisterVoterRequest) (*registrationpb.RegisterVoterReply, error)
-}
-
 type RegisterVoterCommandHandler struct {
 	logger     zerolog.Logger
 	repository Repository
