@@ -6,15 +6,11 @@ import (
 	"github.com/jukeizu/voting/api/protobuf-spec/registrationpb"
 )
 
-type RegisterVoterReply interface {
-	Handle(*registrationpb.RegisterVoterRequest) (*registrationpb.RegisterVoterReply, error)
-}
-
 type Server struct {
-	registerVoterCommandHandler RegisterVoterReply
+	registerVoterCommandHandler RegisterVoterCommandHandler
 }
 
-func NewServer(registerVoterCommandHandler RegisterVoterReply) Server {
+func NewServer(registerVoterCommandHandler RegisterVoterCommandHandler) Server {
 	return Server{registerVoterCommandHandler}
 }
 

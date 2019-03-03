@@ -5,16 +5,20 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type RegisterVoterCommandHandler struct {
+type RegisterVoterCommandHandler interface {
+	Handle(*registrationpb.RegisterVoterRequest) (*registrationpb.RegisterVoterReply, error)
+}
+
+type registerVoterCommandHandler struct {
 	logger     zerolog.Logger
 	repository Repository
 }
 
 func NewRegisterVoterCommandHandler(logger zerolog.Logger, repository Repository) RegisterVoterCommandHandler {
-	return RegisterVoterCommandHandler{logger, repository}
+	return &registerVoterCommandHandler{logger, repository}
 }
 
-func (h RegisterVoterCommandHandler) Handle(req *registrationpb.RegisterVoterRequest) (*registrationpb.RegisterVoterReply, error) {
+func (h registerVoterCommandHandler) Handle(req *registrationpb.RegisterVoterRequest) (*registrationpb.RegisterVoterReply, error) {
 	voter, err := h.repository.RegisterVoter(req.ExternalId, req.Username, true)
 	if err != nil {
 		return nil, err
