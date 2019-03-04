@@ -7,38 +7,26 @@ import (
 )
 
 type Server struct {
-	createPollCommandHandler CreatePollCommandHandler
-	pollQueryHandler         PollQueryHandler
-	optionsQueryHandler      OptionsQueryHandler
-	endPollCommandHandler    EndPollCommandHandler
+	pollHandler    PollHandler
+	optionsHandler OptionsHandler
 }
 
-func NewServer(
-	createPollCommandHandler CreatePollCommandHandler,
-	pollQueryHandler PollQueryHandler,
-	optionsQueryHandler OptionsQueryHandler,
-	endPollCommandHandler EndPollCommandHandler,
-) Server {
-	return Server{
-		createPollCommandHandler,
-		pollQueryHandler,
-		optionsQueryHandler,
-		endPollCommandHandler,
-	}
+func NewServer(pollHandler PollHandler, optionsHandler OptionsHandler) Server {
+	return Server{pollHandler, optionsHandler}
 }
 
 func (s Server) Create(ctx context.Context, req *pollpb.CreatePollRequest) (*pollpb.CreatePollReply, error) {
-	return s.createPollCommandHandler.Handle(req)
+	return s.pollHandler.Create(req)
 }
 
 func (s Server) Poll(ctx context.Context, req *pollpb.PollRequest) (*pollpb.PollReply, error) {
-	return s.pollQueryHandler.Handle(req)
+	return s.pollHandler.Poll(req)
 }
 
 func (s Server) Options(ctx context.Context, req *pollpb.OptionsRequest) (*pollpb.OptionsReply, error) {
-	return s.optionsQueryHandler.Handle(req)
+	return s.optionsHandler.Options(req)
 }
 
 func (s Server) End(ctx context.Context, req *pollpb.EndPollRequest) (*pollpb.EndPollReply, error) {
-	return s.endPollCommandHandler.Handle(req)
+	return s.pollHandler.End(req)
 }
