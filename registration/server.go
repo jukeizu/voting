@@ -7,13 +7,13 @@ import (
 )
 
 type Server struct {
-	registerVoterCommandHandler RegisterVoterCommandHandler
+	registrationHandler RegistrationHandler
 }
 
-func NewServer(registerVoterCommandHandler RegisterVoterCommandHandler) Server {
-	return Server{registerVoterCommandHandler}
+func NewServer(registrationHandler RegistrationHandler) Server {
+	return Server{registrationHandler}
 }
 
 func (s Server) RegisterVoter(ctx context.Context, req *registrationpb.RegisterVoterRequest) (*registrationpb.RegisterVoterReply, error) {
-	return s.registerVoterCommandHandler.Handle(req)
+	return s.registrationHandler.RegisterVoter(req)
 }
