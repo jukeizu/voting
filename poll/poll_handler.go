@@ -8,21 +8,17 @@ import (
 type PollHandler interface {
 	Create(*pollpb.CreatePollRequest) (*pollpb.CreatePollReply, error)
 	Poll(*pollpb.PollRequest) (*pollpb.PollReply, error)
+	Options(*pollpb.OptionsRequest) (*pollpb.OptionsReply, error)
 	End(*pollpb.EndPollRequest) (*pollpb.EndPollReply, error)
-}
-
-type Validator interface {
-	CanEnd(userId, pollId string) (bool, string)
 }
 
 type pollHandler struct {
 	logger     zerolog.Logger
 	repository Repository
-	validator  Validator
 }
 
-func NewPollHandler(logger zerolog.Logger, repository Repository, validator Validator) PollHandler {
-	return &pollHandler{logger, repository, validator}
+func NewPollHandler(logger zerolog.Logger, repository Repository) PollHandler {
+	return &pollHandler{logger, repository}
 }
 
 func (h pollHandler) Create(req *pollpb.CreatePollRequest) (*pollpb.CreatePollReply, error) {
@@ -48,6 +44,15 @@ func (h pollHandler) Poll(req *pollpb.PollRequest) (*pollpb.PollReply, error) {
 	}
 
 	return &pollpb.PollReply{Poll: poll}, nil
+}
+
+func (h pollHandler) Options(req *pollpb.OptionsRequest) (*pollpb.OptionsReply, error) {
+	options, err := h.repository.Options(req.PollId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pollpb.OptionsReply{Options: options}, nil
 }
 
 func (h pollHandler) End(req *pollpb.EndPollRequest) (*pollpb.EndPollReply, error) {

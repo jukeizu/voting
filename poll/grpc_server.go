@@ -7,25 +7,25 @@ import (
 )
 
 type GrpcServer struct {
-	service Service
+	pollHandler PollHandler
 }
 
-func NewGrpcServer(service Service) GrpcServer {
-	return GrpcServer{service}
+func NewGrpcServer(pollHandler PollHandler) GrpcServer {
+	return GrpcServer{pollHandler}
 }
 
 func (s GrpcServer) Create(ctx context.Context, req *pollpb.CreatePollRequest) (*pollpb.CreatePollReply, error) {
-	return s.service.Create(req)
+	return s.pollHandler.Create(req)
 }
 
 func (s GrpcServer) Poll(ctx context.Context, req *pollpb.PollRequest) (*pollpb.PollReply, error) {
-	return s.service.Poll(req)
+	return s.pollHandler.Poll(req)
 }
 
 func (s GrpcServer) Options(ctx context.Context, req *pollpb.OptionsRequest) (*pollpb.OptionsReply, error) {
-	return s.service.Options(req)
+	return s.pollHandler.Options(req)
 }
 
 func (s GrpcServer) End(ctx context.Context, req *pollpb.EndPollRequest) (*pollpb.EndPollReply, error) {
-	return s.service.End(req)
+	return s.pollHandler.End(req)
 }
