@@ -11,13 +11,18 @@ type PollHandler interface {
 	End(*pollpb.EndPollRequest) (*pollpb.EndPollReply, error)
 }
 
+type Validator interface {
+	CanEnd(userId, pollId string) (bool, string)
+}
+
 type pollHandler struct {
 	logger     zerolog.Logger
 	repository Repository
+	validator  Validator
 }
 
-func NewPollHandler(logger zerolog.Logger, repository Repository) PollHandler {
-	return &pollHandler{logger, repository}
+func NewPollHandler(logger zerolog.Logger, repository Repository, validator Validator) PollHandler {
+	return &pollHandler{logger, repository, validator}
 }
 
 func (h pollHandler) Create(req *pollpb.CreatePollRequest) (*pollpb.CreatePollReply, error) {
