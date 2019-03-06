@@ -14,8 +14,8 @@ type DefaultService struct {
 	repository Repository
 }
 
-func NewDefaultService(logger zerolog.Logger, repository Repository) Service {
-	return &DefaultService{logger, repository}
+func NewDefaultService(logger zerolog.Logger, repository Repository) DefaultService {
+	return DefaultService{logger, repository}
 }
 
 func (h DefaultService) RegisterVoter(req *registrationpb.RegisterVoterRequest) (*registrationpb.RegisterVoterReply, error) {
