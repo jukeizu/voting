@@ -7,13 +7,13 @@ import (
 )
 
 type GrpcServer struct {
-	registrationHandler RegistrationHandler
+	service Service
 }
 
-func NewGrpcServer(registrationHandler RegistrationHandler) GrpcServer {
-	return GrpcServer{registrationHandler}
+func NewGrpcServer(service Service) GrpcServer {
+	return GrpcServer{service}
 }
 
 func (s GrpcServer) RegisterVoter(ctx context.Context, req *registrationpb.RegisterVoterRequest) (*registrationpb.RegisterVoterReply, error) {
-	return s.registrationHandler.RegisterVoter(req)
+	return s.service.RegisterVoter(req)
 }

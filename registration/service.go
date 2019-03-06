@@ -5,20 +5,20 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type RegistrationHandler interface {
+type Service interface {
 	RegisterVoter(*registrationpb.RegisterVoterRequest) (*registrationpb.RegisterVoterReply, error)
 }
 
-type registrationHandler struct {
+type DefaultService struct {
 	logger     zerolog.Logger
 	repository Repository
 }
 
-func NewRegistrationHandler(logger zerolog.Logger, repository Repository) RegistrationHandler {
-	return &registrationHandler{logger, repository}
+func NewDefaultService(logger zerolog.Logger, repository Repository) Service {
+	return &DefaultService{logger, repository}
 }
 
-func (h registrationHandler) RegisterVoter(req *registrationpb.RegisterVoterRequest) (*registrationpb.RegisterVoterReply, error) {
+func (h DefaultService) RegisterVoter(req *registrationpb.RegisterVoterRequest) (*registrationpb.RegisterVoterReply, error) {
 	voter, err := h.repository.RegisterVoter(req.ExternalId, req.Username, true)
 	if err != nil {
 		return nil, err

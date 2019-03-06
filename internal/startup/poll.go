@@ -26,8 +26,8 @@ func (s PollStartup) Migrate() error {
 }
 
 func (s PollStartup) RegisterServer(grpcServer *grpc.Server) {
-	pollHandler := poll.NewPollHandler(s.logger, s.repository)
-	pollServer := poll.NewGrpcServer(pollHandler)
+	service := poll.NewDefaultService(s.logger, s.repository)
+	pollServer := poll.NewGrpcServer(service)
 
 	pollpb.RegisterPollsServer(grpcServer, pollServer)
 }

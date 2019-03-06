@@ -26,8 +26,8 @@ func (s RegistrationStartup) Migrate() error {
 }
 
 func (s RegistrationStartup) RegisterServer(grpcServer *grpc.Server) {
-	registrationHandler := registration.NewRegistrationHandler(s.logger, s.repository)
-	registrationServer := registration.NewGrpcServer(registrationHandler)
+	service := registration.NewDefaultService(s.logger, s.repository)
+	registrationServer := registration.NewGrpcServer(service)
 
 	registrationpb.RegisterRegistrationServer(grpcServer, registrationServer)
 }

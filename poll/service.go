@@ -5,23 +5,23 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type PollHandler interface {
+type Service interface {
 	Create(*pollpb.CreatePollRequest) (*pollpb.CreatePollReply, error)
 	Poll(*pollpb.PollRequest) (*pollpb.PollReply, error)
 	Options(*pollpb.OptionsRequest) (*pollpb.OptionsReply, error)
 	End(*pollpb.EndPollRequest) (*pollpb.EndPollReply, error)
 }
 
-type pollHandler struct {
+type DefaultService struct {
 	logger     zerolog.Logger
 	repository Repository
 }
 
-func NewPollHandler(logger zerolog.Logger, repository Repository) PollHandler {
-	return &pollHandler{logger, repository}
+func NewDefaultService(logger zerolog.Logger, repository Repository) Service {
+	return &DefaultService{logger, repository}
 }
 
-func (h pollHandler) Create(req *pollpb.CreatePollRequest) (*pollpb.CreatePollReply, error) {
+func (h DefaultService) Create(req *pollpb.CreatePollRequest) (*pollpb.CreatePollReply, error) {
 	poll, err := h.repository.CreatePoll(req)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (h pollHandler) Create(req *pollpb.CreatePollRequest) (*pollpb.CreatePollRe
 	return &pollpb.CreatePollReply{Poll: poll}, nil
 }
 
-func (h pollHandler) Poll(req *pollpb.PollRequest) (*pollpb.PollReply, error) {
+func (h DefaultService) Poll(req *pollpb.PollRequest) (*pollpb.PollReply, error) {
 	poll, err := h.repository.Poll(req.Id)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (h pollHandler) Poll(req *pollpb.PollRequest) (*pollpb.PollReply, error) {
 	return &pollpb.PollReply{Poll: poll}, nil
 }
 
-func (h pollHandler) Options(req *pollpb.OptionsRequest) (*pollpb.OptionsReply, error) {
+func (h DefaultService) Options(req *pollpb.OptionsRequest) (*pollpb.OptionsReply, error) {
 	options, err := h.repository.Options(req.PollId)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (h pollHandler) Options(req *pollpb.OptionsRequest) (*pollpb.OptionsReply, 
 	return &pollpb.OptionsReply{Options: options}, nil
 }
 
-func (h pollHandler) End(req *pollpb.EndPollRequest) (*pollpb.EndPollReply, error) {
+func (h DefaultService) End(req *pollpb.EndPollRequest) (*pollpb.EndPollReply, error) {
 	creator, err := h.repository.PollCreator(req.Id)
 	if err != nil {
 		return nil, err
