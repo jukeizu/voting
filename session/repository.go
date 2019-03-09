@@ -14,6 +14,7 @@ const (
 
 type Repository interface {
 	Migrate() error
+	CurrentPoll(serverId string) (string, error)
 	SetCurrentPoll(serverId, pollId string) error
 }
 
@@ -76,6 +77,9 @@ func (r *repository) CurrentPoll(serverId string) (string, error) {
 	pollId := ""
 
 	err := r.Db.QueryRow(q, serverId).Scan(&pollId)
+	if err == sql.ErrNoRows {
+		return "", nil
+	}
 
 	return pollId, err
 }

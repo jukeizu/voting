@@ -82,6 +82,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	sessionStartup, err := startup.NewSessionStartup(logger, dbAddress)
+	if err != nil {
+		logger.Error().Err(err).Caller().Msg("could not startup session")
+		os.Exit(1)
+	}
+
 	if flagMigrate {
 		gossage.Logger = func(format string, a ...interface{}) {
 			msg := fmt.Sprintf(format, a...)
@@ -99,6 +105,12 @@ func main() {
 			logger.Error().Err(err).Caller().Msg("could not migrate registration repository")
 			os.Exit(1)
 		}
+
+		err = sessionStartup.Migrate()
+		if err != nil {
+			logger.Error().Err(err).Caller().Msg("could not migrate session repository")
+			os.Exit(1)
+		}
 	}
 
 	g := run.Group{}
@@ -108,6 +120,7 @@ func main() {
 
 		registrationStartup.RegisterServer(grpcServer)
 		pollStartup.RegisterServer(grpcServer)
+		sessionStartup.RegisterServer(grpcServer)
 
 		server := NewServer(logger, grpcServer)
 
