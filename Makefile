@@ -6,7 +6,7 @@ BUILD=GOARCH=amd64 $(GO) build -ldflags="-s -w -X main.Version=$(VERSION)"
 PROTOFILES=$(wildcard api/protobuf-spec/*/*.proto)
 PBFILES=$(patsubst %.proto,%.pb.go, $(PROTOFILES))
 
-.PHONY: all deps test proto build clean $(PROTOFILES)
+.PHONY: all deps test build build-linux docker-build docker-deploy proto clean $(PROTOFILES)
 
 all: deps test build 
 deps:
