@@ -39,10 +39,10 @@ type BallotOption struct {
 type Vote struct {
 	BallotId string
 	VoterId  string
-	Options  []RankOption
+	Options  []VoteOption
 }
 
-type RankOption struct {
+type VoteOption struct {
 	Rank  int32
 	Index int32
 }
