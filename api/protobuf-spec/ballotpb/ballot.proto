@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package ballotpb;
+
+service Ballot {
+    rpc Generate(GenerateBallotRequest) returns (GenerateBallotReply) {}
+    rpc Submit(SubmitBallotRequest) returns (SubmitBallotReply) {}
+    rpc Count(SubmitBallotRequest) returns (SubmitBallotReply) {}
+}
+
+message GenerateBallotRequest {
+    string pollId = 1;
+    string userId = 2;
+}
+
+message GenerateBallotReply {
+}
+
+message BallotOption {
+    int32 id = 1;
+    string optionId = 2;
+    string content = 3;
+}
+
+message SubmitBallotRequest {
+
+}
+
+message SubmitBallotReply {
+
+}

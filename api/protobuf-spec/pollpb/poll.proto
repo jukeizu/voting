@@ -1,12 +1,15 @@
 syntax = "proto3";
 
-package pollpb;
+package votingpb;
 
-service Polls {
-    rpc Create(CreatePollRequest) returns (CreatePollReply) {}
+service Voting {
+    rpc CreatePoll(CreatePollRequest) returns (CreatePollReply) {}
     rpc Poll(PollRequest) returns (PollReply) {}
-    rpc Options(OptionsRequest) returns (OptionsReply) {}
-    rpc End(EndPollRequest) returns (EndPollReply) {}
+    rpc Status(PollRequest) returns (PollReply) {}
+    rpc EndPoll(EndPollRequest) returns (EndPollReply) {}
+    rpc Ballot(EndPollRequest) returns (EndPollReply) {}
+    rpc Vote(EndPollRequest) returns (EndPollReply) {}
+    rpc Count(EndPollRequest) returns (EndPollReply) {}
 }
 
 message CreatePollRequest {
