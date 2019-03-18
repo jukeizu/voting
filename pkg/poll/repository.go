@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jukeizu/voting"
-	"github.com/jukeizu/voting/poll/migrations"
+	"github.com/jukeizu/voting/pkg/poll/migrations"
 	_ "github.com/lib/pq"
 	"github.com/shawntoffel/gossage"
 )

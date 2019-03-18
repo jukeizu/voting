@@ -1,7 +1,7 @@
 package startup
 
 import (
-	"github.com/jukeizu/voting/session"
+	"github.com/jukeizu/voting/pkg/session"
 	"github.com/rs/zerolog"
 )
 
