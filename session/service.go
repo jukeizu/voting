@@ -1,13 +1,11 @@
 package session
 
 import (
+	"github.com/jukeizu/voting"
 	"github.com/rs/zerolog"
 )
 
-type Service interface {
-	CurrentPoll(serverId string) (string, error)
-	SetCurrentPoll(serverId, pollId string) error
-}
+var _ voting.SessionService = &DefaultService{}
 
 type DefaultService struct {
 	logger     zerolog.Logger
