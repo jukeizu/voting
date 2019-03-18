@@ -1,4 +1,4 @@
-package main
+package voting
 
 type Poll struct {
 	Id                 string
@@ -37,8 +37,8 @@ type BallotOption struct {
 }
 
 type Vote struct {
-	BallotId string
 	VoterId  string
+	ServerId string
 	Options  []VoteOption
 }
 
@@ -51,10 +51,28 @@ type PollService interface {
 	Create(poll Poll) (*Poll, error)
 	Poll(id string) (*Poll, error)
 	End(id string) (*Poll, error)
+	HasEnded(id string) (bool, error)
+}
+
+type SessionService interface {
+	CurrentPoll(serverId string) (string, error)
+	SetCurrentPoll(serverId, pollId string) error
 }
 
 type BallotService interface {
 	Create(poll Poll) (*Ballot, error)
+	Ballot(serverId, voterId string) (*Ballot, error)
 	Submit(vote Vote) error
 	Count(pollId string) error
+}
+
+const (
+	ErrPollHasEnded    = ValidationError("poll has ended")
+	ErrPollHasNotEnded = ValidationError("poll has not ended")
+)
+
+type ValidationError string
+
+func (e ValidationError) Error() string {
+	return string(e)
 }

@@ -1,10 +1,8 @@
 package startup
 
 import (
-	"github.com/jukeizu/voting/api/protobuf-spec/sessionpb"
 	"github.com/jukeizu/voting/session"
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc"
 )
 
 type SessionStartup struct {
@@ -23,11 +21,4 @@ func NewSessionStartup(logger zerolog.Logger, dbAddress string) (SessionStartup,
 
 func (s SessionStartup) Migrate() error {
 	return s.repository.Migrate()
-}
-
-func (s SessionStartup) RegisterServer(grpcServer *grpc.Server) {
-	service := session.NewDefaultService(s.logger, s.repository)
-	server := session.NewGrpcServer(service)
-
-	sessionpb.RegisterSessionServer(grpcServer, server)
 }

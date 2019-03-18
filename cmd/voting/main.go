@@ -120,9 +120,8 @@ func main() {
 
 		registrationStartup.RegisterServer(grpcServer)
 		pollStartup.RegisterServer(grpcServer)
-		sessionStartup.RegisterServer(grpcServer)
 
-		server := NewServer(logger, grpcServer)
+		server := startup.NewServer(logger, grpcServer)
 
 		grpcAddr := ":" + grpcPort
 
@@ -169,7 +168,7 @@ func newGrpcServer(logger zerolog.Logger) *grpc.Server {
 				PermitWithoutStream: true,
 			},
 		),
-		LoggingInterceptor(logger),
+		startup.LoggingInterceptor(logger),
 	)
 
 	return grpcServer
