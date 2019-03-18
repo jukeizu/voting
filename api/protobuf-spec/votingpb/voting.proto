@@ -5,11 +5,11 @@ package votingpb;
 service Voting {
     rpc CreatePoll(CreatePollRequest) returns (CreatePollReply) {}
     rpc Poll(PollRequest) returns (PollReply) {}
-    rpc Status(PollRequest) returns (PollReply) {}
     rpc EndPoll(EndPollRequest) returns (EndPollReply) {}
-    rpc Ballot(EndPollRequest) returns (EndPollReply) {}
-    rpc Vote(EndPollRequest) returns (EndPollReply) {}
-    rpc Count(EndPollRequest) returns (EndPollReply) {}
+    rpc Status(StatusRequest) returns (StatusReply) {}
+    rpc CreateBallot(CreateBallotRequest) returns (CreateBallotReply) {}
+    rpc Vote(VoteRequest) returns (VoteReply) {}
+    rpc Count(CountRequest) returns (CountReply) {}
 }
 
 message CreatePollRequest {
@@ -63,4 +63,36 @@ message EndPollReply {
     Poll poll = 1;
     bool success = 2;
     string reason = 3;
+}
+
+message StatusRequest {
+
+}
+
+message StatusReply {
+
+}
+
+message CreateBallotRequest {
+
+}
+
+message CreateBallotReply {
+
+}
+
+message VoteRequest {
+
+}
+
+message VoteReply {
+
+}
+
+message CountRequest {
+
+}
+
+message CountReply {
+
 }
