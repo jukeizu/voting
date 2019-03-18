@@ -65,14 +65,3 @@ type BallotService interface {
 	Submit(vote Vote) error
 	Count(pollId string) error
 }
-
-const (
-	ErrPollHasEnded    = ValidationError("poll has ended")
-	ErrPollHasNotEnded = ValidationError("poll has not ended")
-)
-
-type ValidationError string
-
-func (e ValidationError) Error() string {
-	return string(e)
-}
