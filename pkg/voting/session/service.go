@@ -1,7 +1,7 @@
 package session
 
 import (
-	"github.com/jukeizu/voting"
+	"github.com/jukeizu/voting/pkg/voting"
 	"github.com/rs/zerolog"
 )
 

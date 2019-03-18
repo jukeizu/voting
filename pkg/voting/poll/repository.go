@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/jukeizu/voting"
-	"github.com/jukeizu/voting/pkg/poll/migrations"
+	"github.com/jukeizu/voting/pkg/voting"
+	"github.com/jukeizu/voting/pkg/voting/poll/migrations"
 	_ "github.com/lib/pq"
 	"github.com/shawntoffel/gossage"
 )

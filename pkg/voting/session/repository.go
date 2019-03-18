@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/jukeizu/voting/pkg/session/migrations"
+	"github.com/jukeizu/voting/pkg/voting/session/migrations"
 	"github.com/shawntoffel/gossage"
 )
 
