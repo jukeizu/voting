@@ -36,6 +36,10 @@ func (h DefaultService) Poll(id string) (*voting.Poll, error) {
 	return h.repository.Poll(id)
 }
 
+func (h DefaultService) PollCreator(id string) (string, error) {
+	return h.repository.PollCreator(id)
+}
+
 func (h DefaultService) HasEnded(id string) (bool, error) {
 	return h.repository.HasEnded(id)
 }

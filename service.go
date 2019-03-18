@@ -7,6 +7,7 @@ import (
 type Service interface {
 	CreatePoll(poll Poll) (*Poll, error)
 	Poll(id string) (*Poll, error)
+	EndPoll(id string, userId string) (*Poll, error)
 	CreateBallot(pollId, voterId string) (*Ballot, error)
 	Vote(vote Vote) error
 	Count(pollId string) error
@@ -41,6 +42,10 @@ func (s DefaultService) CreatePoll(poll Poll) (*Poll, error) {
 
 func (s DefaultService) Poll(id string) (*Poll, error) {
 	return s.pollService.Poll(id)
+}
+
+func (s DefaultService) EndPoll(id string, userId string) (*Poll, error) {
+	return s.pollService.End(id)
 }
 
 func (s DefaultService) CreateBallot(pollId string, voterId string) (*Ballot, error) {

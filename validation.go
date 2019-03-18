@@ -14,8 +14,8 @@ func NewValidationService(
 	service Service,
 	pollService PollService,
 	ballotService BallotService,
-) ValidationService {
-	return ValidationService{
+) Service {
+	return &ValidationService{
 		logger,
 		service,
 		pollService,
@@ -29,6 +29,19 @@ func (s ValidationService) CreatePoll(poll Poll) (*Poll, error) {
 
 func (s ValidationService) Poll(id string) (*Poll, error) {
 	return s.service.Poll(id)
+}
+
+func (s ValidationService) EndPoll(id string, userId string) (*Poll, error) {
+	pollCreator, err := s.pollService.PollCreator(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if userId != pollCreator {
+		return nil, ErrNotOwner
+	}
+
+	return s.service.EndPoll(id, userId)
 }
 
 func (s ValidationService) CreateBallot(pollId string, voterId string) (*Ballot, error) {

@@ -70,12 +70,6 @@ func main() {
 		flagHandler = true
 	}
 
-	registrationStartup, err := startup.NewRegistrationStartup(logger, dbAddress)
-	if err != nil {
-		logger.Error().Err(err).Caller().Msg("could not startup registration")
-		os.Exit(1)
-	}
-
 	pollStartup, err := startup.NewPollStartup(logger, dbAddress)
 	if err != nil {
 		logger.Error().Err(err).Caller().Msg("could not startup poll")
@@ -97,12 +91,6 @@ func main() {
 		err = pollStartup.Migrate()
 		if err != nil {
 			logger.Error().Err(err).Caller().Msg("could not migrate poll repository")
-			os.Exit(1)
-		}
-
-		err = registrationStartup.Migrate()
-		if err != nil {
-			logger.Error().Err(err).Caller().Msg("could not migrate registration repository")
 			os.Exit(1)
 		}
 

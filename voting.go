@@ -50,6 +50,7 @@ type VoteOption struct {
 type PollService interface {
 	Create(poll Poll) (*Poll, error)
 	Poll(id string) (*Poll, error)
+	PollCreator(id string) (string, error)
 	End(id string) (*Poll, error)
 	HasEnded(id string) (bool, error)
 }
