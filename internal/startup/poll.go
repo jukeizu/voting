@@ -1,10 +1,8 @@
 package startup
 
 import (
-	"github.com/jukeizu/voting/api/protobuf-spec/pollpb"
 	"github.com/jukeizu/voting/poll"
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc"
 )
 
 type PollStartup struct {
@@ -23,11 +21,4 @@ func NewPollStartup(logger zerolog.Logger, dbAddress string) (PollStartup, error
 
 func (s PollStartup) Migrate() error {
 	return s.repository.Migrate()
-}
-
-func (s PollStartup) RegisterServer(grpcServer *grpc.Server) {
-	service := poll.NewDefaultService(s.logger, s.repository)
-	pollServer := poll.NewGrpcServer(service)
-
-	pollpb.RegisterPollsServer(grpcServer, pollServer)
 }

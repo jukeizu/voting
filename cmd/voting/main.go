@@ -118,9 +118,6 @@ func main() {
 	if flagServer {
 		grpcServer := newGrpcServer(logger)
 
-		registrationStartup.RegisterServer(grpcServer)
-		pollStartup.RegisterServer(grpcServer)
-
 		server := startup.NewServer(logger, grpcServer)
 
 		grpcAddr := ":" + grpcPort
