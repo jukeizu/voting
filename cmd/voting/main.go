@@ -12,6 +12,9 @@ import (
 	"github.com/cheapRoc/grpc-zerolog"
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
 	"github.com/jukeizu/voting/internal/startup"
+	"github.com/jukeizu/voting/pkg/voting/ballot"
+	"github.com/jukeizu/voting/pkg/voting/poll"
+	"github.com/jukeizu/voting/pkg/voting/session"
 	"github.com/oklog/run"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
@@ -70,15 +73,21 @@ func main() {
 		flagHandler = true
 	}
 
-	pollStartup, err := startup.NewPollStartup(logger, dbAddress)
+	pollRepository, err := poll.NewRepository(dbAddress)
 	if err != nil {
-		logger.Error().Err(err).Caller().Msg("could not startup poll")
+		logger.Error().Err(err).Caller().Msg("could not create poll repository")
 		os.Exit(1)
 	}
 
-	sessionStartup, err := startup.NewSessionStartup(logger, dbAddress)
+	ballotRepository, err := ballot.NewRepository(dbAddress)
 	if err != nil {
-		logger.Error().Err(err).Caller().Msg("could not startup session")
+		logger.Error().Err(err).Caller().Msg("could not create ballot repository")
+		os.Exit(1)
+	}
+
+	sessionRepository, err := session.NewRepository(dbAddress)
+	if err != nil {
+		logger.Error().Err(err).Caller().Msg("could not create session repository")
 		os.Exit(1)
 	}
 
@@ -88,13 +97,19 @@ func main() {
 			logger.Info().Str("component", "migrator").Msg(msg)
 		}
 
-		err = pollStartup.Migrate()
+		err = pollRepository.Migrate()
 		if err != nil {
 			logger.Error().Err(err).Caller().Msg("could not migrate poll repository")
 			os.Exit(1)
 		}
 
-		err = sessionStartup.Migrate()
+		err = ballotRepository.Migrate()
+		if err != nil {
+			logger.Error().Err(err).Caller().Msg("could not migrate ballot repository")
+			os.Exit(1)
+		}
+
+		err = sessionRepository.Migrate()
 		if err != nil {
 			logger.Error().Err(err).Caller().Msg("could not migrate session repository")
 			os.Exit(1)
