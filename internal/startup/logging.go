@@ -9,10 +9,10 @@ import (
 )
 
 func LoggingInterceptor(logger zerolog.Logger) grpc.ServerOption {
-	return grpc.UnaryInterceptor(buildLoggingInterceptor(logger))
+	return grpc.UnaryInterceptor(makeLoggingInterceptor(logger))
 }
 
-func buildLoggingInterceptor(logger zerolog.Logger) grpc.UnaryServerInterceptor {
+func makeLoggingInterceptor(logger zerolog.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		begin := time.Now()
 
