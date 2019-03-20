@@ -16,7 +16,8 @@ func (m CreateTableBallotOption20190320020149) Up(tx *sql.Tx) error {
 			ballotOptionId INT NOT NULL,
 			optionId UUID NOT NULL,
 			created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-			updated TIMESTAMPTZ
+			updated TIMESTAMPTZ,
+			UNIQUE (ballotId, optionId),
 			UNIQUE (ballotId, ballotOptionId)
 		)`)
 
