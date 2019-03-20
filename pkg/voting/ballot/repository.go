@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/jukeizu/voting/pkg/voting/ballot/migrations"
 	"github.com/shawntoffel/gossage"
 )
 
@@ -45,7 +46,7 @@ func (r *repository) Migrate() error {
 		return err
 	}
 
-	err = g.RegisterMigrations()
+	err = g.RegisterMigrations(migrations.CreateTableBallot20190320015618{})
 	if err != nil {
 		return err
 	}
