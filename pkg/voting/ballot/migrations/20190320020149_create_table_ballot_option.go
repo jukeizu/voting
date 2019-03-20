@@ -13,16 +13,17 @@ func (m CreateTableBallotOption20190320020149) Up(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS ballot_option (
 			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
 			ballotId UUID NOT NULL REFERENCES ballot,
-			index INT NOT NULL,
+			ballotOptionId INT NOT NULL,
 			optionId UUID NOT NULL,
 			created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 			updated TIMESTAMPTZ
+			UNIQUE (ballotId, ballotOptionId)
 		)`)
 
 	return err
 }
 
 func (m CreateTableBallotOption20190320020149) Down(tx *sql.Tx) error {
-	_, err := tx.Exec(`DROP TABLE ballot`)
+	_, err := tx.Exec(`DROP TABLE ballot_option`)
 	return err
 }
