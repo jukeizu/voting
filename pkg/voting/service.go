@@ -8,7 +8,6 @@ type Service interface {
 	CreatePoll(poll Poll) (*Poll, error)
 	Poll(id string) (*Poll, error)
 	EndPoll(id string, userId string) (*Poll, error)
-	CreateBallot(pollId, voterId string) (*Ballot, error)
 	Vote(vote Vote) error
 	Count(pollId string) error
 	CurrentPoll(serverId string) (string, error)
@@ -18,20 +17,17 @@ type Service interface {
 type DefaultService struct {
 	logger         zerolog.Logger
 	pollService    PollService
-	ballotService  BallotService
 	sessionService SessionService
 }
 
 func NewDefaultService(
 	logger zerolog.Logger,
 	pollService PollService,
-	ballotService BallotService,
 	sessionService SessionService,
 ) DefaultService {
 	return DefaultService{
 		logger,
 		pollService,
-		ballotService,
 		sessionService,
 	}
 }
@@ -48,21 +44,12 @@ func (s DefaultService) EndPoll(id string, userId string) (*Poll, error) {
 	return s.pollService.End(id)
 }
 
-func (s DefaultService) CreateBallot(pollId string, voterId string) (*Ballot, error) {
-	poll, err := s.pollService.Poll(pollId)
-	if err != nil {
-		return nil, err
-	}
-
-	return s.ballotService.Create(*poll)
-}
-
 func (s DefaultService) Vote(vote Vote) error {
-	return s.ballotService.Submit(vote)
+	return nil
 }
 
 func (s DefaultService) Count(pollId string) error {
-	return s.ballotService.Count(pollId)
+	return nil
 }
 
 func (s DefaultService) CurrentPoll(serverId string) (string, error) {

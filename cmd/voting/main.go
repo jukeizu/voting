@@ -12,7 +12,6 @@ import (
 	"github.com/cheapRoc/grpc-zerolog"
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
 	"github.com/jukeizu/voting/internal/startup"
-	"github.com/jukeizu/voting/pkg/voting/ballot"
 	"github.com/jukeizu/voting/pkg/voting/poll"
 	"github.com/jukeizu/voting/pkg/voting/session"
 	"github.com/oklog/run"
@@ -79,12 +78,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	ballotRepository, err := ballot.NewRepository(dbAddress)
-	if err != nil {
-		logger.Error().Err(err).Caller().Msg("could not create ballot repository")
-		os.Exit(1)
-	}
-
 	sessionRepository, err := session.NewRepository(dbAddress)
 	if err != nil {
 		logger.Error().Err(err).Caller().Msg("could not create session repository")
@@ -100,12 +93,6 @@ func main() {
 		err = pollRepository.Migrate()
 		if err != nil {
 			logger.Error().Err(err).Caller().Msg("could not migrate poll repository")
-			os.Exit(1)
-		}
-
-		err = ballotRepository.Migrate()
-		if err != nil {
-			logger.Error().Err(err).Caller().Msg("could not migrate ballot repository")
 			os.Exit(1)
 		}
 

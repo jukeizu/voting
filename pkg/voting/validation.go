@@ -3,23 +3,20 @@ package voting
 import "github.com/rs/zerolog"
 
 type ValidationService struct {
-	logger        zerolog.Logger
-	service       Service
-	pollService   PollService
-	ballotService BallotService
+	logger      zerolog.Logger
+	service     Service
+	pollService PollService
 }
 
 func NewValidationService(
 	logger zerolog.Logger,
 	service Service,
 	pollService PollService,
-	ballotService BallotService,
 ) Service {
 	return &ValidationService{
 		logger,
 		service,
 		pollService,
-		ballotService,
 	}
 }
 
@@ -44,36 +41,36 @@ func (s ValidationService) EndPoll(id string, userId string) (*Poll, error) {
 	return s.service.EndPoll(id, userId)
 }
 
-func (s ValidationService) CreateBallot(pollId string, voterId string) (*Ballot, error) {
-	err := s.validatePollIsActive(pollId)
-	if err != nil {
-		return nil, err
-	}
-
-	return s.service.CreateBallot(pollId, voterId)
-}
-
 func (s ValidationService) Vote(vote Vote) error {
-	ballot, err := s.ballotService.Ballot(vote.ServerId, vote.VoterId)
-	if err != nil {
-		return err
-	}
+	/*
+		ballot, err := s.ballotService.Ballot(vote.ServerId, vote.VoterId)
+		if err != nil {
+			return err
+		}
 
-	err = s.validatePollIsActive(ballot.PollId)
-	if err != nil {
-		return err
-	}
+		err = s.validatePollIsActive(ballot.PollId)
+		if err != nil {
+			return err
+		}
 
-	return s.service.Vote(vote)
+		return s.service.Vote(vote)
+	*/
+
+	return nil
 }
 
 func (s ValidationService) Count(pollId string) error {
-	err := s.validatePollHasEnded(pollId)
-	if err != nil {
-		return err
-	}
+	/*
+		err := s.validatePollHasEnded(pollId)
+		if err != nil {
+			return err
+		}
 
-	return s.service.Count(pollId)
+		return s.service.Count(pollId)
+
+	*/
+
+	return nil
 }
 
 func (s ValidationService) CurrentPoll(serverId string) (string, error) {
