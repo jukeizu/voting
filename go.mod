@@ -9,6 +9,7 @@ require (
 	github.com/rs/xid v1.2.1
 	github.com/rs/zerolog v1.11.0
 	github.com/shawntoffel/gossage v0.0.1
+	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf
 	golang.org/x/net v0.0.0-20190213061140-3a22650c66bd
 	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4 // indirect
 	golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a // indirect

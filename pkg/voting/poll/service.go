@@ -1,8 +1,11 @@
 package poll
 
 import (
+	"errors"
+
 	"github.com/jukeizu/voting/pkg/voting"
 	"github.com/rs/zerolog"
+	"github.com/teris-io/shortid"
 )
 
 var _ voting.PollService = &DefaultService{}
@@ -17,6 +20,13 @@ func NewDefaultService(logger zerolog.Logger, repository Repository) DefaultServ
 }
 
 func (h DefaultService) Create(req voting.Poll) (*voting.Poll, error) {
+	shortId, err := shortid.Generate()
+	if err != nil {
+		return nil, errors.New("could not create a short id: " + err.Error())
+	}
+
+	req.ShortId = shortId
+
 	poll, err := h.repository.CreatePoll(req)
 	if err != nil {
 		return nil, err
