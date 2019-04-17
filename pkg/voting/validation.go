@@ -24,12 +24,12 @@ func (s ValidationService) CreatePoll(poll Poll) (*Poll, error) {
 	return s.service.CreatePoll(poll)
 }
 
-func (s ValidationService) Poll(id string) (*Poll, error) {
-	return s.service.Poll(id)
+func (s ValidationService) Poll(shortId string, serverId string) (*Poll, error) {
+	return s.service.Poll(shortId, serverId)
 }
 
-func (s ValidationService) EndPoll(id string, userId string) (*Poll, error) {
-	pollCreator, err := s.pollService.PollCreator(id)
+func (s ValidationService) EndPoll(shortId string, serverId string, userId string) (*Poll, error) {
+	pollCreator, err := s.pollService.PollCreator(shortId, serverId)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (s ValidationService) EndPoll(id string, userId string) (*Poll, error) {
 		return nil, ErrNotOwner
 	}
 
-	return s.service.EndPoll(id, userId)
+	return s.service.EndPoll(shortId, serverId, userId)
 }
 
 func (s ValidationService) Vote(vote Vote) error {
@@ -81,8 +81,8 @@ func (s ValidationService) SetCurrentPoll(serverId string, pollId string) error 
 	return s.service.SetCurrentPoll(serverId, pollId)
 }
 
-func (s ValidationService) validatePollIsActive(pollId string) error {
-	hasEnded, err := s.pollService.HasEnded(pollId)
+func (s ValidationService) validatePollIsActive(shortId string, serverId string) error {
+	hasEnded, err := s.pollService.HasEnded(shortId, serverId)
 	if err != nil {
 		return err
 	}
@@ -94,8 +94,8 @@ func (s ValidationService) validatePollIsActive(pollId string) error {
 	return nil
 }
 
-func (s ValidationService) validatePollHasEnded(pollId string) error {
-	hasEnded, err := s.pollService.HasEnded(pollId)
+func (s ValidationService) validatePollHasEnded(shortId string, serverId string) error {
+	hasEnded, err := s.pollService.HasEnded(shortId, serverId)
 	if err != nil {
 		return err
 	}

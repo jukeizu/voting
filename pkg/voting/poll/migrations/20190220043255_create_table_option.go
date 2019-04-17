@@ -14,6 +14,7 @@ func (m CreateTableOption20190220043255) Up(tx *sql.Tx) error {
 			id UUID NOT NULL DEFAULT gen_random_uuid(),
 			pollid UUID NOT NULL,
 			content STRING NOT NULL DEFAULT '',
+			url STRING NOT NULL DEFAULT '',
 			created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 			updated TIMESTAMPTZ,
 			PRIMARY KEY (pollid, id),

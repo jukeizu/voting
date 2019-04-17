@@ -32,20 +32,20 @@ func (h DefaultService) Create(req voting.Poll) (*voting.Poll, error) {
 	return poll, nil
 }
 
-func (h DefaultService) Poll(id string) (*voting.Poll, error) {
-	return h.repository.Poll(id)
+func (h DefaultService) Poll(shortId string, serverId string) (*voting.Poll, error) {
+	return h.repository.Poll(shortId, serverId)
 }
 
-func (h DefaultService) PollCreator(id string) (string, error) {
-	return h.repository.PollCreator(id)
+func (h DefaultService) PollCreator(shortId string, serverId string) (string, error) {
+	return h.repository.PollCreator(shortId, serverId)
 }
 
-func (h DefaultService) HasEnded(id string) (bool, error) {
-	return h.repository.HasEnded(id)
+func (h DefaultService) HasEnded(shortId string, serverId string) (bool, error) {
+	return h.repository.HasEnded(shortId, serverId)
 }
 
-func (h DefaultService) End(pollId string) (*voting.Poll, error) {
-	poll, err := h.repository.EndPoll(pollId)
+func (h DefaultService) End(shortId string, serverId string) (*voting.Poll, error) {
+	poll, err := h.repository.EndPoll(shortId, serverId)
 	if err != nil {
 		return nil, err
 	}

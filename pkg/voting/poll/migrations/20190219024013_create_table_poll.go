@@ -12,12 +12,15 @@ func (m CreateTablePoll20190219024013) Up(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS poll (
 			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
-			title STRING NOT NULL DEFAULT '',
+			shortId STRING NOT NULL DEFAULT '',
+			serverId STRING NOT NULL DEFAULT '',
 			creatorId STRING NOT NULL DEFAULT '',
+			title STRING NOT NULL DEFAULT '',
 			allowedUniqueVotes INT NOT NULL DEFAULT 0,
 			hasEnded bool NOT NULL DEFAULT false,
 			created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-			updated TIMESTAMPTZ
+			updated TIMESTAMPTZ,
+			UNIQUE (shortId, serverId)
 		)`)
 
 	return err

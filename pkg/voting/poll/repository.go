@@ -17,11 +17,11 @@ const (
 type Repository interface {
 	Migrate() error
 	CreatePoll(voting.Poll) (*voting.Poll, error)
-	Poll(id string) (*voting.Poll, error)
-	HasEnded(id string) (bool, error)
-	PollCreator(id string) (string, error)
+	Poll(shortId string, serverId string) (*voting.Poll, error)
+	HasEnded(shortId string, serverId string) (bool, error)
+	PollCreator(shortId string, serverId string) (string, error)
 	Options(pollId string) ([]voting.Option, error)
-	EndPoll(id string) (*voting.Poll, error)
+	EndPoll(pollShortId, serverId string) (*voting.Poll, error)
 }
 
 type repository struct {
@@ -66,24 +66,24 @@ func (r *repository) Migrate() error {
 }
 
 func (r *repository) CreatePoll(req voting.Poll) (*voting.Poll, error) {
-	q := `INSERT INTO poll (title, creatorId, allowedUniqueVotes)
-		VALUES ($1, $2, $3)
-		RETURNING
-			id,
-			title,
-			creatorId,
-			allowedUniqueVotes,
-			hasEnded`
+	q := `INSERT INTO poll (
+		shortId,
+		serverId,
+		creatorId, 
+		title, 
+		allowedUniqueVotes)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id`
 
-	poll := voting.Poll{}
+	poll := req
 
-	err := r.Db.QueryRow(q, req.Title, req.CreatorId, req.AllowedUniqueVotes).Scan(
-		&poll.Id,
-		&poll.Title,
-		&poll.CreatorId,
-		&poll.AllowedUniqueVotes,
-		&poll.HasEnded,
-	)
+	err := r.Db.QueryRow(q,
+		req.ShortId,
+		req.ServerId,
+		req.Title,
+		req.CreatorId,
+		req.AllowedUniqueVotes,
+	).Scan(&poll.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -100,20 +100,24 @@ func (r *repository) CreatePoll(req voting.Poll) (*voting.Poll, error) {
 	return &poll, err
 }
 
-func (r *repository) Poll(id string) (*voting.Poll, error) {
+func (r *repository) Poll(shortId string, serverId string) (*voting.Poll, error) {
 	q := `SELECT id, 
-		title, 
+		shortId,
+		serverId,
 		creatorId, 
+		title, 
 		allowedUniqueVotes, 
 		hasEnded
-	FROM poll WHERE id = $1`
+	FROM poll WHERE shortid = $1 AND serverid = $2`
 
 	poll := voting.Poll{}
 
-	err := r.Db.QueryRow(q, id).Scan(
+	err := r.Db.QueryRow(q, shortId, serverId).Scan(
 		&poll.Id,
-		&poll.Title,
+		&poll.ShortId,
+		&poll.ServerId,
 		&poll.CreatorId,
+		&poll.Title,
 		&poll.AllowedUniqueVotes,
 		&poll.HasEnded,
 	)
@@ -121,7 +125,7 @@ func (r *repository) Poll(id string) (*voting.Poll, error) {
 		return nil, err
 	}
 
-	options, err := r.Options(id)
+	options, err := r.Options(poll.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -131,12 +135,12 @@ func (r *repository) Poll(id string) (*voting.Poll, error) {
 	return &poll, nil
 }
 
-func (r *repository) HasEnded(id string) (bool, error) {
-	q := `SELECT hasEnded FROM poll WHERE id = $1`
+func (r *repository) HasEnded(shortId string, serverId string) (bool, error) {
+	q := `SELECT hasEnded FROM poll WHERE shortid = $1 AND serverid = $2`
 
 	poll := voting.Poll{}
 
-	err := r.Db.QueryRow(q, id).Scan(
+	err := r.Db.QueryRow(q, shortId, serverId).Scan(
 		&poll.HasEnded,
 	)
 	if err != nil {
@@ -146,12 +150,12 @@ func (r *repository) HasEnded(id string) (bool, error) {
 	return poll.HasEnded, nil
 }
 
-func (r *repository) PollCreator(id string) (string, error) {
-	q := `SELECT creatorId FROM poll WHERE id = $1`
+func (r *repository) PollCreator(shortId string, serverId string) (string, error) {
+	q := `SELECT creatorId FROM poll WHERE shortid = $1 AND serverid = $2`
 
 	creator := ""
 
-	err := r.Db.QueryRow(q, id).Scan(&creator)
+	err := r.Db.QueryRow(q, shortId, serverId).Scan(&creator)
 	if err != nil {
 		return "", err
 	}
@@ -189,29 +193,28 @@ func (r *repository) Options(pollId string) ([]voting.Option, error) {
 	return options, nil
 }
 
-func (r *repository) EndPoll(pollId string) (*voting.Poll, error) {
-	q := `UPDATE poll SET hasEnded = true WHERE id = $1`
+func (r *repository) EndPoll(pollShortId string, serverId string) (*voting.Poll, error) {
+	q := `UPDATE poll SET hasEnded = true WHERE shortId = $1 AND serverId = $2`
 
-	_, err := r.Db.Exec(q, pollId)
+	_, err := r.Db.Exec(q, pollShortId, serverId)
 	if err != nil {
 		return nil, err
 	}
 
-	return r.Poll(pollId)
+	return r.Poll(pollShortId, serverId)
 }
 
 func (r *repository) createOption(pollId string, option voting.Option) (*voting.Option, error) {
-	q := `INSERT INTO option (pollid, content) VALUES ($1, $2) RETURNING id, pollid, content`
+	q := `INSERT INTO option (pollid, content, url) VALUES ($1, $2, $3) RETURNING id`
 
-	o := voting.Option{}
+	o := option
 
 	err := r.Db.QueryRow(q,
 		pollId,
 		option.Content,
+		option.Url,
 	).Scan(
 		&o.Id,
-		&o.PollId,
-		&o.Content,
 	)
 
 	return &o, err
