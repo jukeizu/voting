@@ -5,9 +5,9 @@ import (
 )
 
 type Service interface {
-	CreatePoll(poll Poll) (*Poll, error)
-	Poll(shortId string, serverId string) (*Poll, error)
-	EndPoll(shortId string, serverId string, userId string) (*Poll, error)
+	CreatePoll(poll Poll) (Poll, error)
+	Poll(shortId string, serverId string) (Poll, error)
+	EndPoll(shortId string, serverId string, userId string) (Poll, error)
 	Vote(vote Vote) error
 	Count(pollId string) error
 	CurrentPoll(serverId string) (string, error)
@@ -32,15 +32,15 @@ func NewDefaultService(
 	}
 }
 
-func (s DefaultService) CreatePoll(poll Poll) (*Poll, error) {
+func (s DefaultService) CreatePoll(poll Poll) (Poll, error) {
 	return s.pollService.Create(poll)
 }
 
-func (s DefaultService) Poll(shortId string, serverId string) (*Poll, error) {
+func (s DefaultService) Poll(shortId string, serverId string) (Poll, error) {
 	return s.pollService.Poll(shortId, serverId)
 }
 
-func (s DefaultService) EndPoll(shortId string, serverId string, userId string) (*Poll, error) {
+func (s DefaultService) EndPoll(shortId string, serverId string, userId string) (Poll, error) {
 	return s.pollService.End(shortId, serverId)
 }
 

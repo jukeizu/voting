@@ -50,14 +50,13 @@ message Poll {
 }
 
 message EndPollRequest {
-    string pollId = 1;
-    string requesterId = 2;
+    string shortId = 1;
+    string serverId = 2;
+    string requesterId = 3;
 }
 
 message EndPollReply {
     Poll poll = 1;
-    bool success = 2;
-    string reason = 3;
 }
 
 message StatusRequest {
@@ -85,7 +84,7 @@ message BallotOption {
 }
 
 message VoteRequest {
-    string pollShortId = 1;
+    string shortId = 1;
     string serverId = 2;
     Voter voter = 3;
     Ballot ballot = 4;

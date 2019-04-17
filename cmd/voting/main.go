@@ -11,7 +11,9 @@ import (
 
 	"github.com/cheapRoc/grpc-zerolog"
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
+	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
 	"github.com/jukeizu/voting/internal/startup"
+	"github.com/jukeizu/voting/pkg/voting"
 	"github.com/jukeizu/voting/pkg/voting/poll"
 	"github.com/jukeizu/voting/pkg/voting/session"
 	"github.com/oklog/run"
@@ -109,6 +111,14 @@ func main() {
 		grpcServer := newGrpcServer(logger)
 
 		server := startup.NewServer(logger, grpcServer)
+
+		pollService := poll.NewDefaultService(logger, pollRepository)
+		sessionService := session.NewDefaultService(logger, sessionRepository)
+		votingService := voting.NewDefaultService(logger, pollService, sessionService)
+
+		votingServer := voting.NewGrpcServer(votingService)
+
+		votingpb.RegisterVotingServer(grpcServer, votingServer)
 
 		grpcAddr := ":" + grpcPort
 

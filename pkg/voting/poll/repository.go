@@ -6,7 +6,7 @@ import (
 
 	"github.com/jukeizu/voting/pkg/voting"
 	"github.com/jukeizu/voting/pkg/voting/poll/migrations"
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 	"github.com/shawntoffel/gossage"
 )
 
@@ -16,12 +16,12 @@ const (
 
 type Repository interface {
 	Migrate() error
-	CreatePoll(voting.Poll) (*voting.Poll, error)
-	Poll(shortId string, serverId string) (*voting.Poll, error)
+	CreatePoll(voting.Poll) (voting.Poll, error)
+	Poll(shortId string, serverId string) (voting.Poll, error)
 	HasEnded(shortId string, serverId string) (bool, error)
 	PollCreator(shortId string, serverId string) (string, error)
 	Options(pollId string) ([]voting.Option, error)
-	EndPoll(pollShortId, serverId string) (*voting.Poll, error)
+	EndPoll(pollShortId, serverId string) (voting.Poll, error)
 }
 
 type repository struct {
@@ -65,17 +65,23 @@ func (r *repository) Migrate() error {
 	return g.Up()
 }
 
-func (r *repository) CreatePoll(req voting.Poll) (*voting.Poll, error) {
+func (r *repository) CreatePoll(req voting.Poll) (voting.Poll, error) {
 	q := `INSERT INTO poll (
 		shortId,
 		serverId,
-		creatorId, 
 		title, 
+		creatorId, 
 		allowedUniqueVotes)
 		VALUES ($1, $2, $3, $4, $5)
-		RETURNING id`
+		RETURNING 
+		id,
+		shortId,
+		serverId,
+		creatorId,
+		title,
+		allowedUniqueVotes`
 
-	poll := req
+	poll := voting.Poll{}
 
 	err := r.Db.QueryRow(q,
 		req.ShortId,
@@ -83,24 +89,34 @@ func (r *repository) CreatePoll(req voting.Poll) (*voting.Poll, error) {
 		req.Title,
 		req.CreatorId,
 		req.AllowedUniqueVotes,
-	).Scan(&poll.Id)
+	).Scan(
+		&poll.Id,
+		&poll.ShortId,
+		&poll.ServerId,
+		&poll.CreatorId,
+		&poll.Title,
+		&poll.AllowedUniqueVotes,
+	)
 	if err != nil {
-		return nil, err
+		return voting.Poll{}, err
 	}
 
-	for _, option := range req.Options {
-		o, err := r.createOption(poll.Id, option)
-		if err != nil {
-			return nil, err
-		}
-
-		poll.Options = append(poll.Options, *o)
+	err = r.createOptions(poll.Id, req.Options)
+	if err != nil {
+		return voting.Poll{}, fmt.Errorf("could not create options for poll: %s", err)
 	}
 
-	return &poll, err
+	options, err := r.Options(poll.Id)
+	if err != nil {
+		return voting.Poll{}, err
+	}
+
+	poll.Options = options
+
+	return poll, err
 }
 
-func (r *repository) Poll(shortId string, serverId string) (*voting.Poll, error) {
+func (r *repository) Poll(shortId string, serverId string) (voting.Poll, error) {
 	q := `SELECT id, 
 		shortId,
 		serverId,
@@ -122,17 +138,17 @@ func (r *repository) Poll(shortId string, serverId string) (*voting.Poll, error)
 		&poll.HasEnded,
 	)
 	if err != nil {
-		return nil, err
+		return voting.Poll{}, err
 	}
 
 	options, err := r.Options(poll.Id)
 	if err != nil {
-		return nil, err
+		return voting.Poll{}, err
 	}
 
 	poll.Options = options
 
-	return &poll, nil
+	return poll, nil
 }
 
 func (r *repository) HasEnded(shortId string, serverId string) (bool, error) {
@@ -193,29 +209,49 @@ func (r *repository) Options(pollId string) ([]voting.Option, error) {
 	return options, nil
 }
 
-func (r *repository) EndPoll(pollShortId string, serverId string) (*voting.Poll, error) {
+func (r *repository) EndPoll(pollShortId string, serverId string) (voting.Poll, error) {
 	q := `UPDATE poll SET hasEnded = true WHERE shortId = $1 AND serverId = $2`
 
 	_, err := r.Db.Exec(q, pollShortId, serverId)
 	if err != nil {
-		return nil, err
+		return voting.Poll{}, err
 	}
 
 	return r.Poll(pollShortId, serverId)
 }
 
-func (r *repository) createOption(pollId string, option voting.Option) (*voting.Option, error) {
-	q := `INSERT INTO option (pollid, content, url) VALUES ($1, $2, $3) RETURNING id`
+func (r *repository) createOptions(pollId string, options []voting.Option) error {
+	txn, err := r.Db.Begin()
+	if err != nil {
+		return err
+	}
 
-	o := option
+	stmt, err := txn.Prepare(pq.CopyIn("option", "pollid", "content", "url"))
+	if err != nil {
+		return err
+	}
 
-	err := r.Db.QueryRow(q,
-		pollId,
-		option.Content,
-		option.Url,
-	).Scan(
-		&o.Id,
-	)
+	for _, option := range options {
+		_, err := stmt.Exec(pollId, option.Content, option.Url)
+		if err != nil {
+			return err
+		}
+	}
 
-	return &o, err
+	_, err = stmt.Exec()
+	if err != nil {
+		return err
+	}
+
+	err = stmt.Close()
+	if err != nil {
+		return err
+	}
+
+	err = txn.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

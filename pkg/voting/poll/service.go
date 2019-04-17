@@ -19,17 +19,17 @@ func NewDefaultService(logger zerolog.Logger, repository Repository) DefaultServ
 	return DefaultService{logger, repository}
 }
 
-func (h DefaultService) Create(req voting.Poll) (*voting.Poll, error) {
+func (h DefaultService) Create(req voting.Poll) (voting.Poll, error) {
 	shortId, err := shortid.Generate()
 	if err != nil {
-		return nil, errors.New("could not create a short id: " + err.Error())
+		return voting.Poll{}, errors.New("could not create a short id: " + err.Error())
 	}
 
 	req.ShortId = shortId
 
 	poll, err := h.repository.CreatePoll(req)
 	if err != nil {
-		return nil, err
+		return voting.Poll{}, err
 	}
 
 	h.logger.Info().
@@ -42,7 +42,7 @@ func (h DefaultService) Create(req voting.Poll) (*voting.Poll, error) {
 	return poll, nil
 }
 
-func (h DefaultService) Poll(shortId string, serverId string) (*voting.Poll, error) {
+func (h DefaultService) Poll(shortId string, serverId string) (voting.Poll, error) {
 	return h.repository.Poll(shortId, serverId)
 }
 
@@ -54,10 +54,10 @@ func (h DefaultService) HasEnded(shortId string, serverId string) (bool, error) 
 	return h.repository.HasEnded(shortId, serverId)
 }
 
-func (h DefaultService) End(shortId string, serverId string) (*voting.Poll, error) {
+func (h DefaultService) End(shortId string, serverId string) (voting.Poll, error) {
 	poll, err := h.repository.EndPoll(shortId, serverId)
 	if err != nil {
-		return nil, err
+		return voting.Poll{}, err
 	}
 
 	h.logger.Info().

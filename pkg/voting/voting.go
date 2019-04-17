@@ -38,10 +38,10 @@ type VoteOption struct {
 }
 
 type PollService interface {
-	Create(poll Poll) (*Poll, error)
-	Poll(shortId string, serverId string) (*Poll, error)
+	Create(poll Poll) (Poll, error)
+	Poll(shortId string, serverId string) (Poll, error)
 	PollCreator(shortId string, serverId string) (string, error)
-	End(shortId string, serverId string) (*Poll, error)
+	End(shortId string, serverId string) (Poll, error)
 	HasEnded(shortId string, serverId string) (bool, error)
 }
 

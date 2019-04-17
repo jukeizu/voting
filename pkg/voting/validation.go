@@ -20,22 +20,22 @@ func NewValidationService(
 	}
 }
 
-func (s ValidationService) CreatePoll(poll Poll) (*Poll, error) {
+func (s ValidationService) CreatePoll(poll Poll) (Poll, error) {
 	return s.service.CreatePoll(poll)
 }
 
-func (s ValidationService) Poll(shortId string, serverId string) (*Poll, error) {
+func (s ValidationService) Poll(shortId string, serverId string) (Poll, error) {
 	return s.service.Poll(shortId, serverId)
 }
 
-func (s ValidationService) EndPoll(shortId string, serverId string, userId string) (*Poll, error) {
+func (s ValidationService) EndPoll(shortId string, serverId string, userId string) (Poll, error) {
 	pollCreator, err := s.pollService.PollCreator(shortId, serverId)
 	if err != nil {
-		return nil, err
+		return Poll{}, err
 	}
 
 	if userId != pollCreator {
-		return nil, ErrNotOwner
+		return Poll{}, ErrNotOwner
 	}
 
 	return s.service.EndPoll(shortId, serverId, userId)
