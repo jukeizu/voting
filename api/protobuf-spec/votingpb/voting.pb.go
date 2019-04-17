@@ -24,10 +24,11 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 type CreatePollRequest struct {
-	CreatorId            string    `protobuf:"bytes,1,opt,name=creatorId,proto3" json:"creatorId,omitempty"`
-	Title                string    `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	AllowedUniqueVotes   int32     `protobuf:"varint,3,opt,name=allowedUniqueVotes,proto3" json:"allowedUniqueVotes,omitempty"`
-	Options              []*Option `protobuf:"bytes,4,rep,name=options,proto3" json:"options,omitempty"`
+	ServerId             string    `protobuf:"bytes,1,opt,name=serverId,proto3" json:"serverId,omitempty"`
+	CreatorId            string    `protobuf:"bytes,2,opt,name=creatorId,proto3" json:"creatorId,omitempty"`
+	Title                string    `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	AllowedUniqueVotes   int32     `protobuf:"varint,4,opt,name=allowedUniqueVotes,proto3" json:"allowedUniqueVotes,omitempty"`
+	Options              []*Option `protobuf:"bytes,5,rep,name=options,proto3" json:"options,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
 	XXX_unrecognized     []byte    `json:"-"`
 	XXX_sizecache        int32     `json:"-"`
@@ -37,7 +38,7 @@ func (m *CreatePollRequest) Reset()         { *m = CreatePollRequest{} }
 func (m *CreatePollRequest) String() string { return proto.CompactTextString(m) }
 func (*CreatePollRequest) ProtoMessage()    {}
 func (*CreatePollRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{0}
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{0}
 }
 func (m *CreatePollRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreatePollRequest.Unmarshal(m, b)
@@ -56,6 +57,13 @@ func (m *CreatePollRequest) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_CreatePollRequest proto.InternalMessageInfo
+
+func (m *CreatePollRequest) GetServerId() string {
+	if m != nil {
+		return m.ServerId
+	}
+	return ""
+}
 
 func (m *CreatePollRequest) GetCreatorId() string {
 	if m != nil {
@@ -96,7 +104,7 @@ func (m *CreatePollReply) Reset()         { *m = CreatePollReply{} }
 func (m *CreatePollReply) String() string { return proto.CompactTextString(m) }
 func (*CreatePollReply) ProtoMessage()    {}
 func (*CreatePollReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{1}
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{1}
 }
 func (m *CreatePollReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreatePollReply.Unmarshal(m, b)
@@ -125,8 +133,8 @@ func (m *CreatePollReply) GetPoll() *Poll {
 
 type Option struct {
 	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	PollId               string   `protobuf:"bytes,2,opt,name=pollId,proto3" json:"pollId,omitempty"`
-	Content              string   `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	Content              string   `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+	Url                  string   `protobuf:"bytes,3,opt,name=url,proto3" json:"url,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -136,7 +144,7 @@ func (m *Option) Reset()         { *m = Option{} }
 func (m *Option) String() string { return proto.CompactTextString(m) }
 func (*Option) ProtoMessage()    {}
 func (*Option) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{2}
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{2}
 }
 func (m *Option) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Option.Unmarshal(m, b)
@@ -163,13 +171,6 @@ func (m *Option) GetId() string {
 	return ""
 }
 
-func (m *Option) GetPollId() string {
-	if m != nil {
-		return m.PollId
-	}
-	return ""
-}
-
 func (m *Option) GetContent() string {
 	if m != nil {
 		return m.Content
@@ -177,8 +178,16 @@ func (m *Option) GetContent() string {
 	return ""
 }
 
+func (m *Option) GetUrl() string {
+	if m != nil {
+		return m.Url
+	}
+	return ""
+}
+
 type PollRequest struct {
-	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ShortId              string   `protobuf:"bytes,1,opt,name=shortId,proto3" json:"shortId,omitempty"`
+	ServerId             string   `protobuf:"bytes,2,opt,name=serverId,proto3" json:"serverId,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -188,7 +197,7 @@ func (m *PollRequest) Reset()         { *m = PollRequest{} }
 func (m *PollRequest) String() string { return proto.CompactTextString(m) }
 func (*PollRequest) ProtoMessage()    {}
 func (*PollRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{3}
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{3}
 }
 func (m *PollRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PollRequest.Unmarshal(m, b)
@@ -208,9 +217,16 @@ func (m *PollRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_PollRequest proto.InternalMessageInfo
 
-func (m *PollRequest) GetId() string {
+func (m *PollRequest) GetShortId() string {
 	if m != nil {
-		return m.Id
+		return m.ShortId
+	}
+	return ""
+}
+
+func (m *PollRequest) GetServerId() string {
+	if m != nil {
+		return m.ServerId
 	}
 	return ""
 }
@@ -226,7 +242,7 @@ func (m *PollReply) Reset()         { *m = PollReply{} }
 func (m *PollReply) String() string { return proto.CompactTextString(m) }
 func (*PollReply) ProtoMessage()    {}
 func (*PollReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{4}
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{4}
 }
 func (m *PollReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PollReply.Unmarshal(m, b)
@@ -255,11 +271,13 @@ func (m *PollReply) GetPoll() *Poll {
 
 type Poll struct {
 	Id                   string    `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Title                string    `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	CreatorId            string    `protobuf:"bytes,3,opt,name=creatorId,proto3" json:"creatorId,omitempty"`
-	AllowedUniqueVotes   int32     `protobuf:"varint,4,opt,name=allowedUniqueVotes,proto3" json:"allowedUniqueVotes,omitempty"`
-	HasEnded             bool      `protobuf:"varint,5,opt,name=hasEnded,proto3" json:"hasEnded,omitempty"`
-	Options              []*Option `protobuf:"bytes,6,rep,name=options,proto3" json:"options,omitempty"`
+	ShortId              string    `protobuf:"bytes,2,opt,name=shortId,proto3" json:"shortId,omitempty"`
+	ServerId             string    `protobuf:"bytes,3,opt,name=serverId,proto3" json:"serverId,omitempty"`
+	CreatorId            string    `protobuf:"bytes,4,opt,name=creatorId,proto3" json:"creatorId,omitempty"`
+	Title                string    `protobuf:"bytes,5,opt,name=title,proto3" json:"title,omitempty"`
+	AllowedUniqueVotes   int32     `protobuf:"varint,6,opt,name=allowedUniqueVotes,proto3" json:"allowedUniqueVotes,omitempty"`
+	HasEnded             bool      `protobuf:"varint,7,opt,name=hasEnded,proto3" json:"hasEnded,omitempty"`
+	Options              []*Option `protobuf:"bytes,8,rep,name=options,proto3" json:"options,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
 	XXX_unrecognized     []byte    `json:"-"`
 	XXX_sizecache        int32     `json:"-"`
@@ -269,7 +287,7 @@ func (m *Poll) Reset()         { *m = Poll{} }
 func (m *Poll) String() string { return proto.CompactTextString(m) }
 func (*Poll) ProtoMessage()    {}
 func (*Poll) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{5}
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{5}
 }
 func (m *Poll) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Poll.Unmarshal(m, b)
@@ -296,9 +314,16 @@ func (m *Poll) GetId() string {
 	return ""
 }
 
-func (m *Poll) GetTitle() string {
+func (m *Poll) GetShortId() string {
 	if m != nil {
-		return m.Title
+		return m.ShortId
+	}
+	return ""
+}
+
+func (m *Poll) GetServerId() string {
+	if m != nil {
+		return m.ServerId
 	}
 	return ""
 }
@@ -306,6 +331,13 @@ func (m *Poll) GetTitle() string {
 func (m *Poll) GetCreatorId() string {
 	if m != nil {
 		return m.CreatorId
+	}
+	return ""
+}
+
+func (m *Poll) GetTitle() string {
+	if m != nil {
+		return m.Title
 	}
 	return ""
 }
@@ -331,85 +363,9 @@ func (m *Poll) GetOptions() []*Option {
 	return nil
 }
 
-type OptionsRequest struct {
-	PollId               string   `protobuf:"bytes,1,opt,name=pollId,proto3" json:"pollId,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *OptionsRequest) Reset()         { *m = OptionsRequest{} }
-func (m *OptionsRequest) String() string { return proto.CompactTextString(m) }
-func (*OptionsRequest) ProtoMessage()    {}
-func (*OptionsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{6}
-}
-func (m *OptionsRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_OptionsRequest.Unmarshal(m, b)
-}
-func (m *OptionsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_OptionsRequest.Marshal(b, m, deterministic)
-}
-func (dst *OptionsRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_OptionsRequest.Merge(dst, src)
-}
-func (m *OptionsRequest) XXX_Size() int {
-	return xxx_messageInfo_OptionsRequest.Size(m)
-}
-func (m *OptionsRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_OptionsRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_OptionsRequest proto.InternalMessageInfo
-
-func (m *OptionsRequest) GetPollId() string {
-	if m != nil {
-		return m.PollId
-	}
-	return ""
-}
-
-type OptionsReply struct {
-	Options              []*Option `protobuf:"bytes,1,rep,name=options,proto3" json:"options,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
-	XXX_unrecognized     []byte    `json:"-"`
-	XXX_sizecache        int32     `json:"-"`
-}
-
-func (m *OptionsReply) Reset()         { *m = OptionsReply{} }
-func (m *OptionsReply) String() string { return proto.CompactTextString(m) }
-func (*OptionsReply) ProtoMessage()    {}
-func (*OptionsReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{7}
-}
-func (m *OptionsReply) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_OptionsReply.Unmarshal(m, b)
-}
-func (m *OptionsReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_OptionsReply.Marshal(b, m, deterministic)
-}
-func (dst *OptionsReply) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_OptionsReply.Merge(dst, src)
-}
-func (m *OptionsReply) XXX_Size() int {
-	return xxx_messageInfo_OptionsReply.Size(m)
-}
-func (m *OptionsReply) XXX_DiscardUnknown() {
-	xxx_messageInfo_OptionsReply.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_OptionsReply proto.InternalMessageInfo
-
-func (m *OptionsReply) GetOptions() []*Option {
-	if m != nil {
-		return m.Options
-	}
-	return nil
-}
-
 type EndPollRequest struct {
-	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId               string   `protobuf:"bytes,2,opt,name=userId,proto3" json:"userId,omitempty"`
+	PollId               string   `protobuf:"bytes,1,opt,name=pollId,proto3" json:"pollId,omitempty"`
+	RequesterId          string   `protobuf:"bytes,2,opt,name=requesterId,proto3" json:"requesterId,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -419,7 +375,7 @@ func (m *EndPollRequest) Reset()         { *m = EndPollRequest{} }
 func (m *EndPollRequest) String() string { return proto.CompactTextString(m) }
 func (*EndPollRequest) ProtoMessage()    {}
 func (*EndPollRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{8}
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{6}
 }
 func (m *EndPollRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_EndPollRequest.Unmarshal(m, b)
@@ -439,16 +395,16 @@ func (m *EndPollRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_EndPollRequest proto.InternalMessageInfo
 
-func (m *EndPollRequest) GetId() string {
+func (m *EndPollRequest) GetPollId() string {
 	if m != nil {
-		return m.Id
+		return m.PollId
 	}
 	return ""
 }
 
-func (m *EndPollRequest) GetUserId() string {
+func (m *EndPollRequest) GetRequesterId() string {
 	if m != nil {
-		return m.UserId
+		return m.RequesterId
 	}
 	return ""
 }
@@ -466,7 +422,7 @@ func (m *EndPollReply) Reset()         { *m = EndPollReply{} }
 func (m *EndPollReply) String() string { return proto.CompactTextString(m) }
 func (*EndPollReply) ProtoMessage()    {}
 func (*EndPollReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{9}
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{7}
 }
 func (m *EndPollReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_EndPollReply.Unmarshal(m, b)
@@ -508,6 +464,8 @@ func (m *EndPollReply) GetReason() string {
 }
 
 type StatusRequest struct {
+	ShortId              string   `protobuf:"bytes,1,opt,name=shortId,proto3" json:"shortId,omitempty"`
+	ServerId             string   `protobuf:"bytes,2,opt,name=serverId,proto3" json:"serverId,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -517,7 +475,7 @@ func (m *StatusRequest) Reset()         { *m = StatusRequest{} }
 func (m *StatusRequest) String() string { return proto.CompactTextString(m) }
 func (*StatusRequest) ProtoMessage()    {}
 func (*StatusRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{10}
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{8}
 }
 func (m *StatusRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_StatusRequest.Unmarshal(m, b)
@@ -537,7 +495,69 @@ func (m *StatusRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_StatusRequest proto.InternalMessageInfo
 
+func (m *StatusRequest) GetShortId() string {
+	if m != nil {
+		return m.ShortId
+	}
+	return ""
+}
+
+func (m *StatusRequest) GetServerId() string {
+	if m != nil {
+		return m.ServerId
+	}
+	return ""
+}
+
+type Voter struct {
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Username             string   `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Voter) Reset()         { *m = Voter{} }
+func (m *Voter) String() string { return proto.CompactTextString(m) }
+func (*Voter) ProtoMessage()    {}
+func (*Voter) Descriptor() ([]byte, []int) {
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{9}
+}
+func (m *Voter) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Voter.Unmarshal(m, b)
+}
+func (m *Voter) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Voter.Marshal(b, m, deterministic)
+}
+func (dst *Voter) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Voter.Merge(dst, src)
+}
+func (m *Voter) XXX_Size() int {
+	return xxx_messageInfo_Voter.Size(m)
+}
+func (m *Voter) XXX_DiscardUnknown() {
+	xxx_messageInfo_Voter.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Voter proto.InternalMessageInfo
+
+func (m *Voter) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+func (m *Voter) GetUsername() string {
+	if m != nil {
+		return m.Username
+	}
+	return ""
+}
+
 type StatusReply struct {
+	Poll                 *Poll    `protobuf:"bytes,1,opt,name=poll,proto3" json:"poll,omitempty"`
+	Voters               []*Voter `protobuf:"bytes,2,rep,name=voters,proto3" json:"voters,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -547,7 +567,7 @@ func (m *StatusReply) Reset()         { *m = StatusReply{} }
 func (m *StatusReply) String() string { return proto.CompactTextString(m) }
 func (*StatusReply) ProtoMessage()    {}
 func (*StatusReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{11}
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{10}
 }
 func (m *StatusReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_StatusReply.Unmarshal(m, b)
@@ -567,67 +587,109 @@ func (m *StatusReply) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_StatusReply proto.InternalMessageInfo
 
-type CreateBallotRequest struct {
+func (m *StatusReply) GetPoll() *Poll {
+	if m != nil {
+		return m.Poll
+	}
+	return nil
+}
+
+func (m *StatusReply) GetVoters() []*Voter {
+	if m != nil {
+		return m.Voters
+	}
+	return nil
+}
+
+type Ballot struct {
+	Options              []*BallotOption `protobuf:"bytes,1,rep,name=options,proto3" json:"options,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *Ballot) Reset()         { *m = Ballot{} }
+func (m *Ballot) String() string { return proto.CompactTextString(m) }
+func (*Ballot) ProtoMessage()    {}
+func (*Ballot) Descriptor() ([]byte, []int) {
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{11}
+}
+func (m *Ballot) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Ballot.Unmarshal(m, b)
+}
+func (m *Ballot) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Ballot.Marshal(b, m, deterministic)
+}
+func (dst *Ballot) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Ballot.Merge(dst, src)
+}
+func (m *Ballot) XXX_Size() int {
+	return xxx_messageInfo_Ballot.Size(m)
+}
+func (m *Ballot) XXX_DiscardUnknown() {
+	xxx_messageInfo_Ballot.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Ballot proto.InternalMessageInfo
+
+func (m *Ballot) GetOptions() []*BallotOption {
+	if m != nil {
+		return m.Options
+	}
+	return nil
+}
+
+type BallotOption struct {
+	Rank                 int32    `protobuf:"varint,1,opt,name=rank,proto3" json:"rank,omitempty"`
+	OptionId             string   `protobuf:"bytes,2,opt,name=optionId,proto3" json:"optionId,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *CreateBallotRequest) Reset()         { *m = CreateBallotRequest{} }
-func (m *CreateBallotRequest) String() string { return proto.CompactTextString(m) }
-func (*CreateBallotRequest) ProtoMessage()    {}
-func (*CreateBallotRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{12}
+func (m *BallotOption) Reset()         { *m = BallotOption{} }
+func (m *BallotOption) String() string { return proto.CompactTextString(m) }
+func (*BallotOption) ProtoMessage()    {}
+func (*BallotOption) Descriptor() ([]byte, []int) {
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{12}
 }
-func (m *CreateBallotRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CreateBallotRequest.Unmarshal(m, b)
+func (m *BallotOption) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_BallotOption.Unmarshal(m, b)
 }
-func (m *CreateBallotRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CreateBallotRequest.Marshal(b, m, deterministic)
+func (m *BallotOption) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_BallotOption.Marshal(b, m, deterministic)
 }
-func (dst *CreateBallotRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CreateBallotRequest.Merge(dst, src)
+func (dst *BallotOption) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BallotOption.Merge(dst, src)
 }
-func (m *CreateBallotRequest) XXX_Size() int {
-	return xxx_messageInfo_CreateBallotRequest.Size(m)
+func (m *BallotOption) XXX_Size() int {
+	return xxx_messageInfo_BallotOption.Size(m)
 }
-func (m *CreateBallotRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_CreateBallotRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CreateBallotRequest proto.InternalMessageInfo
-
-type CreateBallotReply struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+func (m *BallotOption) XXX_DiscardUnknown() {
+	xxx_messageInfo_BallotOption.DiscardUnknown(m)
 }
 
-func (m *CreateBallotReply) Reset()         { *m = CreateBallotReply{} }
-func (m *CreateBallotReply) String() string { return proto.CompactTextString(m) }
-func (*CreateBallotReply) ProtoMessage()    {}
-func (*CreateBallotReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{13}
-}
-func (m *CreateBallotReply) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CreateBallotReply.Unmarshal(m, b)
-}
-func (m *CreateBallotReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CreateBallotReply.Marshal(b, m, deterministic)
-}
-func (dst *CreateBallotReply) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CreateBallotReply.Merge(dst, src)
-}
-func (m *CreateBallotReply) XXX_Size() int {
-	return xxx_messageInfo_CreateBallotReply.Size(m)
-}
-func (m *CreateBallotReply) XXX_DiscardUnknown() {
-	xxx_messageInfo_CreateBallotReply.DiscardUnknown(m)
+var xxx_messageInfo_BallotOption proto.InternalMessageInfo
+
+func (m *BallotOption) GetRank() int32 {
+	if m != nil {
+		return m.Rank
+	}
+	return 0
 }
 
-var xxx_messageInfo_CreateBallotReply proto.InternalMessageInfo
+func (m *BallotOption) GetOptionId() string {
+	if m != nil {
+		return m.OptionId
+	}
+	return ""
+}
 
 type VoteRequest struct {
+	PollShortId          string   `protobuf:"bytes,1,opt,name=pollShortId,proto3" json:"pollShortId,omitempty"`
+	ServerId             string   `protobuf:"bytes,2,opt,name=serverId,proto3" json:"serverId,omitempty"`
+	Voter                *Voter   `protobuf:"bytes,3,opt,name=voter,proto3" json:"voter,omitempty"`
+	Ballot               *Ballot  `protobuf:"bytes,4,opt,name=ballot,proto3" json:"ballot,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -637,7 +699,7 @@ func (m *VoteRequest) Reset()         { *m = VoteRequest{} }
 func (m *VoteRequest) String() string { return proto.CompactTextString(m) }
 func (*VoteRequest) ProtoMessage()    {}
 func (*VoteRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{14}
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{13}
 }
 func (m *VoteRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_VoteRequest.Unmarshal(m, b)
@@ -657,17 +719,48 @@ func (m *VoteRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_VoteRequest proto.InternalMessageInfo
 
+func (m *VoteRequest) GetPollShortId() string {
+	if m != nil {
+		return m.PollShortId
+	}
+	return ""
+}
+
+func (m *VoteRequest) GetServerId() string {
+	if m != nil {
+		return m.ServerId
+	}
+	return ""
+}
+
+func (m *VoteRequest) GetVoter() *Voter {
+	if m != nil {
+		return m.Voter
+	}
+	return nil
+}
+
+func (m *VoteRequest) GetBallot() *Ballot {
+	if m != nil {
+		return m.Ballot
+	}
+	return nil
+}
+
 type VoteReply struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Success              bool      `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message              string    `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Options              []*Option `protobuf:"bytes,3,rep,name=options,proto3" json:"options,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
+	XXX_unrecognized     []byte    `json:"-"`
+	XXX_sizecache        int32     `json:"-"`
 }
 
 func (m *VoteReply) Reset()         { *m = VoteReply{} }
 func (m *VoteReply) String() string { return proto.CompactTextString(m) }
 func (*VoteReply) ProtoMessage()    {}
 func (*VoteReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{15}
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{14}
 }
 func (m *VoteReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_VoteReply.Unmarshal(m, b)
@@ -687,7 +780,33 @@ func (m *VoteReply) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_VoteReply proto.InternalMessageInfo
 
+func (m *VoteReply) GetSuccess() bool {
+	if m != nil {
+		return m.Success
+	}
+	return false
+}
+
+func (m *VoteReply) GetMessage() string {
+	if m != nil {
+		return m.Message
+	}
+	return ""
+}
+
+func (m *VoteReply) GetOptions() []*Option {
+	if m != nil {
+		return m.Options
+	}
+	return nil
+}
+
 type CountRequest struct {
+	PollShortId          string   `protobuf:"bytes,1,opt,name=pollShortId,proto3" json:"pollShortId,omitempty"`
+	ServerId             string   `protobuf:"bytes,2,opt,name=serverId,proto3" json:"serverId,omitempty"`
+	NumToElect           int32    `protobuf:"varint,3,opt,name=numToElect,proto3" json:"numToElect,omitempty"`
+	Method               string   `protobuf:"bytes,4,opt,name=method,proto3" json:"method,omitempty"`
+	ToExclude            []string `protobuf:"bytes,5,rep,name=toExclude,proto3" json:"toExclude,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -697,7 +816,7 @@ func (m *CountRequest) Reset()         { *m = CountRequest{} }
 func (m *CountRequest) String() string { return proto.CompactTextString(m) }
 func (*CountRequest) ProtoMessage()    {}
 func (*CountRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{16}
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{15}
 }
 func (m *CountRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CountRequest.Unmarshal(m, b)
@@ -717,17 +836,56 @@ func (m *CountRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_CountRequest proto.InternalMessageInfo
 
+func (m *CountRequest) GetPollShortId() string {
+	if m != nil {
+		return m.PollShortId
+	}
+	return ""
+}
+
+func (m *CountRequest) GetServerId() string {
+	if m != nil {
+		return m.ServerId
+	}
+	return ""
+}
+
+func (m *CountRequest) GetNumToElect() int32 {
+	if m != nil {
+		return m.NumToElect
+	}
+	return 0
+}
+
+func (m *CountRequest) GetMethod() string {
+	if m != nil {
+		return m.Method
+	}
+	return ""
+}
+
+func (m *CountRequest) GetToExclude() []string {
+	if m != nil {
+		return m.ToExclude
+	}
+	return nil
+}
+
 type CountReply struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Poll                 *Poll          `protobuf:"bytes,1,opt,name=poll,proto3" json:"poll,omitempty"`
+	Elected              []*CountOption `protobuf:"bytes,2,rep,name=elected,proto3" json:"elected,omitempty"`
+	Events               []*CountEvent  `protobuf:"bytes,3,rep,name=events,proto3" json:"events,omitempty"`
+	Summaries            []*CountEvent  `protobuf:"bytes,4,rep,name=summaries,proto3" json:"summaries,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
 }
 
 func (m *CountReply) Reset()         { *m = CountReply{} }
 func (m *CountReply) String() string { return proto.CompactTextString(m) }
 func (*CountReply) ProtoMessage()    {}
 func (*CountReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_voting_e436c270bf504a8c, []int{17}
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{16}
 }
 func (m *CountReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CountReply.Unmarshal(m, b)
@@ -747,6 +905,126 @@ func (m *CountReply) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_CountReply proto.InternalMessageInfo
 
+func (m *CountReply) GetPoll() *Poll {
+	if m != nil {
+		return m.Poll
+	}
+	return nil
+}
+
+func (m *CountReply) GetElected() []*CountOption {
+	if m != nil {
+		return m.Elected
+	}
+	return nil
+}
+
+func (m *CountReply) GetEvents() []*CountEvent {
+	if m != nil {
+		return m.Events
+	}
+	return nil
+}
+
+func (m *CountReply) GetSummaries() []*CountEvent {
+	if m != nil {
+		return m.Summaries
+	}
+	return nil
+}
+
+type CountEvent struct {
+	Description          string   `protobuf:"bytes,1,opt,name=description,proto3" json:"description,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CountEvent) Reset()         { *m = CountEvent{} }
+func (m *CountEvent) String() string { return proto.CompactTextString(m) }
+func (*CountEvent) ProtoMessage()    {}
+func (*CountEvent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{17}
+}
+func (m *CountEvent) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CountEvent.Unmarshal(m, b)
+}
+func (m *CountEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CountEvent.Marshal(b, m, deterministic)
+}
+func (dst *CountEvent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CountEvent.Merge(dst, src)
+}
+func (m *CountEvent) XXX_Size() int {
+	return xxx_messageInfo_CountEvent.Size(m)
+}
+func (m *CountEvent) XXX_DiscardUnknown() {
+	xxx_messageInfo_CountEvent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CountEvent proto.InternalMessageInfo
+
+func (m *CountEvent) GetDescription() string {
+	if m != nil {
+		return m.Description
+	}
+	return ""
+}
+
+type CountOption struct {
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Content              string   `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+	Rank                 int32    `protobuf:"varint,3,opt,name=rank,proto3" json:"rank,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CountOption) Reset()         { *m = CountOption{} }
+func (m *CountOption) String() string { return proto.CompactTextString(m) }
+func (*CountOption) ProtoMessage()    {}
+func (*CountOption) Descriptor() ([]byte, []int) {
+	return fileDescriptor_voting_b74449f16d33ad0c, []int{18}
+}
+func (m *CountOption) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CountOption.Unmarshal(m, b)
+}
+func (m *CountOption) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CountOption.Marshal(b, m, deterministic)
+}
+func (dst *CountOption) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CountOption.Merge(dst, src)
+}
+func (m *CountOption) XXX_Size() int {
+	return xxx_messageInfo_CountOption.Size(m)
+}
+func (m *CountOption) XXX_DiscardUnknown() {
+	xxx_messageInfo_CountOption.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CountOption proto.InternalMessageInfo
+
+func (m *CountOption) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+func (m *CountOption) GetContent() string {
+	if m != nil {
+		return m.Content
+	}
+	return ""
+}
+
+func (m *CountOption) GetRank() int32 {
+	if m != nil {
+		return m.Rank
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterType((*CreatePollRequest)(nil), "votingpb.CreatePollRequest")
 	proto.RegisterType((*CreatePollReply)(nil), "votingpb.CreatePollReply")
@@ -754,18 +1032,19 @@ func init() {
 	proto.RegisterType((*PollRequest)(nil), "votingpb.PollRequest")
 	proto.RegisterType((*PollReply)(nil), "votingpb.PollReply")
 	proto.RegisterType((*Poll)(nil), "votingpb.Poll")
-	proto.RegisterType((*OptionsRequest)(nil), "votingpb.OptionsRequest")
-	proto.RegisterType((*OptionsReply)(nil), "votingpb.OptionsReply")
 	proto.RegisterType((*EndPollRequest)(nil), "votingpb.EndPollRequest")
 	proto.RegisterType((*EndPollReply)(nil), "votingpb.EndPollReply")
 	proto.RegisterType((*StatusRequest)(nil), "votingpb.StatusRequest")
+	proto.RegisterType((*Voter)(nil), "votingpb.Voter")
 	proto.RegisterType((*StatusReply)(nil), "votingpb.StatusReply")
-	proto.RegisterType((*CreateBallotRequest)(nil), "votingpb.CreateBallotRequest")
-	proto.RegisterType((*CreateBallotReply)(nil), "votingpb.CreateBallotReply")
+	proto.RegisterType((*Ballot)(nil), "votingpb.Ballot")
+	proto.RegisterType((*BallotOption)(nil), "votingpb.BallotOption")
 	proto.RegisterType((*VoteRequest)(nil), "votingpb.VoteRequest")
 	proto.RegisterType((*VoteReply)(nil), "votingpb.VoteReply")
 	proto.RegisterType((*CountRequest)(nil), "votingpb.CountRequest")
 	proto.RegisterType((*CountReply)(nil), "votingpb.CountReply")
+	proto.RegisterType((*CountEvent)(nil), "votingpb.CountEvent")
+	proto.RegisterType((*CountOption)(nil), "votingpb.CountOption")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -784,7 +1063,6 @@ type VotingClient interface {
 	Poll(ctx context.Context, in *PollRequest, opts ...grpc.CallOption) (*PollReply, error)
 	EndPoll(ctx context.Context, in *EndPollRequest, opts ...grpc.CallOption) (*EndPollReply, error)
 	Status(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusReply, error)
-	CreateBallot(ctx context.Context, in *CreateBallotRequest, opts ...grpc.CallOption) (*CreateBallotReply, error)
 	Vote(ctx context.Context, in *VoteRequest, opts ...grpc.CallOption) (*VoteReply, error)
 	Count(ctx context.Context, in *CountRequest, opts ...grpc.CallOption) (*CountReply, error)
 }
@@ -833,15 +1111,6 @@ func (c *votingClient) Status(ctx context.Context, in *StatusRequest, opts ...gr
 	return out, nil
 }
 
-func (c *votingClient) CreateBallot(ctx context.Context, in *CreateBallotRequest, opts ...grpc.CallOption) (*CreateBallotReply, error) {
-	out := new(CreateBallotReply)
-	err := c.cc.Invoke(ctx, "/votingpb.Voting/CreateBallot", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *votingClient) Vote(ctx context.Context, in *VoteRequest, opts ...grpc.CallOption) (*VoteReply, error) {
 	out := new(VoteReply)
 	err := c.cc.Invoke(ctx, "/votingpb.Voting/Vote", in, out, opts...)
@@ -866,7 +1135,6 @@ type VotingServer interface {
 	Poll(context.Context, *PollRequest) (*PollReply, error)
 	EndPoll(context.Context, *EndPollRequest) (*EndPollReply, error)
 	Status(context.Context, *StatusRequest) (*StatusReply, error)
-	CreateBallot(context.Context, *CreateBallotRequest) (*CreateBallotReply, error)
 	Vote(context.Context, *VoteRequest) (*VoteReply, error)
 	Count(context.Context, *CountRequest) (*CountReply, error)
 }
@@ -947,24 +1215,6 @@ func _Voting_Status_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Voting_CreateBallot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateBallotRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(VotingServer).CreateBallot(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/votingpb.Voting/CreateBallot",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VotingServer).CreateBallot(ctx, req.(*CreateBallotRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Voting_Vote_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(VoteRequest)
 	if err := dec(in); err != nil {
@@ -1022,10 +1272,6 @@ var _Voting_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Voting_Status_Handler,
 		},
 		{
-			MethodName: "CreateBallot",
-			Handler:    _Voting_CreateBallot_Handler,
-		},
-		{
 			MethodName: "Vote",
 			Handler:    _Voting_Vote_Handler,
 		},
@@ -1038,42 +1284,59 @@ var _Voting_serviceDesc = grpc.ServiceDesc{
 	Metadata: "voting.proto",
 }
 
-func init() { proto.RegisterFile("voting.proto", fileDescriptor_voting_e436c270bf504a8c) }
+func init() { proto.RegisterFile("voting.proto", fileDescriptor_voting_b74449f16d33ad0c) }
 
-var fileDescriptor_voting_e436c270bf504a8c = []byte{
-	// 543 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x54, 0xd1, 0x6e, 0xd3, 0x30,
-	0x14, 0x5d, 0xd6, 0x36, 0x6d, 0x6f, 0xd2, 0x0e, 0xdc, 0x75, 0x84, 0x8c, 0x49, 0x95, 0x9f, 0x2a,
-	0x1e, 0x8a, 0x54, 0x40, 0xa0, 0x49, 0xbc, 0x30, 0x0d, 0x69, 0x08, 0x09, 0x14, 0xc4, 0xde, 0xb3,
-	0xc6, 0x82, 0x48, 0x56, 0x9c, 0xc5, 0x0e, 0xa8, 0xdf, 0xc3, 0x7f, 0xf0, 0xc0, 0x97, 0x21, 0xdb,
-	0x71, 0xe2, 0xa6, 0x19, 0x83, 0xc7, 0x73, 0xef, 0xb9, 0xf6, 0x3d, 0xe7, 0xc4, 0x01, 0xff, 0x3b,
-	0x13, 0x69, 0xf6, 0x75, 0x95, 0x17, 0x4c, 0x30, 0x34, 0xd2, 0x28, 0xbf, 0xc1, 0x3f, 0x1d, 0x78,
-	0x78, 0x51, 0x90, 0x58, 0x90, 0x4f, 0x8c, 0xd2, 0x88, 0xdc, 0x96, 0x84, 0x0b, 0xf4, 0x04, 0xc6,
-	0x1b, 0x59, 0x64, 0xc5, 0x55, 0x12, 0x38, 0x0b, 0x67, 0x39, 0x8e, 0x9a, 0x02, 0x3a, 0x86, 0x81,
-	0x48, 0x05, 0x25, 0xc1, 0xa1, 0xea, 0x68, 0x80, 0x56, 0x80, 0x62, 0x4a, 0xd9, 0x0f, 0x92, 0x7c,
-	0xc9, 0xd2, 0xdb, 0x92, 0x5c, 0x33, 0x41, 0x78, 0xd0, 0x5b, 0x38, 0xcb, 0x41, 0xd4, 0xd1, 0x41,
-	0x4f, 0x61, 0xc8, 0x72, 0x91, 0xb2, 0x8c, 0x07, 0xfd, 0x45, 0x6f, 0xe9, 0xad, 0x1f, 0xac, 0xcc,
-	0x56, 0xab, 0x8f, 0xaa, 0x11, 0x19, 0x02, 0x7e, 0x09, 0x47, 0xf6, 0x92, 0x39, 0xdd, 0x22, 0x0c,
-	0xfd, 0x9c, 0x51, 0xaa, 0xb6, 0xf3, 0xd6, 0xd3, 0x66, 0x56, 0x51, 0x54, 0x0f, 0xbf, 0x07, 0x57,
-	0x9f, 0x84, 0xa6, 0x70, 0x98, 0x1a, 0x25, 0x87, 0x69, 0x82, 0x4e, 0xc0, 0x95, 0x8c, 0xab, 0xa4,
-	0xd2, 0x50, 0x21, 0x14, 0xc0, 0x70, 0xc3, 0x32, 0x41, 0x32, 0xa1, 0x36, 0x1f, 0x47, 0x06, 0xe2,
-	0x33, 0xf0, 0x6c, 0x87, 0x5a, 0x07, 0xe2, 0x67, 0x30, 0xfe, 0xbf, 0xdd, 0x7e, 0x3b, 0xd0, 0x97,
-	0x70, 0x6f, 0xb5, 0x6e, 0x77, 0x77, 0x12, 0xe9, 0xb5, 0x13, 0xe9, 0xf6, 0xbe, 0x7f, 0xa7, 0xf7,
-	0x21, 0x8c, 0xbe, 0xc5, 0xfc, 0x32, 0x4b, 0x48, 0x12, 0x0c, 0x16, 0xce, 0x72, 0x14, 0xd5, 0xd8,
-	0xce, 0xc5, 0xbd, 0x2f, 0x97, 0x25, 0x4c, 0x75, 0x89, 0x1b, 0x5f, 0x1a, 0x63, 0x1d, 0xdb, 0x58,
-	0x7c, 0x0e, 0x7e, 0xcd, 0x94, 0x16, 0x59, 0xb7, 0x38, 0xf7, 0xdd, 0xf2, 0x1a, 0xa6, 0x97, 0x59,
-	0xf2, 0x17, 0xf7, 0xe5, 0xad, 0x25, 0x27, 0x45, 0x13, 0xa7, 0x46, 0x38, 0x01, 0xbf, 0x9e, 0xfc,
-	0xc7, 0x60, 0xe4, 0x27, 0xc0, 0xcb, 0xcd, 0x86, 0x70, 0xae, 0x0e, 0x1b, 0x45, 0x06, 0xca, 0x5b,
-	0x0a, 0x12, 0x73, 0x96, 0x55, 0x01, 0x54, 0x08, 0x1f, 0xc1, 0xe4, 0xb3, 0x88, 0x45, 0x69, 0x4c,
-	0xc0, 0x13, 0xf0, 0x4c, 0x21, 0xa7, 0x5b, 0x3c, 0x87, 0x99, 0xfe, 0x7a, 0xdf, 0xca, 0x28, 0x84,
-	0x61, 0xcd, 0xcc, 0xcb, 0x33, 0x65, 0xc9, 0x9d, 0x80, 0x27, 0x23, 0x32, 0x1c, 0x0f, 0xc6, 0x1a,
-	0xca, 0xde, 0x14, 0xfc, 0x0b, 0x56, 0x66, 0xf5, 0x01, 0x3e, 0x40, 0x85, 0x73, 0xba, 0x5d, 0xff,
-	0xea, 0x81, 0x7b, 0xad, 0xf4, 0xa0, 0x77, 0x00, 0xcd, 0x73, 0x41, 0xa7, 0x8d, 0xcc, 0xbd, 0x97,
-	0x1e, 0x3e, 0xee, 0x6e, 0xca, 0xeb, 0x0e, 0xd0, 0x8b, 0xea, 0x13, 0x9d, 0xb7, 0x8c, 0xaa, 0x66,
-	0x67, 0xed, 0xb2, 0x9e, 0x7a, 0x03, 0xc3, 0xca, 0x74, 0x14, 0x34, 0x8c, 0xdd, 0x04, 0xc3, 0x93,
-	0x8e, 0x8e, 0x1e, 0x3f, 0x07, 0x57, 0x9b, 0x87, 0x1e, 0x35, 0x9c, 0x1d, 0x7f, 0xc3, 0xf9, 0x7e,
-	0x43, 0xcf, 0x7e, 0x00, 0xdf, 0xb6, 0x14, 0x9d, 0xb5, 0xd5, 0xed, 0x24, 0x10, 0x9e, 0xde, 0xd5,
-	0xae, 0xe5, 0x4b, 0xf3, 0x6d, 0xf9, 0x56, 0x36, 0xb6, 0xfc, 0x26, 0xa3, 0x03, 0xf4, 0x0a, 0x06,
-	0x2a, 0x15, 0x64, 0x49, 0xb4, 0x63, 0x0b, 0x8f, 0xf7, 0xea, 0x6a, 0xf0, 0xc6, 0x55, 0xff, 0xe6,
-	0xe7, 0x7f, 0x02, 0x00, 0x00, 0xff, 0xff, 0x1d, 0x3a, 0x2a, 0x1d, 0xab, 0x05, 0x00, 0x00,
+var fileDescriptor_voting_b74449f16d33ad0c = []byte{
+	// 803 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x56, 0x4d, 0x6f, 0xd3, 0x4a,
+	0x14, 0xad, 0x93, 0xd8, 0x49, 0xae, 0xf3, 0xda, 0xbe, 0x79, 0x6d, 0x9e, 0x09, 0x08, 0x45, 0x23,
+	0x21, 0x22, 0x84, 0x52, 0x94, 0x82, 0x90, 0x2a, 0xc1, 0x82, 0x12, 0x24, 0x60, 0x01, 0x72, 0xa1,
+	0x0b, 0x76, 0x6e, 0x3c, 0x6a, 0xad, 0x3a, 0x9e, 0xd4, 0x33, 0x0e, 0xf4, 0xbf, 0xb0, 0xe2, 0x8f,
+	0xb0, 0xe0, 0x0f, 0xb1, 0x64, 0x89, 0x66, 0x3c, 0x63, 0x8f, 0xd3, 0xa4, 0x1f, 0x82, 0x5d, 0xee,
+	0x9c, 0x7b, 0x3d, 0xe7, 0x9e, 0x33, 0x73, 0x27, 0xd0, 0x99, 0x53, 0x1e, 0x25, 0xc7, 0xc3, 0x59,
+	0x4a, 0x39, 0x45, 0xad, 0x3c, 0x9a, 0x1d, 0xe1, 0xef, 0x16, 0xfc, 0xbb, 0x9f, 0x92, 0x80, 0x93,
+	0xf7, 0x34, 0x8e, 0x7d, 0x72, 0x96, 0x11, 0xc6, 0x51, 0x0f, 0x5a, 0x8c, 0xa4, 0x73, 0x92, 0xbe,
+	0x0e, 0x3d, 0xab, 0x6f, 0x0d, 0xda, 0x7e, 0x11, 0xa3, 0x3b, 0xd0, 0x9e, 0x88, 0x02, 0x2a, 0xc0,
+	0x9a, 0x04, 0xcb, 0x05, 0xb4, 0x05, 0x36, 0x8f, 0x78, 0x4c, 0xbc, 0xba, 0x44, 0xf2, 0x00, 0x0d,
+	0x01, 0x05, 0x71, 0x4c, 0x3f, 0x93, 0xf0, 0x63, 0x12, 0x9d, 0x65, 0xe4, 0x90, 0x72, 0xc2, 0xbc,
+	0x46, 0xdf, 0x1a, 0xd8, 0xfe, 0x12, 0x04, 0x3d, 0x80, 0x26, 0x9d, 0xf1, 0x88, 0x26, 0xcc, 0xb3,
+	0xfb, 0xf5, 0x81, 0x3b, 0xda, 0x1c, 0x6a, 0xc6, 0xc3, 0x77, 0x12, 0xf0, 0x75, 0x02, 0x7e, 0x02,
+	0x1b, 0x66, 0x03, 0xb3, 0xf8, 0x1c, 0x61, 0x68, 0xcc, 0x68, 0x1c, 0x4b, 0xea, 0xee, 0x68, 0xbd,
+	0xac, 0x95, 0x29, 0x12, 0xc3, 0x2f, 0xc1, 0xc9, 0xbf, 0x84, 0xd6, 0xa1, 0x16, 0xe9, 0x36, 0x6b,
+	0x51, 0x88, 0x3c, 0x68, 0x4e, 0x68, 0xc2, 0x49, 0xc2, 0x55, 0x7b, 0x3a, 0x44, 0x9b, 0x50, 0xcf,
+	0xd2, 0x58, 0xb5, 0x26, 0x7e, 0xe2, 0x7d, 0x70, 0x4d, 0xdd, 0x3c, 0x68, 0xb2, 0x13, 0x9a, 0xf2,
+	0x42, 0x36, 0x1d, 0x56, 0x14, 0xad, 0x55, 0x15, 0xc5, 0x3b, 0xd0, 0xbe, 0x19, 0xf7, 0x5f, 0x16,
+	0x34, 0x44, 0xb8, 0x8c, 0xba, 0xde, 0xbf, 0xb6, 0x7a, 0xff, 0xfa, 0x65, 0x8e, 0x36, 0x56, 0x3a,
+	0x6a, 0x5f, 0xed, 0xa8, 0xb3, 0xd2, 0xd1, 0x1e, 0xb4, 0x4e, 0x02, 0x36, 0x4e, 0x42, 0x12, 0x7a,
+	0xcd, 0xbe, 0x35, 0x68, 0xf9, 0x45, 0x6c, 0xba, 0xdd, 0xba, 0xca, 0xed, 0x37, 0xb0, 0x3e, 0x4e,
+	0x42, 0x53, 0xf3, 0x2e, 0x38, 0x42, 0x94, 0x42, 0x72, 0x15, 0xa1, 0x3e, 0xb8, 0x69, 0x9e, 0x62,
+	0x88, 0x6e, 0x2e, 0xe1, 0x10, 0x3a, 0xc5, 0xb7, 0xae, 0x29, 0xbd, 0x54, 0x38, 0x9b, 0x4c, 0x08,
+	0x63, 0xf2, 0x8b, 0x2d, 0x5f, 0x87, 0x82, 0x47, 0x4a, 0x02, 0x46, 0x13, 0xa5, 0xaf, 0x8a, 0xf0,
+	0x18, 0xfe, 0x39, 0xe0, 0x01, 0xcf, 0xd8, 0x9f, 0x1d, 0x92, 0x5d, 0xb0, 0x85, 0x92, 0xe9, 0x05,
+	0xcf, 0x7b, 0xd0, 0xca, 0x18, 0x49, 0x93, 0x60, 0x4a, 0x74, 0x91, 0x8e, 0xf1, 0x27, 0x70, 0xf5,
+	0xde, 0xd7, 0x6d, 0xf0, 0x3e, 0x38, 0x73, 0xb1, 0x8f, 0xe8, 0x4f, 0x78, 0xb1, 0x51, 0x66, 0xc9,
+	0xfd, 0x7d, 0x05, 0xe3, 0x3d, 0x70, 0x5e, 0x08, 0xa3, 0x39, 0x7a, 0x54, 0xfa, 0x67, 0xc9, 0x9a,
+	0x6e, 0x59, 0x93, 0xa7, 0x2c, 0xba, 0xf8, 0x1c, 0x3a, 0x26, 0x80, 0x10, 0x34, 0xd2, 0x20, 0x39,
+	0x95, 0xc4, 0x6c, 0x5f, 0xfe, 0x16, 0x7d, 0xe5, 0xe9, 0xa5, 0x18, 0x3a, 0xc6, 0x5f, 0x2d, 0x70,
+	0x05, 0x1b, 0x2d, 0x69, 0x1f, 0x5c, 0x41, 0xfe, 0xa0, 0x22, 0xab, 0xb9, 0x74, 0x99, 0xb4, 0xe8,
+	0x1e, 0xd8, 0xb2, 0x27, 0x69, 0xdc, 0x92, 0x8e, 0x73, 0x14, 0x0d, 0xc0, 0x39, 0x92, 0xa4, 0xe5,
+	0x1d, 0xa9, 0x9c, 0xd2, 0xbc, 0x19, 0x5f, 0xe1, 0xf8, 0x14, 0xda, 0x39, 0x3b, 0x21, 0xba, 0x71,
+	0x62, 0xac, 0xea, 0x89, 0xf1, 0xa0, 0x39, 0x25, 0x8c, 0x05, 0xc7, 0xda, 0x38, 0x1d, 0x9a, 0x37,
+	0xa2, 0x7e, 0xd5, 0x8d, 0xf8, 0x66, 0x41, 0x67, 0x9f, 0x66, 0x09, 0xff, 0x3b, 0x62, 0xdc, 0x05,
+	0x48, 0xb2, 0xe9, 0x07, 0x3a, 0x8e, 0xc9, 0x84, 0x4b, 0x45, 0x6c, 0xdf, 0x58, 0x11, 0xc7, 0x7c,
+	0x4a, 0xf8, 0x09, 0xd5, 0x93, 0x42, 0x45, 0x62, 0x88, 0x70, 0x3a, 0xfe, 0x32, 0x89, 0xb3, 0x90,
+	0xc8, 0xa1, 0xdd, 0xf6, 0xcb, 0x05, 0xfc, 0xc3, 0x02, 0x50, 0x24, 0xaf, 0x7b, 0x10, 0x77, 0xa0,
+	0x49, 0xc4, 0x8e, 0x24, 0x54, 0x27, 0x71, 0xbb, 0x4c, 0x93, 0x9f, 0xd2, 0x42, 0xa8, 0x2c, 0xf4,
+	0x10, 0x1c, 0x32, 0x27, 0x09, 0xd7, 0x9a, 0x6d, 0x2d, 0xe4, 0x8f, 0x05, 0xe8, 0xab, 0x1c, 0x34,
+	0x82, 0x36, 0xcb, 0xa6, 0xd3, 0x20, 0x8d, 0xe4, 0x4b, 0xb4, 0xba, 0xa0, 0x4c, 0xc3, 0x43, 0xd5,
+	0x84, 0x04, 0x84, 0xce, 0x21, 0x61, 0x93, 0x34, 0x92, 0x3c, 0xb4, 0xce, 0xc6, 0x12, 0x7e, 0x0b,
+	0xae, 0xc1, 0xf4, 0x06, 0x0f, 0x8d, 0xbe, 0x0f, 0xf5, 0xf2, 0x3e, 0x8c, 0x7e, 0xd6, 0xc0, 0x39,
+	0x94, 0xfc, 0xd0, 0x2b, 0x80, 0xf2, 0xc9, 0x43, 0xb7, 0x0d, 0xda, 0x8b, 0x2f, 0x79, 0xef, 0xd6,
+	0x72, 0x70, 0x16, 0x9f, 0xe3, 0x35, 0xf4, 0x58, 0x3d, 0x23, 0xdb, 0x0b, 0x06, 0xa8, 0xda, 0xff,
+	0x16, 0x97, 0xf3, 0xaa, 0x67, 0xd0, 0x54, 0x63, 0x13, 0x79, 0x65, 0x46, 0x75, 0x2a, 0xf7, 0xba,
+	0x4b, 0x90, 0xbc, 0x7c, 0x0f, 0x9c, 0x7c, 0x26, 0xa1, 0xff, 0xcb, 0x9c, 0xca, 0x84, 0xec, 0x6d,
+	0x5f, 0x04, 0x0a, 0xc2, 0xe2, 0x62, 0x99, 0x84, 0x8d, 0x31, 0x60, 0x12, 0x2e, 0xee, 0x1f, 0x5e,
+	0x43, 0x4f, 0xc1, 0x96, 0x36, 0xa0, 0xee, 0x82, 0xc1, 0xba, 0x6e, 0xeb, 0xc2, 0xba, 0x2c, 0x3c,
+	0x72, 0xe4, 0xbf, 0xa5, 0xdd, 0xdf, 0x01, 0x00, 0x00, 0xff, 0xff, 0x0a, 0x08, 0x61, 0x17, 0x3d,
+	0x09, 0x00, 0x00,
 }

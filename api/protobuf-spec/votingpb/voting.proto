@@ -7,16 +7,16 @@ service Voting {
     rpc Poll(PollRequest) returns (PollReply) {}
     rpc EndPoll(EndPollRequest) returns (EndPollReply) {}
     rpc Status(StatusRequest) returns (StatusReply) {}
-    rpc CreateBallot(CreateBallotRequest) returns (CreateBallotReply) {}
     rpc Vote(VoteRequest) returns (VoteReply) {}
     rpc Count(CountRequest) returns (CountReply) {}
 }
 
 message CreatePollRequest {
-    string creatorId = 1;
-    string title = 2;
-    int32 allowedUniqueVotes = 3;
-    repeated Option options = 4;
+    string serverId = 1;
+    string creatorId = 2;
+    string title = 3;
+    int32 allowedUniqueVotes = 4;
+    repeated Option options = 5;
 }
 
 message CreatePollReply {
@@ -25,12 +25,13 @@ message CreatePollReply {
 
 message Option {
     string id = 1;
-    string pollId = 2;
-    string content = 3;
+    string content = 2;
+    string url = 3;
 }
 
 message PollRequest {
-    string id = 1;
+    string shortId = 1;
+    string serverId = 2;
 }
 
 message PollReply {
@@ -39,24 +40,18 @@ message PollReply {
 
 message Poll {
     string id = 1;
-    string title = 2;
-    string creatorId = 3;
-    int32 allowedUniqueVotes = 4;
-    bool hasEnded = 5;
-    repeated Option options = 6;
-}
-
-message OptionsRequest {
-    string pollId = 1;
-}
-
-message OptionsReply {
-    repeated Option options = 1;
+    string shortId = 2;
+    string serverId = 3;
+    string creatorId = 4;
+    string title = 5;
+    int32 allowedUniqueVotes = 6;
+    bool hasEnded = 7;
+    repeated Option options = 8;
 }
 
 message EndPollRequest {
-    string id = 1;
-    string userId = 2;
+    string pollId = 1;
+    string requesterId = 2;
 }
 
 message EndPollReply {
@@ -66,33 +61,63 @@ message EndPollReply {
 }
 
 message StatusRequest {
+    string shortId = 1;
+    string serverId = 2;
+}
 
+message Voter {
+    string id = 1;
+    string username = 2;
 }
 
 message StatusReply {
-
+    Poll poll = 1;
+    repeated Voter voters = 2;
 }
 
-message CreateBallotRequest {
-
+message Ballot {
+    repeated BallotOption options = 1;
 }
 
-message CreateBallotReply {
-
+message BallotOption {
+    int32 rank = 1;
+    string optionId = 2;
 }
 
 message VoteRequest {
-
+    string pollShortId = 1;
+    string serverId = 2;
+    Voter voter = 3;
+    Ballot ballot = 4;
 }
 
 message VoteReply {
-
+    bool success = 1;
+    string message = 2;
+    repeated Option options = 3;
 }
 
 message CountRequest {
-
+    string pollShortId = 1;
+    string serverId = 2;
+    int32 numToElect = 3;
+    string method = 4;
+    repeated string toExclude = 5;
 }
 
 message CountReply {
+    Poll poll = 1;
+    repeated CountOption elected = 2;
+    repeated CountEvent events = 3;
+    repeated CountEvent summaries = 4;
+}
 
+message CountEvent {
+    string description = 1;
+}
+
+message CountOption {
+    string id = 1;
+    string content = 2;
+    int32 rank = 3;
 }
