@@ -67,19 +67,19 @@ func (r *repository) Migrate() error {
 
 func (r *repository) CreatePoll(req voting.Poll) (voting.Poll, error) {
 	q := `INSERT INTO poll (
-		shortId,
-		serverId,
-		title, 
-		creatorId, 
-		allowedUniqueVotes)
+			shortId,
+			serverId,
+			title, 
+			creatorId, 
+			allowedUniqueVotes)
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING 
-		id,
-		shortId,
-		serverId,
-		creatorId,
-		title,
-		allowedUniqueVotes`
+			id,
+			shortId,
+			serverId,
+			creatorId,
+			title,
+			allowedUniqueVotes`
 
 	poll := voting.Poll{}
 
@@ -113,7 +113,7 @@ func (r *repository) CreatePoll(req voting.Poll) (voting.Poll, error) {
 
 	poll.Options = options
 
-	return poll, err
+	return poll, nil
 }
 
 func (r *repository) Poll(shortId string, serverId string) (voting.Poll, error) {

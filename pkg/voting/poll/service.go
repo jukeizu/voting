@@ -34,6 +34,8 @@ func (h DefaultService) Create(req voting.Poll) (voting.Poll, error) {
 
 	h.logger.Info().
 		Str("pollId", poll.Id).
+		Str("shortId", poll.ShortId).
+		Str("serverId", poll.ServerId).
 		Str("title", poll.Title).
 		Str("creatorId", poll.CreatorId).
 		Int32("allowedUniqueVotes", poll.AllowedUniqueVotes).
