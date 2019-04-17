@@ -50,8 +50,6 @@ func (r *repository) Migrate() error {
 
 	err = g.RegisterMigrations(
 		migrations.CreateTableCurrentPoll20190303044144{},
-		migrations.CreateTableVoterSession20190303044855{},
-		migrations.CreateTableOption20190303045441{},
 	)
 	if err != nil {
 		return err
