@@ -8,6 +8,7 @@ type Service interface {
 	CreatePoll(poll Poll) (Poll, error)
 	Poll(shortId string, serverId string) (Poll, error)
 	EndPoll(shortId string, serverId string, userId string) (Poll, error)
+	Status(shortIdf string, serverId string) (Status, error)
 	Vote(vote Vote) error
 	Count(pollId string) error
 	CurrentPoll(serverId string) (string, error)
@@ -42,6 +43,21 @@ func (s DefaultService) Poll(shortId string, serverId string) (Poll, error) {
 
 func (s DefaultService) EndPoll(shortId string, serverId string, userId string) (Poll, error) {
 	return s.pollService.End(shortId, serverId)
+}
+
+func (s DefaultService) Status(shortId string, serverId string) (Status, error) {
+	poll, err := s.pollService.Poll(shortId, serverId)
+	if err != nil {
+		return Status{}, err
+	}
+
+	//TODO: get voters & add to status
+
+	status := Status{
+		Poll: poll,
+	}
+
+	return status, nil
 }
 
 func (s DefaultService) Vote(vote Vote) error {

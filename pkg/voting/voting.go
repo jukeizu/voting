@@ -37,6 +37,11 @@ type VoteOption struct {
 	OptionId string
 }
 
+type Status struct {
+	Poll   Poll
+	Voters []Voter
+}
+
 type PollService interface {
 	Create(poll Poll) (Poll, error)
 	Poll(shortId string, serverId string) (Poll, error)
