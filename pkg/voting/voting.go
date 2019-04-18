@@ -54,3 +54,8 @@ type SessionService interface {
 	CurrentPoll(serverId string) (string, error)
 	SetCurrentPoll(serverId, pollId string) error
 }
+
+type VoterService interface {
+	Create(voter Voter) (Voter, error)
+	Voter(id string) (Voter, error)
+}
