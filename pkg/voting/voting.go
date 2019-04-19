@@ -25,16 +25,21 @@ type Voter struct {
 	CanVote    bool
 }
 
-type Vote struct {
+type Ballot struct {
 	PollId   string
 	ServerId string
 	Voter    Voter
-	Options  []VoteOption
+	Options  []BallotOption
 }
 
-type VoteOption struct {
+type BallotOption struct {
 	Rank     int32
 	OptionId string
+}
+
+type BallotResult struct {
+	Success bool
+	Message string
 }
 
 type Status struct {
@@ -58,4 +63,9 @@ type SessionService interface {
 type VoterService interface {
 	Create(voter Voter) (Voter, error)
 	Voter(id string) (Voter, error)
+}
+
+type BallotService interface {
+	Submit(Ballot) (BallotResult, error)
+	Count() error
 }

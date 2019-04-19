@@ -9,7 +9,7 @@ type Service interface {
 	Poll(shortId string, serverId string) (Poll, error)
 	EndPoll(shortId string, serverId string, userId string) (Poll, error)
 	Status(shortIdf string, serverId string) (Status, error)
-	Vote(vote Vote) error
+	Vote(ballot Ballot) error
 	Count(pollId string) error
 	CurrentPoll(serverId string) (string, error)
 	SetCurrentPoll(serverId, pollId string) error
@@ -60,7 +60,7 @@ func (s DefaultService) Status(shortId string, serverId string) (Status, error) 
 	return status, nil
 }
 
-func (s DefaultService) Vote(vote Vote) error {
+func (s DefaultService) Vote(ballot Ballot) error {
 	return nil
 }
 

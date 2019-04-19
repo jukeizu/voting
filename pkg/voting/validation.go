@@ -45,7 +45,7 @@ func (s ValidationService) Status(shortId string, serverId string) (Status, erro
 	return s.service.Status(shortId, serverId)
 }
 
-func (s ValidationService) Vote(vote Vote) error {
+func (s ValidationService) Vote(ballot Ballot) error {
 	/*
 		ballot, err := s.ballotService.Ballot(vote.ServerId, vote.VoterId)
 		if err != nil {
