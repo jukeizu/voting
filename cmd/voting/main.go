@@ -14,6 +14,7 @@ import (
 	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
 	"github.com/jukeizu/voting/internal/startup"
 	"github.com/jukeizu/voting/pkg/voting"
+	"github.com/jukeizu/voting/pkg/voting/ballot"
 	"github.com/jukeizu/voting/pkg/voting/poll"
 	"github.com/jukeizu/voting/pkg/voting/session"
 	"github.com/jukeizu/voting/pkg/voting/voter"
@@ -93,6 +94,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	ballotRepository, err := ballot.NewRepository(dbAddress)
+	if err != nil {
+		logger.Error().Err(err).Caller().Msg("could not create ballot repository")
+		os.Exit(1)
+	}
+
 	if flagMigrate {
 		gossage.Logger = func(format string, a ...interface{}) {
 			msg := fmt.Sprintf(format, a...)
@@ -114,6 +121,12 @@ func main() {
 		err = voterRepository.Migrate()
 		if err != nil {
 			logger.Error().Err(err).Caller().Msg("could not migrate voter repository")
+			os.Exit(1)
+		}
+
+		err = ballotRepository.Migrate()
+		if err != nil {
+			logger.Error().Err(err).Caller().Msg("could not migrate ballot repository")
 			os.Exit(1)
 		}
 	}

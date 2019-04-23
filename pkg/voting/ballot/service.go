@@ -17,7 +17,17 @@ func NewDefaultService(logger zerolog.Logger, repository Repository) DefaultServ
 }
 
 func (s DefaultService) Submit(ballot voting.Ballot) (voting.BallotResult, error) {
-	return voting.BallotResult{}, nil
+	err := s.repository.VoidBallotOptions(ballot.PollId, ballot.Voter.Id)
+	if err != nil {
+		return voting.BallotResult{Success: false}, err
+	}
+
+	err = s.repository.CreateBallotOptions(ballot)
+	if err != nil {
+		return voting.BallotResult{Success: false}, err
+	}
+
+	return voting.BallotResult{Success: true}, nil
 }
 
 func (s DefaultService) Count() error {

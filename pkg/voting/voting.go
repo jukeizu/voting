@@ -26,10 +26,9 @@ type Voter struct {
 }
 
 type Ballot struct {
-	PollId   string
-	ServerId string
-	Voter    Voter
-	Options  []BallotOption
+	PollId  string
+	Voter   Voter
+	Options []BallotOption
 }
 
 type BallotOption struct {
