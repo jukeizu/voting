@@ -59,7 +59,7 @@ func (r *repository) Migrate() error {
 }
 
 func (r *repository) VoidBallotOptions(pollId string, voterId string) error {
-	q := `UPDATE ballot_option SET void = true WHERE pollId = $1 AND voterId = $2`
+	q := `UPDATE ballot_option SET void = true, updated = now() WHERE pollId = $1 AND voterId = $2`
 
 	_, err := r.Db.Exec(q, pollId, voterId)
 
