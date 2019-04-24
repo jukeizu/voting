@@ -64,6 +64,27 @@ type Status struct {
 	Voters []Voter
 }
 
+type CountRequest struct {
+	ShortId    string
+	ServerId   string
+	NumToElect int
+	Method     string
+	ToExclude  []string
+}
+
+type CountResult struct {
+	Success   bool
+	Message   string
+	Poll      Poll
+	Elected   []VoteReplyOption
+	Events    []CountEvent
+	Summaries []CountEvent
+}
+
+type CountEvent struct {
+	Description string
+}
+
 type PollService interface {
 	Create(poll Poll) (Poll, error)
 	Poll(shortId string, serverId string) (Poll, error)
@@ -71,6 +92,7 @@ type PollService interface {
 	End(shortId string, serverId string) (Poll, error)
 	HasEnded(shortId string, serverId string) (bool, error)
 	UniqueOptions(pollId string, optionIds []string) ([]Option, error)
+	Option(id string) (Option, error)
 }
 
 type SessionService interface {
@@ -86,5 +108,6 @@ type VoterService interface {
 type BallotService interface {
 	Submit(Ballot) (BallotResult, error)
 	VoterIds(pollId string) ([]string, error)
-	Count() error
+	Count(CountRequest) (CountResult, error)
+	VoterBallot(pollId string, voterId string) ([]string, error)
 }

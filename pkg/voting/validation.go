@@ -74,8 +74,8 @@ func (s ValidationService) Vote(voteRequest VoteRequest) (VoteReply, error) {
 	return s.service.Vote(voteRequest)
 }
 
-func (s ValidationService) Count(pollId string) error {
-	return nil
+func (s ValidationService) Count(countRequest CountRequest) (CountResult, error) {
+	return s.service.Count(countRequest)
 }
 
 func (s ValidationService) CurrentPoll(serverId string) (string, error) {

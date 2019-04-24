@@ -98,7 +98,7 @@ message VoteReplyOption {
 }
 
 message CountRequest {
-    string pollShortId = 1;
+    string shortId = 1;
     string serverId = 2;
     int32 numToElect = 3;
     string method = 4;
@@ -107,17 +107,11 @@ message CountRequest {
 
 message CountReply {
     Poll poll = 1;
-    repeated CountOption elected = 2;
+    repeated VoteReplyOption elected = 2;
     repeated CountEvent events = 3;
     repeated CountEvent summaries = 4;
 }
 
 message CountEvent {
     string description = 1;
-}
-
-message CountOption {
-    string id = 1;
-    string content = 2;
-    int32 rank = 3;
 }

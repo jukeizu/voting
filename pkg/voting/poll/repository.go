@@ -20,6 +20,7 @@ type Repository interface {
 	Poll(shortId string, serverId string) (voting.Poll, error)
 	HasEnded(shortId string, serverId string) (bool, error)
 	PollCreator(shortId string, serverId string) (string, error)
+	Option(id string) (voting.Option, error)
 	Options(pollId string) ([]voting.Option, error)
 	EndPoll(pollShortId, serverId string) (voting.Poll, error)
 	UniqueOptions(pollId string, optionIds []string) ([]voting.Option, error)
@@ -178,6 +179,23 @@ func (r *repository) PollCreator(shortId string, serverId string) (string, error
 	}
 
 	return creator, nil
+}
+
+func (r *repository) Option(id string) (voting.Option, error) {
+	q := `SELECT id, pollid, content, url
+		FROM option
+		WHERE id = $1`
+
+	option := voting.Option{}
+
+	err := r.Db.QueryRow(q, id).Scan(
+		&option.Id,
+		&option.PollId,
+		&option.Content,
+		&option.Url,
+	)
+
+	return option, err
 }
 
 func (r *repository) Options(pollId string) ([]voting.Option, error) {

@@ -19,6 +19,7 @@ type Repository interface {
 	VoidBallotOptions(pollId string, voterId string) error
 	CreateBallotOptions(ballot voting.Ballot) error
 	VoterIds(pollId string) ([]string, error)
+	VoterBallot(pollId string, voterId string) ([]string, error)
 }
 
 type repository struct {
@@ -127,4 +128,33 @@ func (r *repository) VoterIds(pollId string) ([]string, error) {
 	}
 
 	return voterIds, nil
+}
+
+func (r *repository) VoterBallot(pollId string, voterId string) ([]string, error) {
+	q := `SELECT optionId FROM ballot_option 
+		WHERE pollid = $1 AND voterid = $2 AND void = false
+		ORDER by rank`
+
+	optionIds := []string{}
+
+	rows, err := r.Db.Query(q, pollId, voterId)
+	if err != nil {
+		return optionIds, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		optionId := ""
+		err := rows.Scan(
+			&optionId,
+		)
+		if err != nil {
+			return optionIds, err
+		}
+
+		optionIds = append(optionIds, optionId)
+	}
+
+	return optionIds, nil
+
 }

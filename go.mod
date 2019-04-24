@@ -8,7 +8,11 @@ require (
 	github.com/oklog/run v1.0.0
 	github.com/rs/xid v1.2.1
 	github.com/rs/zerolog v1.11.0
+	github.com/shawntoffel/election v0.0.0-20180326025518-276d6c411475
+	github.com/shawntoffel/electioncounter v0.0.0-20171016070357-ac289770e4ac
 	github.com/shawntoffel/gossage v0.0.2
+	github.com/shawntoffel/math v0.0.0-20170730005841-fe1df356a34f // indirect
+	github.com/shawntoffel/meekstv v0.0.0-20180416032127-98fe3aa2c8f1 // indirect
 	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf
 	golang.org/x/net v0.0.0-20190213061140-3a22650c66bd
 	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4 // indirect

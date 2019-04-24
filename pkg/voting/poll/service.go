@@ -72,3 +72,7 @@ func (h DefaultService) HasEnded(shortId string, serverId string) (bool, error) 
 func (h DefaultService) UniqueOptions(pollId string, optionIds []string) ([]voting.Option, error) {
 	return h.repository.UniqueOptions(pollId, optionIds)
 }
+
+func (h DefaultService) Option(id string) (voting.Option, error) {
+	return h.repository.Option(id)
+}

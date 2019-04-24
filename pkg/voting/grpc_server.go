@@ -82,7 +82,20 @@ func (s GrpcServer) Vote(ctx context.Context, req *votingpb.VoteRequest) (*votin
 }
 
 func (s GrpcServer) Count(ctx context.Context, req *votingpb.CountRequest) (*votingpb.CountReply, error) {
-	return nil, nil
+	countRequest := CountRequest{
+		ShortId:    req.ShortId,
+		ServerId:   req.ServerId,
+		NumToElect: int(req.NumToElect),
+		Method:     req.Method,
+		ToExclude:  req.ToExclude,
+	}
+
+	countResult, err := s.service.Count(countRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return toPbCountReply(countResult), nil
 }
 
 func createPollRequestToPoll(req *votingpb.CreatePollRequest) Poll {
@@ -199,4 +212,32 @@ func toPbVoters(voters []Voter) []*votingpb.Voter {
 	}
 
 	return pbVoters
+}
+
+func toPbCountReply(countResult CountResult) *votingpb.CountReply {
+	countReply := &votingpb.CountReply{
+		Poll:      toPbPoll(countResult.Poll),
+		Events:    toPbCountEvents(countResult.Events),
+		Summaries: toPbCountEvents(countResult.Summaries),
+	}
+
+	for _, elected := range countResult.Elected {
+		countReply.Elected = append(countReply.Elected, toPbVoteReplyOption(elected))
+	}
+
+	return countReply
+}
+
+func toPbCountEvents(countEvents []CountEvent) []*votingpb.CountEvent {
+	pbCountEvents := []*votingpb.CountEvent{}
+
+	for _, countEvent := range countEvents {
+		pbCountEvent := &votingpb.CountEvent{
+			Description: countEvent.Description,
+		}
+
+		pbCountEvents = append(pbCountEvents, pbCountEvent)
+	}
+
+	return pbCountEvents
 }
