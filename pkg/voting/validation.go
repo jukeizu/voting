@@ -60,7 +60,7 @@ func (s ValidationService) Vote(voteRequest VoteRequest) (VoteReply, error) {
 
 	poll, err := s.pollService.Poll(voteRequest.ShortId, voteRequest.ServerId)
 	if err != nil {
-		return VoteReply{Message: "couldn't find poll: " + voteRequest.ShortId}, err
+		return VoteReply{}, err
 	}
 
 	valid, message, err = s.validateBallotOptions(poll, voteRequest.Options)
@@ -75,16 +75,6 @@ func (s ValidationService) Vote(voteRequest VoteRequest) (VoteReply, error) {
 }
 
 func (s ValidationService) Count(pollId string) error {
-	/*
-		err := s.validatePollHasEnded(pollId)
-		if err != nil {
-			return err
-		}
-
-		return s.service.Count(pollId)
-
-	*/
-
 	return nil
 }
 
@@ -133,7 +123,6 @@ func (s ValidationService) validateBallotOptions(poll Poll, ballotOptions []Ball
 	}
 
 	optionIds := []string{}
-
 	for _, option := range ballotOptions {
 		optionIds = append(optionIds, option.OptionId)
 	}
