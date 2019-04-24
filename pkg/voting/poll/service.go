@@ -52,10 +52,6 @@ func (h DefaultService) PollCreator(shortId string, serverId string) (string, er
 	return h.repository.PollCreator(shortId, serverId)
 }
 
-func (h DefaultService) HasEnded(shortId string, serverId string) (bool, error) {
-	return h.repository.HasEnded(shortId, serverId)
-}
-
 func (h DefaultService) End(shortId string, serverId string) (voting.Poll, error) {
 	poll, err := h.repository.EndPoll(shortId, serverId)
 	if err != nil {
@@ -67,4 +63,12 @@ func (h DefaultService) End(shortId string, serverId string) (voting.Poll, error
 		Msg("poll has ended")
 
 	return poll, nil
+}
+
+func (h DefaultService) HasEnded(shortId string, serverId string) (bool, error) {
+	return h.repository.HasEnded(shortId, serverId)
+}
+
+func (h DefaultService) UniqueOptions(pollId string, optionIds []string) ([]voting.Option, error) {
+	return h.repository.UniqueOptions(pollId, optionIds)
 }

@@ -33,7 +33,7 @@ func NewDefaultService(
 	sessionService SessionService,
 	voterService VoterService,
 	ballotService BallotService,
-) DefaultService {
+) Service {
 	return DefaultService{
 		logger,
 		pollService,
@@ -75,6 +75,8 @@ func (s DefaultService) Vote(voteRequest VoteRequest) (VoteReply, error) {
 	if err != nil {
 		return VoteReply{}, errors.New("couldn't find poll: " + err.Error())
 	}
+
+	voteRequest.Voter.CanVote = true
 
 	voter, err := s.voterService.Create(voteRequest.Voter)
 	if err != nil {

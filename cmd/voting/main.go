@@ -143,6 +143,7 @@ func main() {
 		voterService := voter.NewDefaultService(logger, voterRepository)
 		ballotService := ballot.NewDefaultService(logger, ballotRepository)
 		votingService := voting.NewDefaultService(logger, pollService, sessionService, voterService, ballotService)
+		votingService = voting.NewValidationService(logger, votingService, pollService)
 
 		votingServer := voting.NewGrpcServer(votingService)
 

@@ -70,6 +70,7 @@ type PollService interface {
 	PollCreator(shortId string, serverId string) (string, error)
 	End(shortId string, serverId string) (Poll, error)
 	HasEnded(shortId string, serverId string) (bool, error)
+	UniqueOptions(pollId string, optionIds []string) ([]Option, error)
 }
 
 type SessionService interface {

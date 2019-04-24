@@ -22,6 +22,7 @@ type Repository interface {
 	PollCreator(shortId string, serverId string) (string, error)
 	Options(pollId string) ([]voting.Option, error)
 	EndPoll(pollShortId, serverId string) (voting.Poll, error)
+	UniqueOptions(pollId string, optionIds []string) ([]voting.Option, error)
 }
 
 type repository struct {
@@ -218,6 +219,37 @@ func (r *repository) EndPoll(pollShortId string, serverId string) (voting.Poll, 
 	}
 
 	return r.Poll(pollShortId, serverId)
+}
+
+func (r *repository) UniqueOptions(pollId string, optionIds []string) ([]voting.Option, error) {
+	options := []voting.Option{}
+
+	q := `SELECT id, pollid, content, url
+		FROM option
+		WHERE pollId = $1 AND id = ANY($2)`
+
+	rows, err := r.Db.Query(q, pollId, pq.Array(optionIds))
+	if err != nil {
+		return options, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		option := voting.Option{}
+		err := rows.Scan(
+			&option.Id,
+			&option.PollId,
+			&option.Content,
+			&option.Url,
+		)
+		if err != nil {
+			return options, err
+		}
+
+		options = append(options, option)
+	}
+
+	return options, nil
 }
 
 func (r *repository) createOptions(pollId string, options []voting.Option) error {

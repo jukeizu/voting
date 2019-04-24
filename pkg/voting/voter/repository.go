@@ -61,10 +61,10 @@ func (r *repository) Create(voter voting.Voter) (voting.Voter, error) {
 	q := `INSERT INTO voter (externalId, username, canVote)
 		VALUES ($1, $2, $3)
 		ON CONFLICT (externalId)
-		DO UPDATE SET username = excluded.username, canVote = excluded.canVote, updated = now()
-		RETURNING id`
+		DO UPDATE SET username = excluded.username, updated = now()
+		RETURNING id, canvote`
 
-	err := r.Db.QueryRow(q, voter.ExternalId, voter.Username, voter.CanVote).Scan(&voter.Id)
+	err := r.Db.QueryRow(q, voter.ExternalId, voter.Username, voter.CanVote).Scan(&voter.Id, &voter.CanVote)
 
 	return voter, err
 }
