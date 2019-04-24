@@ -14,8 +14,10 @@ import (
 	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
 	"github.com/jukeizu/voting/internal/startup"
 	"github.com/jukeizu/voting/pkg/voting"
+	"github.com/jukeizu/voting/pkg/voting/ballot"
 	"github.com/jukeizu/voting/pkg/voting/poll"
 	"github.com/jukeizu/voting/pkg/voting/session"
+	"github.com/jukeizu/voting/pkg/voting/voter"
 	"github.com/oklog/run"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
@@ -86,6 +88,18 @@ func main() {
 		os.Exit(1)
 	}
 
+	voterRepository, err := voter.NewRepository(dbAddress)
+	if err != nil {
+		logger.Error().Err(err).Caller().Msg("could not create voter repository")
+		os.Exit(1)
+	}
+
+	ballotRepository, err := ballot.NewRepository(dbAddress)
+	if err != nil {
+		logger.Error().Err(err).Caller().Msg("could not create ballot repository")
+		os.Exit(1)
+	}
+
 	if flagMigrate {
 		gossage.Logger = func(format string, a ...interface{}) {
 			msg := fmt.Sprintf(format, a...)
@@ -103,6 +117,18 @@ func main() {
 			logger.Error().Err(err).Caller().Msg("could not migrate session repository")
 			os.Exit(1)
 		}
+
+		err = voterRepository.Migrate()
+		if err != nil {
+			logger.Error().Err(err).Caller().Msg("could not migrate voter repository")
+			os.Exit(1)
+		}
+
+		err = ballotRepository.Migrate()
+		if err != nil {
+			logger.Error().Err(err).Caller().Msg("could not migrate ballot repository")
+			os.Exit(1)
+		}
 	}
 
 	g := run.Group{}
@@ -114,7 +140,10 @@ func main() {
 
 		pollService := poll.NewDefaultService(logger, pollRepository)
 		sessionService := session.NewDefaultService(logger, sessionRepository)
-		votingService := voting.NewDefaultService(logger, pollService, sessionService)
+		voterService := voter.NewDefaultService(logger, voterRepository)
+		ballotService := ballot.NewDefaultService(logger, ballotRepository)
+		votingService := voting.NewDefaultService(logger, pollService, sessionService, voterService, ballotService)
+		votingService = voting.NewValidationService(logger, votingService, pollService)
 
 		votingServer := voting.NewGrpcServer(votingService)
 

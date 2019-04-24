@@ -74,10 +74,6 @@ message StatusReply {
     repeated Voter voters = 2;
 }
 
-message Ballot {
-    repeated BallotOption options = 1;
-}
-
 message BallotOption {
     int32 rank = 1;
     string optionId = 2;
@@ -87,13 +83,18 @@ message VoteRequest {
     string shortId = 1;
     string serverId = 2;
     Voter voter = 3;
-    Ballot ballot = 4;
+    repeated BallotOption options = 4;
 }
 
 message VoteReply {
     bool success = 1;
     string message = 2;
-    repeated Option options = 3;
+    repeated VoteReplyOption options = 3;
+}
+
+message VoteReplyOption {
+    int32 rank = 1;
+    Option option = 2;
 }
 
 message CountRequest {

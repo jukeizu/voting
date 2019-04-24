@@ -25,16 +25,38 @@ type Voter struct {
 	CanVote    bool
 }
 
-type Vote struct {
-	PollId   string
+type VoteRequest struct {
+	ShortId  string
 	ServerId string
 	Voter    Voter
-	Options  []VoteOption
+	Options  []BallotOption
 }
 
-type VoteOption struct {
+type VoteReply struct {
+	Success bool
+	Message string
+	Options []VoteReplyOption
+}
+
+type Ballot struct {
+	PollId  string
+	Voter   Voter
+	Options []BallotOption
+}
+
+type BallotOption struct {
 	Rank     int32
 	OptionId string
+}
+
+type VoteReplyOption struct {
+	Rank   int32
+	Option Option
+}
+
+type BallotResult struct {
+	Success bool
+	Message string
 }
 
 type Status struct {
@@ -48,9 +70,20 @@ type PollService interface {
 	PollCreator(shortId string, serverId string) (string, error)
 	End(shortId string, serverId string) (Poll, error)
 	HasEnded(shortId string, serverId string) (bool, error)
+	UniqueOptions(pollId string, optionIds []string) ([]Option, error)
 }
 
 type SessionService interface {
 	CurrentPoll(serverId string) (string, error)
 	SetCurrentPoll(serverId, pollId string) error
+}
+
+type VoterService interface {
+	Create(voter Voter) (Voter, error)
+	Voter(id string) (Voter, error)
+}
+
+type BallotService interface {
+	Submit(Ballot) (BallotResult, error)
+	Count() error
 }
