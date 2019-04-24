@@ -75,6 +75,14 @@ func (s ValidationService) Vote(voteRequest VoteRequest) (VoteReply, error) {
 }
 
 func (s ValidationService) Count(countRequest CountRequest) (CountResult, error) {
+	valid, message, err := s.validatePollHasEnded(countRequest.ShortId, countRequest.ServerId)
+	if err != nil {
+		return CountResult{}, err
+	}
+	if !valid {
+		return CountResult{Message: message}, nil
+	}
+
 	return s.service.Count(countRequest)
 }
 

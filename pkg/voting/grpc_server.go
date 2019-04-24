@@ -216,6 +216,8 @@ func toPbVoters(voters []Voter) []*votingpb.Voter {
 
 func toPbCountReply(countResult CountResult) *votingpb.CountReply {
 	countReply := &votingpb.CountReply{
+		Success:   countResult.Success,
+		Message:   countResult.Message,
 		Poll:      toPbPoll(countResult.Poll),
 		Events:    toPbCountEvents(countResult.Events),
 		Summaries: toPbCountEvents(countResult.Summaries),

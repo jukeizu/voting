@@ -106,10 +106,12 @@ message CountRequest {
 }
 
 message CountReply {
-    Poll poll = 1;
-    repeated VoteReplyOption elected = 2;
-    repeated CountEvent events = 3;
-    repeated CountEvent summaries = 4;
+    bool success = 1;
+    string message = 2;
+    Poll poll = 3;
+    repeated VoteReplyOption elected = 4;
+    repeated CountEvent events = 5;
+    repeated CountEvent summaries = 6;
 }
 
 message CountEvent {

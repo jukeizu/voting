@@ -178,6 +178,7 @@ func (s DefaultService) Count(countRequest CountRequest) (countResult CountResul
 	}
 
 	countResult.Elected = elected
+	countResult.Success = true
 
 	return
 }
