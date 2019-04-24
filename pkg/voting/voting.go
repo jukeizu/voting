@@ -85,5 +85,6 @@ type VoterService interface {
 
 type BallotService interface {
 	Submit(Ballot) (BallotResult, error)
+	VoterIds(pollId string) ([]string, error)
 	Count() error
 }

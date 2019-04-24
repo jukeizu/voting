@@ -18,6 +18,7 @@ type Repository interface {
 	Migrate() error
 	VoidBallotOptions(pollId string, voterId string) error
 	CreateBallotOptions(ballot voting.Ballot) error
+	VoterIds(pollId string) ([]string, error)
 }
 
 type repository struct {
@@ -100,4 +101,30 @@ func (r *repository) CreateBallotOptions(ballot voting.Ballot) error {
 	}
 
 	return nil
+}
+
+func (r *repository) VoterIds(pollId string) ([]string, error) {
+	q := `SELECT DISTINCT voterId FROM ballot_option WHERE pollid = $1 AND void = false`
+
+	voterIds := []string{}
+
+	rows, err := r.Db.Query(q, pollId)
+	if err != nil {
+		return voterIds, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		voterId := ""
+		err := rows.Scan(
+			&voterId,
+		)
+		if err != nil {
+			return voterIds, err
+		}
+
+		voterIds = append(voterIds, voterId)
+	}
+
+	return voterIds, nil
 }
