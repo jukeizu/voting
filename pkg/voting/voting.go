@@ -25,6 +25,19 @@ type Voter struct {
 	CanVote    bool
 }
 
+type VoteRequest struct {
+	ShortId  string
+	ServerId string
+	Voter    Voter
+	Options  []BallotOption
+}
+
+type VoteReply struct {
+	Success bool
+	Message string
+	Options []VoteReplyOption
+}
+
 type Ballot struct {
 	PollId  string
 	Voter   Voter
@@ -34,6 +47,11 @@ type Ballot struct {
 type BallotOption struct {
 	Rank     int32
 	OptionId string
+}
+
+type VoteReplyOption struct {
+	Rank   int32
+	Option Option
 }
 
 type BallotResult struct {

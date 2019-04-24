@@ -66,7 +66,19 @@ func (s GrpcServer) Status(ctx context.Context, req *votingpb.StatusRequest) (*v
 }
 
 func (s GrpcServer) Vote(ctx context.Context, req *votingpb.VoteRequest) (*votingpb.VoteReply, error) {
-	return nil, nil
+	voteRequest := VoteRequest{
+		ShortId:  req.ShortId,
+		ServerId: req.ServerId,
+		Voter:    toVoter(req.Voter),
+		Options:  toBallotOptions(req.Options),
+	}
+
+	voteReply, err := s.service.Vote(voteRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return toPbVoteReply(voteReply), nil
 }
 
 func (s GrpcServer) Count(ctx context.Context, req *votingpb.CountRequest) (*votingpb.CountReply, error) {
@@ -93,6 +105,30 @@ func createPollRequestToPoll(req *votingpb.CreatePollRequest) Poll {
 	return poll
 }
 
+func toBallotOptions(pbOptions []*votingpb.BallotOption) []BallotOption {
+	ballotOptions := []BallotOption{}
+
+	for _, pbOption := range pbOptions {
+		ballotOption := BallotOption{
+			Rank:     pbOption.Rank,
+			OptionId: pbOption.OptionId,
+		}
+
+		ballotOptions = append(ballotOptions, ballotOption)
+	}
+
+	return ballotOptions
+}
+
+func toVoter(pbVoter *votingpb.Voter) Voter {
+	voter := Voter{
+		ExternalId: pbVoter.Id,
+		Username:   pbVoter.Username,
+	}
+
+	return voter
+}
+
 func toPbPoll(poll Poll) *votingpb.Poll {
 	pbPoll := &votingpb.Poll{
 		Id:                 poll.Id,
@@ -112,16 +148,42 @@ func toPbOptions(options []Option) []*votingpb.Option {
 	pbOptions := []*votingpb.Option{}
 
 	for _, option := range options {
-		pbOption := &votingpb.Option{
-			Id:      option.Id,
-			Content: option.Content,
-			Url:     option.Url,
-		}
-
-		pbOptions = append(pbOptions, pbOption)
+		pbOptions = append(pbOptions, toPbOption(option))
 	}
 
 	return pbOptions
+}
+
+func toPbOption(option Option) *votingpb.Option {
+	pbOption := &votingpb.Option{
+		Id:      option.Id,
+		Content: option.Content,
+		Url:     option.Url,
+	}
+
+	return pbOption
+}
+
+func toPbVoteReply(voteReply VoteReply) *votingpb.VoteReply {
+	pbVoteReply := &votingpb.VoteReply{
+		Success: voteReply.Success,
+		Message: voteReply.Message,
+	}
+
+	for _, voteReplyOption := range voteReply.Options {
+		pbVoteReply.Options = append(pbVoteReply.Options, toPbVoteReplyOption(voteReplyOption))
+	}
+
+	return pbVoteReply
+}
+
+func toPbVoteReplyOption(voteReplyOption VoteReplyOption) *votingpb.VoteReplyOption {
+	pbVoteReplyOption := &votingpb.VoteReplyOption{
+		Rank:   voteReplyOption.Rank,
+		Option: toPbOption(voteReplyOption.Option),
+	}
+
+	return pbVoteReplyOption
 }
 
 func toPbVoters(voters []Voter) []*votingpb.Voter {
