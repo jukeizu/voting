@@ -1,7 +1,6 @@
 package voting
 
 import (
-	"errors"
 	"fmt"
 	"runtime/debug"
 
@@ -102,14 +101,12 @@ func (s DefaultService) Status(shortId string, serverId string) (Status, error) 
 func (s DefaultService) Vote(voteRequest VoteRequest) (VoteReply, error) {
 	poll, err := s.findPoll(voteRequest.ShortId, voteRequest.ServerId)
 	if err != nil {
-		return VoteReply{}, errors.New("couldn't find poll: " + err.Error())
+		return VoteReply{}, err
 	}
-
-	voteRequest.Voter.CanVote = true
 
 	voter, err := s.voterService.Create(voteRequest.Voter)
 	if err != nil {
-		return VoteReply{}, errors.New("couldn't find voter: " + err.Error())
+		return VoteReply{}, err
 	}
 
 	ballot := Ballot{
@@ -120,7 +117,7 @@ func (s DefaultService) Vote(voteRequest VoteRequest) (VoteReply, error) {
 
 	ballotResult, err := s.ballotService.Submit(ballot)
 	if err != nil {
-		return VoteReply{}, errors.New("couldn't submit ballot: " + err.Error())
+		return VoteReply{}, err
 	}
 
 	voteReply := VoteReply{

@@ -61,7 +61,7 @@ func (s ValidationService) Vote(voteRequest VoteRequest) (VoteReply, error) {
 	}
 
 	if !voter.CanVote {
-		return VoteReply{}, ErrVoterNotPermitted
+		return VoteReply{}, ErrVoterNotPermitted(voter)
 	}
 
 	err = s.validatePollIsActive(voteRequest.ShortId, voteRequest.ServerId)

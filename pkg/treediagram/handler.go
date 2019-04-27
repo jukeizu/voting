@@ -1,14 +1,13 @@
 package treediagram
 
 import (
-	"bytes"
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/jukeizu/contract"
 	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
+	shellwords "github.com/mattn/go-shellwords"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -44,16 +43,29 @@ func (h Handler) CreatePoll(request contract.Request) (*contract.Response, error
 		return h.checkValidationError(err)
 	}
 
-	buffer := bytes.Buffer{}
-	buffer.WriteString(fmt.Sprintf(":ballot_box: **A new poll has started** `%s`\n", reply.Poll.ShortId))
+	return contract.StringResponse(FormatNewPollReply(reply.Poll)), nil
+}
 
-	if reply.Poll.Title != "" {
-		buffer.WriteString(fmt.Sprintf("\n**%s**\n", reply.Poll.Title))
+func (h Handler) PollStatus(request contract.Request) (*contract.Response, error) {
+	args, err := shellwords.Parse(request.Content)
+	if err != nil {
+		return nil, err
 	}
 
-	buffer.WriteString(fmt.Sprintf("\nType `!poll` to view the poll. A previous poll can be viewed via id. e.g. `!poll %s`", reply.Poll.ShortId))
+	req := &votingpb.StatusRequest{
+		ServerId: request.ServerId,
+	}
 
-	return contract.StringResponse(buffer.String()), nil
+	if len(args) > 1 {
+		req.ShortId = args[len(args)-1]
+	}
+
+	status, err := h.client.Status(context.Background(), req)
+	if err != nil {
+		return h.checkValidationError(err)
+	}
+
+	return contract.StringResponse(FormatPollStatusReply(status)), nil
 }
 
 func (h Handler) Start() error {
@@ -61,6 +73,7 @@ func (h Handler) Start() error {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/createpoll", h.makeLoggingHttpHandlerFunc("createpoll", h.CreatePoll))
+	mux.HandleFunc("/pollstatus", h.makeLoggingHttpHandlerFunc("pollstatus", h.PollStatus))
 
 	h.httpServer.Handler = mux
 
@@ -95,6 +108,13 @@ func (h Handler) checkValidationError(err error) (*contract.Response, error) {
 	}
 
 	if st.Code() == codes.InvalidArgument {
+		return contract.StringResponse(st.Message()), nil
+	}
+
+	switch st.Code() {
+	case codes.InvalidArgument:
+		return contract.StringResponse(st.Message()), nil
+	case codes.NotFound:
 		return contract.StringResponse(st.Message()), nil
 	}
 

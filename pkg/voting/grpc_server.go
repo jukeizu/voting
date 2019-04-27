@@ -250,7 +250,8 @@ func toStatusErr(err error) error {
 	switch err.(type) {
 	case ValidationError:
 		return status.Error(codes.InvalidArgument, err.Error())
+	case NotFoundError:
+		return status.Error(codes.NotFound, err.Error())
 	}
-
 	return err
 }
