@@ -53,7 +53,7 @@ func (s DefaultService) CreatePoll(poll Poll) (Poll, error) {
 		return Poll{}, err
 	}
 
-	err = s.sessionService.SetCurrentPoll(poll.ServerId, poll.Id)
+	err = s.sessionService.SetCurrentPoll(poll.ServerId, poll.ShortId)
 	if err != nil {
 		return Poll{}, err
 	}
@@ -62,15 +62,20 @@ func (s DefaultService) CreatePoll(poll Poll) (Poll, error) {
 }
 
 func (s DefaultService) Poll(shortId string, serverId string) (Poll, error) {
-	return s.pollService.Poll(shortId, serverId)
+	return s.findPoll(shortId, serverId)
 }
 
 func (s DefaultService) EndPoll(shortId string, serverId string, userId string) (Poll, error) {
+	shortId, err := s.findPollShortId(shortId, serverId)
+	if err != nil {
+		return Poll{}, err
+	}
+
 	return s.pollService.End(shortId, serverId)
 }
 
 func (s DefaultService) Status(shortId string, serverId string) (Status, error) {
-	poll, err := s.pollService.Poll(shortId, serverId)
+	poll, err := s.findPoll(shortId, serverId)
 	if err != nil {
 		return Status{}, err
 	}
@@ -97,7 +102,7 @@ func (s DefaultService) Status(shortId string, serverId string) (Status, error) 
 }
 
 func (s DefaultService) Vote(voteRequest VoteRequest) (VoteReply, error) {
-	poll, err := s.pollService.Poll(voteRequest.ShortId, voteRequest.ServerId)
+	poll, err := s.findPoll(voteRequest.ShortId, voteRequest.ServerId)
 	if err != nil {
 		return VoteReply{}, errors.New("couldn't find poll: " + err.Error())
 	}
@@ -142,7 +147,7 @@ func (s DefaultService) Vote(voteRequest VoteRequest) (VoteReply, error) {
 }
 
 func (s DefaultService) Count(countRequest CountRequest) (countResult CountResult, err error) {
-	poll, err := s.pollService.Poll(countRequest.ShortId, countRequest.ServerId)
+	poll, err := s.findPoll(countRequest.ShortId, countRequest.ServerId)
 	if err != nil {
 		return CountResult{}, err
 	}
@@ -199,6 +204,23 @@ func (s DefaultService) CurrentPoll(serverId string) (string, error) {
 
 func (s DefaultService) SetCurrentPoll(serverId string, pollId string) error {
 	return s.sessionService.SetCurrentPoll(serverId, pollId)
+}
+
+func (s DefaultService) findPoll(shortId string, serverId string) (Poll, error) {
+	shortId, err := s.findPollShortId(shortId, serverId)
+	if err != nil {
+		return Poll{}, err
+	}
+
+	return s.pollService.Poll(shortId, serverId)
+}
+
+func (s DefaultService) findPollShortId(shortId string, serverId string) (string, error) {
+	if shortId != "" {
+		return shortId, nil
+	}
+
+	return s.sessionService.CurrentPoll(serverId)
 }
 
 func (s DefaultService) electionBallots(pollId string) (election.Ballots, error) {

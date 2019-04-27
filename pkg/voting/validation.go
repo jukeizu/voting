@@ -5,20 +5,23 @@ import (
 )
 
 type ValidationService struct {
-	logger      zerolog.Logger
-	service     Service
-	pollService PollService
+	logger       zerolog.Logger
+	service      Service
+	pollService  PollService
+	voterService VoterService
 }
 
 func NewValidationService(
 	logger zerolog.Logger,
 	service Service,
 	pollService PollService,
+	voterService VoterService,
 ) Service {
 	return &ValidationService{
 		logger,
 		service,
 		pollService,
+		voterService,
 	}
 }
 
@@ -35,12 +38,12 @@ func (s ValidationService) Poll(shortId string, serverId string) (Poll, error) {
 }
 
 func (s ValidationService) EndPoll(shortId string, serverId string, userId string) (Poll, error) {
-	pollCreator, err := s.pollService.PollCreator(shortId, serverId)
+	poll, err := s.service.Poll(shortId, serverId)
 	if err != nil {
 		return Poll{}, err
 	}
 
-	if userId != pollCreator {
+	if userId != poll.CreatorId {
 		return Poll{}, ErrNotOwner
 	}
 
@@ -52,12 +55,21 @@ func (s ValidationService) Status(shortId string, serverId string) (Status, erro
 }
 
 func (s ValidationService) Vote(voteRequest VoteRequest) (VoteReply, error) {
-	err := s.validatePollIsActive(voteRequest.ShortId, voteRequest.ServerId)
+	voter, err := s.voterService.Create(voteRequest.Voter)
 	if err != nil {
 		return VoteReply{}, err
 	}
 
-	poll, err := s.pollService.Poll(voteRequest.ShortId, voteRequest.ServerId)
+	if !voter.CanVote {
+		return VoteReply{}, ErrVoterNotPermitted
+	}
+
+	err = s.validatePollIsActive(voteRequest.ShortId, voteRequest.ServerId)
+	if err != nil {
+		return VoteReply{}, err
+	}
+
+	poll, err := s.service.Poll(voteRequest.ShortId, voteRequest.ServerId)
 	if err != nil {
 		return VoteReply{}, err
 	}
@@ -88,12 +100,12 @@ func (s ValidationService) SetCurrentPoll(serverId string, pollId string) error 
 }
 
 func (s ValidationService) validatePollIsActive(shortId string, serverId string) error {
-	hasEnded, err := s.pollService.HasEnded(shortId, serverId)
+	poll, err := s.service.Poll(shortId, serverId)
 	if err != nil {
 		return err
 	}
 
-	if hasEnded {
+	if poll.HasEnded {
 		return ErrPollHasEnded
 	}
 
@@ -101,12 +113,12 @@ func (s ValidationService) validatePollIsActive(shortId string, serverId string)
 }
 
 func (s ValidationService) validatePollHasEnded(shortId string, serverId string) error {
-	hasEnded, err := s.pollService.HasEnded(shortId, serverId)
+	poll, err := s.service.Poll(shortId, serverId)
 	if err != nil {
 		return err
 	}
 
-	if !hasEnded {
+	if !poll.HasEnded {
 		return ErrPollHasNotEnded
 	}
 
