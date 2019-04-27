@@ -48,7 +48,17 @@ func NewDefaultService(
 }
 
 func (s DefaultService) CreatePoll(poll Poll) (Poll, error) {
-	return s.pollService.Create(poll)
+	poll, err := s.pollService.Create(poll)
+	if err != nil {
+		return Poll{}, err
+	}
+
+	err = s.sessionService.SetCurrentPoll(poll.ServerId, poll.Id)
+	if err != nil {
+		return Poll{}, err
+	}
+
+	return poll, nil
 }
 
 func (s DefaultService) Poll(shortId string, serverId string) (Poll, error) {

@@ -134,7 +134,7 @@ func (s ValidationService) validateBallotOptions(poll Poll, ballotOptions []Ball
 	}
 
 	if len(availableOptions) != optionCount {
-		return ErrInvalidOptions
+		return ErrInvalidOrDuplicateOptions
 	}
 
 	return nil
