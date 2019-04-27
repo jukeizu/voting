@@ -29,12 +29,12 @@ func NewHandler(logger zerolog.Logger, client votingpb.VotingClient, addr string
 func (h Handler) CreatePoll(request contract.Request) (*contract.Response, error) {
 	createPollRequest, err := ParseCreatePollRequest(request)
 	if err != nil {
-		return FormatError(err)
+		return FormatParseError(err)
 	}
 
 	reply, err := h.client.CreatePoll(context.Background(), createPollRequest)
 	if err != nil {
-		return FormatError(err)
+		return FormatClientError(err)
 	}
 
 	return contract.StringResponse(FormatNewPollReply(reply.Poll)), nil
@@ -43,12 +43,12 @@ func (h Handler) CreatePoll(request contract.Request) (*contract.Response, error
 func (h Handler) PollStatus(request contract.Request) (*contract.Response, error) {
 	req, err := ParsePollStatusRequest(request)
 	if err != nil {
-		return FormatError(err)
+		return FormatParseError(err)
 	}
 
 	status, err := h.client.Status(context.Background(), req)
 	if err != nil {
-		return FormatError(err)
+		return FormatClientError(err)
 	}
 
 	return contract.StringResponse(FormatPollStatusReply(status)), nil

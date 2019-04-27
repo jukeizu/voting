@@ -48,12 +48,16 @@ func FormatPollStatusReply(status *votingpb.StatusReply) string {
 	return buffer.String()
 }
 
-func FormatError(err error) (*contract.Response, error) {
+func FormatParseError(err error) (*contract.Response, error) {
 	switch err.(type) {
 	case ParseError:
 		return contract.StringResponse(err.Error()), nil
 	}
 
+	return nil, err
+}
+
+func FormatClientError(err error) (*contract.Response, error) {
 	st, ok := status.FromError(err)
 	if !ok {
 		return nil, err
