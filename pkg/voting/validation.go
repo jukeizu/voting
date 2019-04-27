@@ -91,14 +91,6 @@ func (s ValidationService) Count(countRequest CountRequest) (CountResult, error)
 	return s.service.Count(countRequest)
 }
 
-func (s ValidationService) CurrentPoll(serverId string) (string, error) {
-	return s.service.CurrentPoll(serverId)
-}
-
-func (s ValidationService) SetCurrentPoll(serverId string, pollId string) error {
-	return s.service.SetCurrentPoll(serverId, pollId)
-}
-
 func (s ValidationService) validatePollIsActive(shortId string, serverId string) error {
 	poll, err := s.service.Poll(shortId, serverId)
 	if err != nil {

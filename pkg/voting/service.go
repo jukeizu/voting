@@ -17,8 +17,6 @@ type Service interface {
 	Status(shortId string, serverId string) (Status, error)
 	Vote(voteRequest VoteRequest) (VoteReply, error)
 	Count(countRequest CountRequest) (countResult CountResult, err error)
-	CurrentPoll(serverId string) (string, error)
-	SetCurrentPoll(serverId, pollId string) error
 }
 
 var _ Service = &DefaultService{}
@@ -196,14 +194,6 @@ func (s DefaultService) Count(countRequest CountRequest) (countResult CountResul
 	countResult.Success = true
 
 	return
-}
-
-func (s DefaultService) CurrentPoll(serverId string) (string, error) {
-	return s.sessionService.CurrentPoll(serverId)
-}
-
-func (s DefaultService) SetCurrentPoll(serverId string, pollId string) error {
-	return s.sessionService.SetCurrentPoll(serverId, pollId)
 }
 
 func (s DefaultService) findPoll(shortId string, serverId string) (Poll, error) {
