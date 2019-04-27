@@ -31,11 +31,7 @@ func NewHandler(logger zerolog.Logger, client votingpb.VotingClient, addr string
 func (h Handler) CreatePoll(request contract.Request) (*contract.Response, error) {
 	createPollRequest, msg, err := ParseCreatePollRequest(request)
 	if msg != "" {
-		message := contract.Message{
-			Content: msg,
-		}
-
-		return &contract.Response{Messages: []*contract.Message{&message}}, nil
+		return contract.StringResponse(msg), nil
 	}
 	if err != nil {
 		return nil, err
@@ -47,11 +43,7 @@ func (h Handler) CreatePoll(request contract.Request) (*contract.Response, error
 	}
 
 	if !reply.Success {
-		message := contract.Message{
-			Content: reply.Message,
-		}
-
-		return &contract.Response{Messages: []*contract.Message{&message}}, nil
+		return contract.StringResponse(reply.Message), nil
 	}
 
 	buffer := bytes.Buffer{}
@@ -63,11 +55,7 @@ func (h Handler) CreatePoll(request contract.Request) (*contract.Response, error
 
 	buffer.WriteString(fmt.Sprintf("\nType `!poll` to view the poll. A previous poll can be viewed via id. e.g. `!poll %s`", reply.Poll.ShortId))
 
-	message := contract.Message{
-		Content: buffer.String(),
-	}
-
-	return &contract.Response{Messages: []*contract.Message{&message}}, nil
+	return contract.StringResponse(buffer.String()), nil
 }
 
 func (h Handler) Start() error {
