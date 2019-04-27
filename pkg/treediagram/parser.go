@@ -9,10 +9,10 @@ import (
 	shellwords "github.com/mattn/go-shellwords"
 )
 
-func ParseCreatePollRequest(request contract.Request) (*votingpb.CreatePollRequest, string, error) {
+func ParseCreatePollRequest(request contract.Request) (*votingpb.CreatePollRequest, error) {
 	args, err := shellwords.Parse(request.Content)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
 	outputBuffer := bytes.NewBuffer([]byte{})
@@ -25,7 +25,7 @@ func ParseCreatePollRequest(request contract.Request) (*votingpb.CreatePollReque
 
 	err = parser.Parse(args[1:])
 	if err != nil {
-		return nil, outputBuffer.String(), err
+		return nil, ParseError{Message: outputBuffer.String()}
 	}
 
 	createPollRequest := &votingpb.CreatePollRequest{
@@ -43,5 +43,22 @@ func ParseCreatePollRequest(request contract.Request) (*votingpb.CreatePollReque
 		createPollRequest.Options = append(createPollRequest.Options, option)
 	}
 
-	return createPollRequest, "", nil
+	return createPollRequest, nil
+}
+
+func ParsePollStatusRequest(request contract.Request) (*votingpb.StatusRequest, error) {
+	args, err := shellwords.Parse(request.Content)
+	if err != nil {
+		return nil, err
+	}
+
+	req := &votingpb.StatusRequest{
+		ServerId: request.ServerId,
+	}
+
+	if len(args) > 1 {
+		req.ShortId = args[len(args)-1]
+	}
+
+	return req, nil
 }

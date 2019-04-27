@@ -7,10 +7,7 @@ import (
 
 	"github.com/jukeizu/contract"
 	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
-	shellwords "github.com/mattn/go-shellwords"
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type Handler struct {
@@ -30,39 +27,28 @@ func NewHandler(logger zerolog.Logger, client votingpb.VotingClient, addr string
 }
 
 func (h Handler) CreatePoll(request contract.Request) (*contract.Response, error) {
-	createPollRequest, msg, err := ParseCreatePollRequest(request)
-	if msg != "" {
-		return contract.StringResponse(msg), nil
-	}
+	createPollRequest, err := ParseCreatePollRequest(request)
 	if err != nil {
-		return nil, err
+		return FormatError(err)
 	}
 
 	reply, err := h.client.CreatePoll(context.Background(), createPollRequest)
 	if err != nil {
-		return h.checkValidationError(err)
+		return FormatError(err)
 	}
 
 	return contract.StringResponse(FormatNewPollReply(reply.Poll)), nil
 }
 
 func (h Handler) PollStatus(request contract.Request) (*contract.Response, error) {
-	args, err := shellwords.Parse(request.Content)
+	req, err := ParsePollStatusRequest(request)
 	if err != nil {
-		return nil, err
-	}
-
-	req := &votingpb.StatusRequest{
-		ServerId: request.ServerId,
-	}
-
-	if len(args) > 1 {
-		req.ShortId = args[len(args)-1]
+		return FormatError(err)
 	}
 
 	status, err := h.client.Status(context.Background(), req)
 	if err != nil {
-		return h.checkValidationError(err)
+		return FormatError(err)
 	}
 
 	return contract.StringResponse(FormatPollStatusReply(status)), nil
@@ -99,24 +85,4 @@ func (h Handler) makeLoggingHttpHandlerFunc(name string, f func(contract.Request
 
 		contractHandlerFunc.ServeHTTP(w, r)
 	}
-}
-
-func (h Handler) checkValidationError(err error) (*contract.Response, error) {
-	st, ok := status.FromError(err)
-	if !ok {
-		return nil, err
-	}
-
-	if st.Code() == codes.InvalidArgument {
-		return contract.StringResponse(st.Message()), nil
-	}
-
-	switch st.Code() {
-	case codes.InvalidArgument:
-		return contract.StringResponse(st.Message()), nil
-	case codes.NotFound:
-		return contract.StringResponse(st.Message()), nil
-	}
-
-	return nil, err
 }

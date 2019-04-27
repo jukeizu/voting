@@ -15,7 +15,7 @@ func ErrTooManyVotes(max int32) ValidationError {
 }
 
 func ErrPollNotFound(shortId string) NotFoundError {
-	return NotFoundError{Message: "could not find poll with id: " + shortId}
+	return NotFoundError{Message: "couldn't find poll with id: " + shortId}
 }
 
 func ErrVoterNotPermitted(voter Voter) ValidationError {
