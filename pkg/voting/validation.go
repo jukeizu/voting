@@ -25,6 +25,10 @@ func NewValidationService(
 }
 
 func (s ValidationService) CreatePoll(poll Poll) (Poll, error) {
+	if len(poll.Options) < 1 {
+		return Poll{}, ErrNoOptions
+
+	}
 	return s.service.CreatePoll(poll)
 }
 

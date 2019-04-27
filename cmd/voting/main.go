@@ -13,6 +13,7 @@ import (
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
 	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
 	"github.com/jukeizu/voting/internal/startup"
+	"github.com/jukeizu/voting/pkg/treediagram"
 	"github.com/jukeizu/voting/pkg/voting"
 	"github.com/jukeizu/voting/pkg/voting/ballot"
 	"github.com/jukeizu/voting/pkg/voting/poll"
@@ -131,6 +132,20 @@ func main() {
 		}
 	}
 
+	clientConn, err := grpc.Dial(serviceAddress, grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(
+			keepalive.ClientParameters{
+				Time:                30 * time.Second,
+				Timeout:             10 * time.Second,
+				PermitWithoutStream: true,
+			},
+		),
+	)
+	if err != nil {
+		logger.Error().Err(err).Str("serviceAddress", serviceAddress).Msg("could not dial service address")
+		os.Exit(1)
+	}
+
 	g := run.Group{}
 
 	if flagServer {
@@ -155,6 +170,23 @@ func main() {
 			return server.Start(grpcAddr)
 		}, func(error) {
 			server.Stop()
+		})
+	}
+
+	if flagHandler {
+		client := votingpb.NewVotingClient(clientConn)
+
+		httpAddr := ":" + httpPort
+
+		handler := treediagram.NewHandler(logger, client, httpAddr)
+
+		g.Add(func() error {
+			return handler.Start()
+		}, func(error) {
+			err := handler.Stop()
+			if err != nil {
+				logger.Error().Err(err).Caller().Msg("couldn't stop handler")
+			}
 		})
 	}
 

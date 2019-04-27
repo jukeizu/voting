@@ -21,12 +21,16 @@ func (s GrpcServer) CreatePoll(ctx context.Context, req *votingpb.CreatePollRequ
 
 	poll, err := s.service.CreatePoll(pollReq)
 	if err != nil {
+		switch err.(type) {
+		case ValidationError:
+			return &votingpb.CreatePollReply{Message: "validation error: " + err.Error()}, nil
+		}
 		return nil, err
 	}
 
 	pollReply := toPbPoll(poll)
 
-	return &votingpb.CreatePollReply{Poll: pollReply}, nil
+	return &votingpb.CreatePollReply{Success: true, Poll: pollReply}, nil
 }
 
 func (s GrpcServer) Poll(ctx context.Context, req *votingpb.PollRequest) (*votingpb.PollReply, error) {

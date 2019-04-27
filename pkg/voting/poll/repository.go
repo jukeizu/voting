@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	DatabaseName = "poll"
+	DatabaseName = "voting_poll"
 )
 
 type Repository interface {
