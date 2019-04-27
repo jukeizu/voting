@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var _ votingpb.VotingServer = &GrpcServer{}
@@ -21,22 +23,18 @@ func (s GrpcServer) CreatePoll(ctx context.Context, req *votingpb.CreatePollRequ
 
 	poll, err := s.service.CreatePoll(pollReq)
 	if err != nil {
-		switch err.(type) {
-		case ValidationError:
-			return &votingpb.CreatePollReply{Message: "validation error: " + err.Error()}, nil
-		}
-		return nil, err
+		return nil, toStatusErr(err)
 	}
 
 	pollReply := toPbPoll(poll)
 
-	return &votingpb.CreatePollReply{Success: true, Poll: pollReply}, nil
+	return &votingpb.CreatePollReply{Poll: pollReply}, nil
 }
 
 func (s GrpcServer) Poll(ctx context.Context, req *votingpb.PollRequest) (*votingpb.PollReply, error) {
 	poll, err := s.service.Poll(req.ShortId, req.ServerId)
 	if err != nil {
-		return nil, err
+		return nil, toStatusErr(err)
 	}
 
 	pollReply := toPbPoll(poll)
@@ -47,7 +45,7 @@ func (s GrpcServer) Poll(ctx context.Context, req *votingpb.PollRequest) (*votin
 func (s GrpcServer) EndPoll(ctx context.Context, req *votingpb.EndPollRequest) (*votingpb.EndPollReply, error) {
 	poll, err := s.service.EndPoll(req.ShortId, req.ServerId, req.RequesterId)
 	if err != nil {
-		return nil, err
+		return nil, toStatusErr(err)
 	}
 
 	pollReply := toPbPoll(poll)
@@ -58,7 +56,7 @@ func (s GrpcServer) EndPoll(ctx context.Context, req *votingpb.EndPollRequest) (
 func (s GrpcServer) Status(ctx context.Context, req *votingpb.StatusRequest) (*votingpb.StatusReply, error) {
 	status, err := s.service.Status(req.ShortId, req.ServerId)
 	if err != nil {
-		return nil, err
+		return nil, toStatusErr(err)
 	}
 
 	reply := &votingpb.StatusReply{
@@ -79,7 +77,7 @@ func (s GrpcServer) Vote(ctx context.Context, req *votingpb.VoteRequest) (*votin
 
 	voteReply, err := s.service.Vote(voteRequest)
 	if err != nil {
-		return nil, err
+		return nil, toStatusErr(err)
 	}
 
 	return toPbVoteReply(voteReply), nil
@@ -96,7 +94,7 @@ func (s GrpcServer) Count(ctx context.Context, req *votingpb.CountRequest) (*vot
 
 	countResult, err := s.service.Count(countRequest)
 	if err != nil {
-		return nil, err
+		return nil, toStatusErr(err)
 	}
 
 	return toPbCountReply(countResult), nil
@@ -246,4 +244,13 @@ func toPbCountEvents(countEvents []CountEvent) []*votingpb.CountEvent {
 	}
 
 	return pbCountEvents
+}
+
+func toStatusErr(err error) error {
+	switch err.(type) {
+	case ValidationError:
+		return status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	return err
 }

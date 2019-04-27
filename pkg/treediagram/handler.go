@@ -10,6 +10,8 @@ import (
 	"github.com/jukeizu/contract"
 	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
 	"github.com/rs/zerolog"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Handler struct {
@@ -39,11 +41,12 @@ func (h Handler) CreatePoll(request contract.Request) (*contract.Response, error
 
 	reply, err := h.client.CreatePoll(context.Background(), createPollRequest)
 	if err != nil {
-		return nil, err
-	}
+		st := status.Convert(err)
+		if st.Code() == 3 {
+			return contract.StringResponse(st.Message()), nil
+		}
 
-	if !reply.Success {
-		return contract.StringResponse(reply.Message), nil
+		return nil, err
 	}
 
 	buffer := bytes.Buffer{}
@@ -88,4 +91,17 @@ func (h Handler) makeLoggingHttpHandlerFunc(name string, f func(contract.Request
 
 		contractHandlerFunc.ServeHTTP(w, r)
 	}
+}
+
+func (h Handler) checkValidationError(err error) (*contract.Response, error) {
+	st, ok := status.FromError(err)
+	if !ok {
+		return nil, err
+	}
+
+	if st.Code() == codes.InvalidArgument {
+		return contract.StringResponse(st.Message()), nil
+	}
+
+	return nil, err
 }

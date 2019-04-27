@@ -20,9 +20,7 @@ message CreatePollRequest {
 }
 
 message CreatePollReply {
-    bool success = 1;
-    string message = 2;
-    Poll poll = 3;
+    Poll poll = 1;
 }
 
 message Option {
