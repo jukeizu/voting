@@ -1,8 +1,6 @@
 package voting
 
 import (
-	"fmt"
-
 	"github.com/rs/zerolog"
 )
 
@@ -54,12 +52,9 @@ func (s ValidationService) Status(shortId string, serverId string) (Status, erro
 }
 
 func (s ValidationService) Vote(voteRequest VoteRequest) (VoteReply, error) {
-	valid, message, err := s.validatePollIsActive(voteRequest.ShortId, voteRequest.ServerId)
+	err := s.validatePollIsActive(voteRequest.ShortId, voteRequest.ServerId)
 	if err != nil {
 		return VoteReply{}, err
-	}
-	if !valid {
-		return VoteReply{Message: message}, nil
 	}
 
 	poll, err := s.pollService.Poll(voteRequest.ShortId, voteRequest.ServerId)
@@ -67,24 +62,18 @@ func (s ValidationService) Vote(voteRequest VoteRequest) (VoteReply, error) {
 		return VoteReply{}, err
 	}
 
-	valid, message, err = s.validateBallotOptions(poll, voteRequest.Options)
+	err = s.validateBallotOptions(poll, voteRequest.Options)
 	if err != nil {
 		return VoteReply{}, err
-	}
-	if !valid {
-		return VoteReply{Message: message}, nil
 	}
 
 	return s.service.Vote(voteRequest)
 }
 
 func (s ValidationService) Count(countRequest CountRequest) (CountResult, error) {
-	valid, message, err := s.validatePollHasEnded(countRequest.ShortId, countRequest.ServerId)
+	err := s.validatePollHasEnded(countRequest.ShortId, countRequest.ServerId)
 	if err != nil {
 		return CountResult{}, err
-	}
-	if !valid {
-		return CountResult{Message: message}, nil
 	}
 
 	return s.service.Count(countRequest)
@@ -98,40 +87,40 @@ func (s ValidationService) SetCurrentPoll(serverId string, pollId string) error 
 	return s.service.SetCurrentPoll(serverId, pollId)
 }
 
-func (s ValidationService) validatePollIsActive(shortId string, serverId string) (bool, string, error) {
+func (s ValidationService) validatePollIsActive(shortId string, serverId string) error {
 	hasEnded, err := s.pollService.HasEnded(shortId, serverId)
 	if err != nil {
-		return false, "", err
+		return err
 	}
 
 	if hasEnded {
-		return false, ErrPollHasEnded.Error(), nil
+		return ErrPollHasEnded
 	}
 
-	return true, "", nil
+	return nil
 }
 
-func (s ValidationService) validatePollHasEnded(shortId string, serverId string) (bool, string, error) {
+func (s ValidationService) validatePollHasEnded(shortId string, serverId string) error {
 	hasEnded, err := s.pollService.HasEnded(shortId, serverId)
 	if err != nil {
-		return false, "", err
+		return err
 	}
 
 	if !hasEnded {
-		return false, ErrPollHasNotEnded.Error(), nil
+		return ErrPollHasNotEnded
 	}
 
-	return true, "", nil
+	return nil
 }
 
-func (s ValidationService) validateBallotOptions(poll Poll, ballotOptions []BallotOption) (bool, string, error) {
+func (s ValidationService) validateBallotOptions(poll Poll, ballotOptions []BallotOption) error {
 	optionCount := len(ballotOptions)
 	if optionCount < 1 {
-		return false, "At least one option must be specified.", nil
+		return ErrNoOptions
 	}
 
 	if optionCount > int(poll.AllowedUniqueVotes) {
-		return false, fmt.Sprintf("Too many votes. Maximum for this poll is %d.", poll.AllowedUniqueVotes), nil
+		return ErrTooManyVotes(poll.AllowedUniqueVotes)
 	}
 
 	optionIds := []string{}
@@ -141,12 +130,12 @@ func (s ValidationService) validateBallotOptions(poll Poll, ballotOptions []Ball
 
 	availableOptions, err := s.pollService.UniqueOptions(poll.Id, optionIds)
 	if err != nil {
-		return false, "", err
+		return err
 	}
 
 	if len(availableOptions) != optionCount {
-		return false, "Your vote contains invalid or duplicate options.", nil
+		return ErrInvalidOptions
 	}
 
-	return true, "", nil
+	return nil
 }

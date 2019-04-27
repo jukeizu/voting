@@ -41,12 +41,7 @@ func (h Handler) CreatePoll(request contract.Request) (*contract.Response, error
 
 	reply, err := h.client.CreatePoll(context.Background(), createPollRequest)
 	if err != nil {
-		st := status.Convert(err)
-		if st.Code() == 3 {
-			return contract.StringResponse(st.Message()), nil
-		}
-
-		return nil, err
+		return h.checkValidationError(err)
 	}
 
 	buffer := bytes.Buffer{}
