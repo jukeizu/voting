@@ -46,6 +46,23 @@ func ParseCreatePollRequest(request contract.Request) (*votingpb.CreatePollReque
 	return createPollRequest, nil
 }
 
+func ParsePollRequest(request contract.Request) (*votingpb.PollRequest, error) {
+	args, err := shellwords.Parse(request.Content)
+	if err != nil {
+		return nil, err
+	}
+
+	req := &votingpb.PollRequest{
+		ServerId: request.ServerId,
+	}
+
+	if len(args) > 1 {
+		req.ShortId = args[len(args)-1]
+	}
+
+	return req, nil
+}
+
 func ParsePollStatusRequest(request contract.Request) (*votingpb.StatusRequest, error) {
 	args, err := shellwords.Parse(request.Content)
 	if err != nil {
