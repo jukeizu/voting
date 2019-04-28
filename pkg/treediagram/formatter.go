@@ -26,7 +26,7 @@ func FormatNewPollReply(poll *votingpb.Poll) string {
 	return buffer.String()
 }
 
-func FormatPollStatusReply(status *votingpb.StatusReply) string {
+func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Voter) string {
 	buffer := bytes.Buffer{}
 
 	buffer.WriteString(":ballot_box: ")
@@ -36,16 +36,24 @@ func FormatPollStatusReply(status *votingpb.StatusReply) string {
 
 	buffer.WriteString(fmt.Sprintf("`%s`\n", status.Poll.ShortId))
 
-	voterCount := len(status.Voters)
-
-	voters := []string{}
-
-	for _, voter := range status.Voters {
-		voters = append(voters, voter.Username)
+	if status.Poll.HasEnded {
+		buffer.WriteString("\nPoll has ended!\n")
 	}
 
-	buffer.WriteString(fmt.Sprintf("\n**%d users have voted**\n\n", voterCount))
-	buffer.WriteString(strings.Join(voters, ", "))
+	voterCount := status.VoterCount
+	voterUsernames := []string{}
+
+	for _, voter := range voters {
+		voterUsernames = append(voterUsernames, voter.Username)
+	}
+
+	if voterCount == 1 {
+		buffer.WriteString("\n**1 user has voted**\n\n")
+	} else {
+		buffer.WriteString(fmt.Sprintf("\n**%d users have voted**\n\n", voterCount))
+	}
+
+	buffer.WriteString(strings.Join(voterUsernames, ", "))
 
 	return buffer.String()
 }
@@ -66,7 +74,13 @@ func FormatPollReply(poll *votingpb.Poll, reply *selectionpb.CreateSelectionRepl
 	}
 	buffer.WriteString(fmt.Sprintf("`%s`\n\n", poll.ShortId))
 
-	buffer.WriteString(fmt.Sprintf("You can vote for %d option(s).\n\n", poll.AllowedUniqueVotes))
+	buffer.WriteString(fmt.Sprintf("You can vote for %d ", poll.AllowedUniqueVotes))
+	if poll.AllowedUniqueVotes == 1 {
+		buffer.WriteString("option")
+	} else {
+		buffer.WriteString("options")
+	}
+	buffer.WriteString(".\n\n")
 
 	for _, k := range options {
 		buffer.WriteString(fmt.Sprintf("%d. %s\n", k, reply.Options[int32(k)].Content))

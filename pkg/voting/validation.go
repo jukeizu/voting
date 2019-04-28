@@ -54,6 +54,10 @@ func (s ValidationService) Status(shortId string, serverId string) (Status, erro
 	return s.service.Status(shortId, serverId)
 }
 
+func (s ValidationService) Voters(shortId string, serverId string) ([]Voter, error) {
+	return s.service.Voters(shortId, serverId)
+}
+
 func (s ValidationService) Vote(voteRequest VoteRequest) (VoteReply, error) {
 	voter, err := s.voterService.Create(voteRequest.Voter)
 	if err != nil {

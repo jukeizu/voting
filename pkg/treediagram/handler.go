@@ -3,6 +3,7 @@ package treediagram
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -56,6 +57,10 @@ func (h Handler) Poll(request contract.Request) (*contract.Response, error) {
 		return FormatClientError(err)
 	}
 
+	if pollReply.Poll.HasEnded {
+		return contract.StringResponse("Poll has ended."), nil
+	}
+
 	selectionRequest := &selectionpb.CreateSelectionRequest{
 		AppId:      AppId + ".poll",
 		InstanceId: pollReply.Poll.Id,
@@ -103,7 +108,60 @@ func (h Handler) PollStatus(request contract.Request) (*contract.Response, error
 		return FormatClientError(err)
 	}
 
-	return contract.StringResponse(FormatPollStatusReply(status)), nil
+	voters := []*votingpb.Voter{}
+	if status.VoterCount <= 30 {
+		v, err := h.voters(req.ShortId, req.ServerId)
+		if err != nil {
+			return FormatClientError(err)
+		}
+
+		voters = v
+	}
+
+	return contract.StringResponse(FormatPollStatusReply(status, voters)), nil
+}
+
+func (h Handler) PollEnd(request contract.Request) (*contract.Response, error) {
+	req, err := ParseEndPollRequest(request)
+	if err != nil {
+		return FormatParseError(err)
+	}
+
+	_, err = h.client.EndPoll(context.Background(), req)
+	if err != nil {
+		return FormatClientError(err)
+	}
+
+	return contract.StringResponse("Poll has ended."), nil
+}
+
+func (h Handler) voters(shortId string, serverId string) ([]*votingpb.Voter, error) {
+	voters := []*votingpb.Voter{}
+
+	votersRequest := &votingpb.VotersRequest{
+		ShortId:  shortId,
+		ServerId: serverId,
+	}
+
+	stream, err := h.client.Voters(context.Background(), votersRequest)
+	if err != nil {
+		return voters, err
+	}
+
+	for {
+		voter, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			return voters, err
+		}
+
+		voters = append(voters, voter)
+	}
+
+	return voters, nil
 }
 
 func (h Handler) Start() error {
@@ -113,6 +171,7 @@ func (h Handler) Start() error {
 	mux.HandleFunc("/createpoll", h.makeLoggingHttpHandlerFunc("createpoll", h.CreatePoll))
 	mux.HandleFunc("/poll", h.makeLoggingHttpHandlerFunc("poll", h.Poll))
 	mux.HandleFunc("/pollstatus", h.makeLoggingHttpHandlerFunc("pollstatus", h.PollStatus))
+	mux.HandleFunc("/pollend", h.makeLoggingHttpHandlerFunc("pollend", h.PollEnd))
 
 	h.httpServer.Handler = mux
 

@@ -35,3 +35,7 @@ func (s DefaultService) Create(voter voting.Voter) (voting.Voter, error) {
 func (s DefaultService) Voter(id string) (voting.Voter, error) {
 	return s.repository.Voter(id)
 }
+
+func (s DefaultService) Voters(ids []string) ([]voting.Voter, error) {
+	return s.repository.Voters(ids)
+}

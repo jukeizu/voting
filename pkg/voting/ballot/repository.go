@@ -18,6 +18,7 @@ type Repository interface {
 	Migrate() error
 	VoidBallotOptions(pollId string, voterId string) error
 	CreateBallotOptions(ballot voting.Ballot) error
+	VoterCount(pollId string) (int64, error)
 	VoterIds(pollId string) ([]string, error)
 	VoterBallot(pollId string, voterId string) ([]string, error)
 }
@@ -102,6 +103,19 @@ func (r *repository) CreateBallotOptions(ballot voting.Ballot) error {
 	}
 
 	return nil
+}
+
+func (r *repository) VoterCount(pollId string) (int64, error) {
+	q := `SELECT COUNT(DISTINCT voterid) FROM ballot_option WHERE pollid = $1 AND void = false`
+
+	count := int64(0)
+
+	err := r.Db.QueryRow(q, pollId).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func (r *repository) VoterIds(pollId string) ([]string, error) {

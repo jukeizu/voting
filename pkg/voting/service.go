@@ -9,11 +9,14 @@ import (
 	"github.com/shawntoffel/electioncounter"
 )
 
+var MaxStatusVoterCount = int64(50)
+
 type Service interface {
 	CreatePoll(poll Poll) (Poll, error)
 	Poll(shortId string, serverId string) (Poll, error)
 	EndPoll(shortId string, serverId string, userId string) (Poll, error)
 	Status(shortId string, serverId string) (Status, error)
+	Voters(shortId string, serverId string) ([]Voter, error)
 	Vote(voteRequest VoteRequest) (VoteReply, error)
 	Count(countRequest CountRequest) (countResult CountResult, err error)
 }
@@ -77,25 +80,36 @@ func (s DefaultService) Status(shortId string, serverId string) (Status, error) 
 		return Status{}, err
 	}
 
-	status := Status{
-		Poll: poll,
-	}
-
-	voterIds, err := s.ballotService.VoterIds(poll.Id)
+	voterCount, err := s.ballotService.VoterCount(poll.Id)
 	if err != nil {
 		return Status{}, err
 	}
 
-	for _, voterId := range voterIds {
-		voter, err := s.voterService.Voter(voterId)
-		if err != nil {
-			return Status{}, err
-		}
-
-		status.Voters = append(status.Voters, voter)
+	status := Status{
+		Poll:       poll,
+		VoterCount: voterCount,
 	}
 
 	return status, nil
+}
+
+func (s DefaultService) Voters(shortId string, serverId string) ([]Voter, error) {
+	poll, err := s.findPoll(shortId, serverId)
+	if err != nil {
+		return []Voter{}, err
+	}
+
+	voterIds, err := s.ballotService.VoterIds(poll.Id)
+	if err != nil {
+		return []Voter{}, err
+	}
+
+	voters, err := s.voterService.Voters(voterIds)
+	if err != nil {
+		return []Voter{}, err
+	}
+
+	return voters, nil
 }
 
 func (s DefaultService) Vote(voteRequest VoteRequest) (VoteReply, error) {

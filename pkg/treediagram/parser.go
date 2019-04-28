@@ -79,3 +79,21 @@ func ParsePollStatusRequest(request contract.Request) (*votingpb.StatusRequest, 
 
 	return req, nil
 }
+
+func ParseEndPollRequest(request contract.Request) (*votingpb.EndPollRequest, error) {
+	args, err := shellwords.Parse(request.Content)
+	if err != nil {
+		return nil, err
+	}
+
+	req := &votingpb.EndPollRequest{
+		ServerId:    request.ServerId,
+		RequesterId: request.Author.Id,
+	}
+
+	if len(args) > 1 {
+		req.ShortId = args[len(args)-1]
+	}
+
+	return req, nil
+}

@@ -60,11 +60,28 @@ func (s GrpcServer) Status(ctx context.Context, req *votingpb.StatusRequest) (*v
 	}
 
 	reply := &votingpb.StatusReply{
-		Poll:   toPbPoll(status.Poll),
-		Voters: toPbVoters(status.Voters),
+		Poll:       toPbPoll(status.Poll),
+		VoterCount: status.VoterCount,
 	}
 
 	return reply, nil
+
+}
+
+func (s GrpcServer) Voters(req *votingpb.VotersRequest, stream votingpb.Voting_VotersServer) error {
+	voters, err := s.service.Voters(req.ShortId, req.ServerId)
+	if err != nil {
+		return toStatusErr(err)
+	}
+
+	for _, voter := range voters {
+		err := stream.Send(toPbVoter(voter))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s GrpcServer) Vote(ctx context.Context, req *votingpb.VoteRequest) (*votingpb.VoteReply, error) {
@@ -201,19 +218,13 @@ func toPbVoteReplyOption(voteReplyOption VoteReplyOption) *votingpb.VoteReplyOpt
 	return pbVoteReplyOption
 }
 
-func toPbVoters(voters []Voter) []*votingpb.Voter {
-	pbVoters := []*votingpb.Voter{}
-
-	for _, voter := range voters {
-		pbVoter := &votingpb.Voter{
-			Id:       voter.Id,
-			Username: voter.Username,
-		}
-
-		pbVoters = append(pbVoters, pbVoter)
+func toPbVoter(voter Voter) *votingpb.Voter {
+	pbVoter := &votingpb.Voter{
+		Id:       voter.Id,
+		Username: voter.Username,
 	}
 
-	return pbVoters
+	return pbVoter
 }
 
 func toPbCountReply(countResult CountResult) *votingpb.CountReply {
