@@ -135,6 +135,50 @@ func (h Handler) PollEnd(request contract.Request) (*contract.Response, error) {
 	return contract.StringResponse("Poll has ended."), nil
 }
 
+func (h Handler) Vote(request contract.Request) (*contract.Response, error) {
+	pollReply, err := h.client.Poll(context.Background(), &votingpb.PollRequest{ServerId: request.ServerId})
+	if err != nil {
+		return FormatClientError(err)
+	}
+
+	parseSelectionRequest := &selectionpb.ParseSelectionRequest{
+		AppId:      AppId + ".poll",
+		InstanceId: pollReply.Poll.Id,
+		UserId:     request.Author.Id,
+		ServerId:   request.ServerId,
+		Content:    request.Content,
+	}
+
+	parseSelectionReply, err := h.selectionClient.ParseSelection(context.Background(), parseSelectionRequest)
+	if err != nil {
+		return FormatClientError(err)
+	}
+
+	voteRequest := &votingpb.VoteRequest{
+		ServerId: request.ServerId,
+		Voter: &votingpb.Voter{
+			Id:       request.Author.Id,
+			Username: request.Author.Name,
+		},
+	}
+
+	for _, rankedOption := range parseSelectionReply.RankedOptions {
+		ballotOption := &votingpb.BallotOption{
+			Rank:     rankedOption.Rank,
+			OptionId: rankedOption.Option.OptionId,
+		}
+
+		voteRequest.Options = append(voteRequest.Options, ballotOption)
+	}
+
+	voteReply, err := h.client.Vote(context.Background(), voteRequest)
+	if err != nil {
+		return FormatClientError(err)
+	}
+
+	return contract.StringResponse(FormatVoteReply(pollReply.Poll, voteReply)), nil
+}
+
 func (h Handler) voters(shortId string, serverId string) ([]*votingpb.Voter, error) {
 	voters := []*votingpb.Voter{}
 
@@ -172,6 +216,7 @@ func (h Handler) Start() error {
 	mux.HandleFunc("/poll", h.makeLoggingHttpHandlerFunc("poll", h.Poll))
 	mux.HandleFunc("/pollstatus", h.makeLoggingHttpHandlerFunc("pollstatus", h.PollStatus))
 	mux.HandleFunc("/pollend", h.makeLoggingHttpHandlerFunc("pollend", h.PollEnd))
+	mux.HandleFunc("/vote", h.makeLoggingHttpHandlerFunc("vote", h.Vote))
 
 	h.httpServer.Handler = mux
 

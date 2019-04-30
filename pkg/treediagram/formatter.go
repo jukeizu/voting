@@ -106,6 +106,29 @@ func FormatVoteHelp(allowedVotes int32) string {
 	return buffer.String()
 }
 
+func FormatVoteReply(poll *votingpb.Poll, voteReply *votingpb.VoteReply) string {
+	if !voteReply.Success {
+		return voteReply.Message
+	}
+
+	buffer := bytes.Buffer{}
+
+	buffer.WriteString(":ballot_box_with_check: ")
+
+	if poll.Title != "" {
+		buffer.WriteString(fmt.Sprintf("**%s** ", poll.Title))
+	}
+	buffer.WriteString(fmt.Sprintf("`%s`\n\n", poll.ShortId))
+
+	for _, voteReplyOption := range voteReply.Options {
+		buffer.WriteString(fmt.Sprintf("%d. %s\n", voteReplyOption.Rank+1, voteReplyOption.Option.Content))
+	}
+
+	buffer.WriteString("\nYour vote has been submitted!")
+
+	return buffer.String()
+}
+
 func FormatParseError(err error) (*contract.Response, error) {
 	switch err.(type) {
 	case ParseError:

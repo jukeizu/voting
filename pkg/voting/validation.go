@@ -59,6 +59,10 @@ func (s ValidationService) Voters(shortId string, serverId string) ([]Voter, err
 }
 
 func (s ValidationService) Vote(voteRequest VoteRequest) (VoteReply, error) {
+	if voteRequest.Voter.ExternalId == "" {
+		return VoteReply{}, ErrNoVoterExternalId
+	}
+
 	voter, err := s.voterService.Create(voteRequest.Voter)
 	if err != nil {
 		return VoteReply{}, err

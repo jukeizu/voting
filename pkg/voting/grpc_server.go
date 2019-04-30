@@ -153,6 +153,10 @@ func toBallotOptions(pbOptions []*votingpb.BallotOption) []BallotOption {
 }
 
 func toVoter(pbVoter *votingpb.Voter) Voter {
+	if pbVoter == nil {
+		return Voter{}
+	}
+
 	voter := Voter{
 		ExternalId: pbVoter.Id,
 		Username:   pbVoter.Username,
