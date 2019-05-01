@@ -1,6 +1,7 @@
 package poll
 
 import (
+	"database/sql"
 	"errors"
 
 	"github.com/jukeizu/voting/pkg/voting"
@@ -45,7 +46,12 @@ func (h DefaultService) Create(req voting.Poll) (voting.Poll, error) {
 }
 
 func (h DefaultService) Poll(shortId string, serverId string) (voting.Poll, error) {
-	return h.repository.Poll(shortId, serverId)
+	poll, err := h.repository.Poll(shortId, serverId)
+	if err == sql.ErrNoRows {
+		return voting.Poll{}, voting.ErrPollNotFound(shortId)
+	}
+
+	return poll, nil
 }
 
 func (h DefaultService) PollCreator(shortId string, serverId string) (string, error) {

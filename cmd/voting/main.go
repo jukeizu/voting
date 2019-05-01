@@ -11,8 +11,10 @@ import (
 
 	"github.com/cheapRoc/grpc-zerolog"
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
+	"github.com/jukeizu/selection/api/protobuf-spec/selectionpb"
 	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
 	"github.com/jukeizu/voting/internal/startup"
+	"github.com/jukeizu/voting/pkg/treediagram"
 	"github.com/jukeizu/voting/pkg/voting"
 	"github.com/jukeizu/voting/pkg/voting/ballot"
 	"github.com/jukeizu/voting/pkg/voting/poll"
@@ -35,10 +37,11 @@ var (
 	flagServer  = false
 	flagHandler = false
 
-	grpcPort       = "50052"
-	httpPort       = "10002"
-	dbAddress      = "root@localhost:26257"
-	serviceAddress = "localhost:" + grpcPort
+	grpcPort                = "50052"
+	httpPort                = "10002"
+	dbAddress               = "root@localhost:26257"
+	serviceAddress          = "localhost:" + grpcPort
+	selectionServiceAddress = "localhost:" + grpcPort
 )
 
 func parseConfig() {
@@ -46,6 +49,7 @@ func parseConfig() {
 	flag.StringVar(&httpPort, "http.port", httpPort, "http port for handler")
 	flag.StringVar(&dbAddress, "db", dbAddress, "Database connection address")
 	flag.StringVar(&serviceAddress, "service.addr", serviceAddress, "address of service if not local")
+	flag.StringVar(&selectionServiceAddress, "selection.addr", selectionServiceAddress, "address of selection service if not local")
 	flag.BoolVar(&flagServer, "server", false, "Run as server")
 	flag.BoolVar(&flagHandler, "handler", false, "Run as handler")
 	flag.BoolVar(&flagMigrate, "migrate", false, "Run db migrations")
@@ -131,6 +135,34 @@ func main() {
 		}
 	}
 
+	clientConn, err := grpc.Dial(serviceAddress, grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(
+			keepalive.ClientParameters{
+				Time:                30 * time.Second,
+				Timeout:             10 * time.Second,
+				PermitWithoutStream: true,
+			},
+		),
+	)
+	if err != nil {
+		logger.Error().Err(err).Str("serviceAddress", serviceAddress).Msg("could not dial service address")
+		os.Exit(1)
+	}
+
+	selectionClientConn, err := grpc.Dial(selectionServiceAddress, grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(
+			keepalive.ClientParameters{
+				Time:                30 * time.Second,
+				Timeout:             10 * time.Second,
+				PermitWithoutStream: true,
+			},
+		),
+	)
+	if err != nil {
+		logger.Error().Err(err).Str("serviceAddress", serviceAddress).Msg("could not dial service address")
+		os.Exit(1)
+	}
+
 	g := run.Group{}
 
 	if flagServer {
@@ -143,7 +175,7 @@ func main() {
 		voterService := voter.NewDefaultService(logger, voterRepository)
 		ballotService := ballot.NewDefaultService(logger, ballotRepository)
 		votingService := voting.NewDefaultService(logger, pollService, sessionService, voterService, ballotService)
-		votingService = voting.NewValidationService(logger, votingService, pollService)
+		votingService = voting.NewValidationService(logger, votingService, pollService, voterService)
 
 		votingServer := voting.NewGrpcServer(votingService)
 
@@ -155,6 +187,24 @@ func main() {
 			return server.Start(grpcAddr)
 		}, func(error) {
 			server.Stop()
+		})
+	}
+
+	if flagHandler {
+		client := votingpb.NewVotingClient(clientConn)
+		selectionClient := selectionpb.NewSelectionClient(selectionClientConn)
+
+		httpAddr := ":" + httpPort
+
+		handler := treediagram.NewHandler(logger, client, selectionClient, httpAddr)
+
+		g.Add(func() error {
+			return handler.Start()
+		}, func(error) {
+			err := handler.Stop()
+			if err != nil {
+				logger.Error().Err(err).Caller().Msg("couldn't stop handler")
+			}
 		})
 	}
 

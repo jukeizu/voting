@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var _ votingpb.VotingServer = &GrpcServer{}
@@ -21,7 +23,7 @@ func (s GrpcServer) CreatePoll(ctx context.Context, req *votingpb.CreatePollRequ
 
 	poll, err := s.service.CreatePoll(pollReq)
 	if err != nil {
-		return nil, err
+		return nil, toStatusErr(err)
 	}
 
 	pollReply := toPbPoll(poll)
@@ -32,7 +34,7 @@ func (s GrpcServer) CreatePoll(ctx context.Context, req *votingpb.CreatePollRequ
 func (s GrpcServer) Poll(ctx context.Context, req *votingpb.PollRequest) (*votingpb.PollReply, error) {
 	poll, err := s.service.Poll(req.ShortId, req.ServerId)
 	if err != nil {
-		return nil, err
+		return nil, toStatusErr(err)
 	}
 
 	pollReply := toPbPoll(poll)
@@ -43,7 +45,7 @@ func (s GrpcServer) Poll(ctx context.Context, req *votingpb.PollRequest) (*votin
 func (s GrpcServer) EndPoll(ctx context.Context, req *votingpb.EndPollRequest) (*votingpb.EndPollReply, error) {
 	poll, err := s.service.EndPoll(req.ShortId, req.ServerId, req.RequesterId)
 	if err != nil {
-		return nil, err
+		return nil, toStatusErr(err)
 	}
 
 	pollReply := toPbPoll(poll)
@@ -54,15 +56,32 @@ func (s GrpcServer) EndPoll(ctx context.Context, req *votingpb.EndPollRequest) (
 func (s GrpcServer) Status(ctx context.Context, req *votingpb.StatusRequest) (*votingpb.StatusReply, error) {
 	status, err := s.service.Status(req.ShortId, req.ServerId)
 	if err != nil {
-		return nil, err
+		return nil, toStatusErr(err)
 	}
 
 	reply := &votingpb.StatusReply{
-		Poll:   toPbPoll(status.Poll),
-		Voters: toPbVoters(status.Voters),
+		Poll:       toPbPoll(status.Poll),
+		VoterCount: status.VoterCount,
 	}
 
 	return reply, nil
+
+}
+
+func (s GrpcServer) Voters(req *votingpb.VotersRequest, stream votingpb.Voting_VotersServer) error {
+	voters, err := s.service.Voters(req.ShortId, req.ServerId)
+	if err != nil {
+		return toStatusErr(err)
+	}
+
+	for _, voter := range voters {
+		err := stream.Send(toPbVoter(voter))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s GrpcServer) Vote(ctx context.Context, req *votingpb.VoteRequest) (*votingpb.VoteReply, error) {
@@ -75,7 +94,7 @@ func (s GrpcServer) Vote(ctx context.Context, req *votingpb.VoteRequest) (*votin
 
 	voteReply, err := s.service.Vote(voteRequest)
 	if err != nil {
-		return nil, err
+		return nil, toStatusErr(err)
 	}
 
 	return toPbVoteReply(voteReply), nil
@@ -92,7 +111,7 @@ func (s GrpcServer) Count(ctx context.Context, req *votingpb.CountRequest) (*vot
 
 	countResult, err := s.service.Count(countRequest)
 	if err != nil {
-		return nil, err
+		return nil, toStatusErr(err)
 	}
 
 	return toPbCountReply(countResult), nil
@@ -134,6 +153,10 @@ func toBallotOptions(pbOptions []*votingpb.BallotOption) []BallotOption {
 }
 
 func toVoter(pbVoter *votingpb.Voter) Voter {
+	if pbVoter == nil {
+		return Voter{}
+	}
+
 	voter := Voter{
 		ExternalId: pbVoter.Id,
 		Username:   pbVoter.Username,
@@ -199,19 +222,13 @@ func toPbVoteReplyOption(voteReplyOption VoteReplyOption) *votingpb.VoteReplyOpt
 	return pbVoteReplyOption
 }
 
-func toPbVoters(voters []Voter) []*votingpb.Voter {
-	pbVoters := []*votingpb.Voter{}
-
-	for _, voter := range voters {
-		pbVoter := &votingpb.Voter{
-			Id:       voter.Id,
-			Username: voter.Username,
-		}
-
-		pbVoters = append(pbVoters, pbVoter)
+func toPbVoter(voter Voter) *votingpb.Voter {
+	pbVoter := &votingpb.Voter{
+		Id:       voter.Id,
+		Username: voter.Username,
 	}
 
-	return pbVoters
+	return pbVoter
 }
 
 func toPbCountReply(countResult CountResult) *votingpb.CountReply {
@@ -219,6 +236,7 @@ func toPbCountReply(countResult CountResult) *votingpb.CountReply {
 		Success:   countResult.Success,
 		Message:   countResult.Message,
 		Poll:      toPbPoll(countResult.Poll),
+		Method:    countResult.Method,
 		Events:    toPbCountEvents(countResult.Events),
 		Summaries: toPbCountEvents(countResult.Summaries),
 	}
@@ -242,4 +260,14 @@ func toPbCountEvents(countEvents []CountEvent) []*votingpb.CountEvent {
 	}
 
 	return pbCountEvents
+}
+
+func toStatusErr(err error) error {
+	switch err.(type) {
+	case ValidationError:
+		return status.Error(codes.InvalidArgument, err.Error())
+	case NotFoundError:
+		return status.Error(codes.NotFound, err.Error())
+	}
+	return err
 }

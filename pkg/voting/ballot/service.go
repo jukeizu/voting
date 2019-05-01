@@ -30,6 +30,10 @@ func (s DefaultService) Submit(ballot voting.Ballot) (voting.BallotResult, error
 	return voting.BallotResult{Success: true}, nil
 }
 
+func (s DefaultService) VoterCount(pollId string) (int64, error) {
+	return s.repository.VoterCount(pollId)
+}
+
 func (s DefaultService) VoterIds(pollId string) ([]string, error) {
 	return s.repository.VoterIds(pollId)
 }

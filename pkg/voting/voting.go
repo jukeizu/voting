@@ -60,8 +60,8 @@ type BallotResult struct {
 }
 
 type Status struct {
-	Poll   Poll
-	Voters []Voter
+	Poll       Poll
+	VoterCount int64
 }
 
 type CountRequest struct {
@@ -76,6 +76,7 @@ type CountResult struct {
 	Success   bool
 	Message   string
 	Poll      Poll
+	Method    string
 	Elected   []VoteReplyOption
 	Events    []CountEvent
 	Summaries []CountEvent
@@ -103,10 +104,12 @@ type SessionService interface {
 type VoterService interface {
 	Create(voter Voter) (Voter, error)
 	Voter(id string) (Voter, error)
+	Voters(ids []string) ([]Voter, error)
 }
 
 type BallotService interface {
 	Submit(Ballot) (BallotResult, error)
+	VoterCount(pollId string) (int64, error)
 	VoterIds(pollId string) ([]string, error)
 	VoterBallot(pollId string, voterId string) ([]string, error)
 }
