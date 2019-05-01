@@ -192,6 +192,7 @@ func (s DefaultService) Count(countRequest CountRequest) (countResult CountResul
 
 	countResult = CountResult{
 		Poll:      poll,
+		Method:    countRequest.Method,
 		Events:    s.toCountEvents(result.Events),
 		Summaries: s.toCountEvents(result.Summaries),
 	}

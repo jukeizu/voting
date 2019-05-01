@@ -76,6 +76,7 @@ type CountResult struct {
 	Success   bool
 	Message   string
 	Poll      Poll
+	Method    string
 	Elected   []VoteReplyOption
 	Events    []CountEvent
 	Summaries []CountEvent

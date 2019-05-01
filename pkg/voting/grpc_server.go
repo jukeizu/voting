@@ -236,6 +236,7 @@ func toPbCountReply(countResult CountResult) *votingpb.CountReply {
 		Success:   countResult.Success,
 		Message:   countResult.Message,
 		Poll:      toPbPoll(countResult.Poll),
+		Method:    countResult.Method,
 		Events:    toPbCountEvents(countResult.Events),
 		Summaries: toPbCountEvents(countResult.Summaries),
 	}

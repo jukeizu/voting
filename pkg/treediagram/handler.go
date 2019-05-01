@@ -179,6 +179,22 @@ func (h Handler) Vote(request contract.Request) (*contract.Response, error) {
 	return contract.StringResponse(FormatVoteReply(pollReply.Poll, voteReply)), nil
 }
 
+func (h Handler) Count(request contract.Request) (*contract.Response, error) {
+	countRequest, err := ParseCountRequest(request)
+	if err != nil {
+		return FormatParseError(err)
+	}
+
+	countReply, err := h.client.Count(context.Background(), countRequest)
+	if err != nil {
+		return FormatClientError(err)
+	}
+
+	message := FormatCountResult(countReply)
+
+	return &contract.Response{Messages: []*contract.Message{message}}, nil
+}
+
 func (h Handler) voters(shortId string, serverId string) ([]*votingpb.Voter, error) {
 	voters := []*votingpb.Voter{}
 
@@ -217,6 +233,7 @@ func (h Handler) Start() error {
 	mux.HandleFunc("/pollstatus", h.makeLoggingHttpHandlerFunc("pollstatus", h.PollStatus))
 	mux.HandleFunc("/pollend", h.makeLoggingHttpHandlerFunc("pollend", h.PollEnd))
 	mux.HandleFunc("/vote", h.makeLoggingHttpHandlerFunc("vote", h.Vote))
+	mux.HandleFunc("/electioncount", h.makeLoggingHttpHandlerFunc("electioncount", h.Count))
 
 	h.httpServer.Handler = mux
 

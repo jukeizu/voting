@@ -129,6 +129,75 @@ func FormatVoteReply(poll *votingpb.Poll, voteReply *votingpb.VoteReply) string 
 	return buffer.String()
 }
 
+func FormatCountResult(countReply *votingpb.CountReply) *contract.Message {
+
+	embed := &contract.Embed{
+		Title:       ":ballot_box: Election Result",
+		Description: fmt.Sprintf("%s `%s`", countReply.Poll.Title, countReply.Poll.ShortId),
+		Color:       0x5dadec,
+	}
+
+	method := &contract.EmbedField{
+		Name:  "Counting Method",
+		Value: countReply.Method,
+	}
+
+	embed.Fields = append(embed.Fields, method)
+
+	chunkedCandidates := chunkCandidates(countReply.Elected, 10)
+	for _, chunk := range chunkedCandidates {
+		title := "Elected"
+
+		if len(chunkedCandidates) > 1 {
+			firstRank := chunk[0].Rank
+			lastRank := chunk[len(chunk)-1].Rank
+
+			section := fmt.Sprintf(" (%d - %d)", firstRank, lastRank)
+
+			title = title + section
+		}
+
+		buffer := bytes.Buffer{}
+
+		for _, candidate := range chunk {
+			buffer.WriteString(fmt.Sprintf("%d. %s\n", candidate.Rank, candidate.Option.Content))
+		}
+
+		field := &contract.EmbedField{
+			Name:  title,
+			Value: buffer.String(),
+		}
+
+		embed.Fields = append(embed.Fields, field)
+	}
+
+	message := &contract.Message{
+		Embed: embed,
+	}
+
+	if len(countReply.Events) > 0 {
+		events := bytes.Buffer{}
+
+		for _, event := range countReply.Events {
+			events.WriteString(event.Description + "\r\n")
+		}
+
+		fileName := fmt.Sprintf("%s_%s_results.txt", countReply.Poll.Title, countReply.Method)
+		file := &contract.File{
+			Name:  fileName,
+			Bytes: events.Bytes(),
+		}
+
+		if len(file.Bytes) <= 2000000 {
+			message.Files = append(message.Files, file)
+		} else {
+			message.Content = "Did not converge within a reasonable file size :/"
+		}
+	}
+
+	return message
+}
+
 func FormatParseError(err error) (*contract.Response, error) {
 	switch err.(type) {
 	case ParseError:
@@ -152,4 +221,24 @@ func FormatClientError(err error) (*contract.Response, error) {
 	}
 
 	return nil, err
+}
+
+func chunkCandidates(candidates []*votingpb.VoteReplyOption, chunkSize int) [][]*votingpb.VoteReplyOption {
+	chunked := [][]*votingpb.VoteReplyOption{}
+
+	numCandidates := len(candidates)
+
+	for i := 0; i < numCandidates; i += chunkSize {
+		nextChunkBound := i + chunkSize
+
+		if nextChunkBound > numCandidates {
+			nextChunkBound = numCandidates
+		}
+
+		chunk := candidates[i:nextChunkBound]
+
+		chunked = append(chunked, chunk)
+	}
+
+	return chunked
 }
