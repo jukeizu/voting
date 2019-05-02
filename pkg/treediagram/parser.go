@@ -120,7 +120,7 @@ func ParseCountRequest(request contract.Request) (*votingpb.CountRequest, error)
 		return nil, ParseError{Message: outputBuffer.String()}
 	}
 
-	coundRequest := &votingpb.CountRequest{
+	countRequest := &votingpb.CountRequest{
 		ShortId:    *shortID,
 		ServerId:   request.ServerId,
 		NumToElect: int32(*numToElect),
@@ -128,5 +128,5 @@ func ParseCountRequest(request contract.Request) (*votingpb.CountRequest, error)
 		ToExclude:  strings.Split(*exclude, ","),
 	}
 
-	return coundRequest, nil
+	return countRequest, nil
 }

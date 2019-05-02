@@ -176,7 +176,12 @@ func (h Handler) Vote(request contract.Request) (*contract.Response, error) {
 		return FormatClientError(err)
 	}
 
-	return contract.StringResponse(FormatVoteReply(pollReply.Poll, voteReply)), nil
+	message := &contract.Message{
+		Content:          FormatVoteReply(pollReply.Poll, voteReply),
+		IsPrivateMessage: true,
+	}
+
+	return &contract.Response{Messages: []*contract.Message{message}}, nil
 }
 
 func (h Handler) Count(request contract.Request) (*contract.Response, error) {
