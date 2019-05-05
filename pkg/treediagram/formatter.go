@@ -106,6 +106,10 @@ func FormatVoteHelp(allowedVotes int32) string {
 	return buffer.String()
 }
 
+func FormatEndPollReply(endPollReply *votingpb.EndPollReply) string {
+	return fmt.Sprintf("ended poll `%s` %s", endPollReply.Poll.ShortId, endPollReply.Poll.Title)
+}
+
 func FormatVoteReply(poll *votingpb.Poll, voteReply *votingpb.VoteReply) string {
 	if !voteReply.Success {
 		return voteReply.Message

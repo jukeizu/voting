@@ -58,7 +58,7 @@ func (h Handler) Poll(request contract.Request) (*contract.Response, error) {
 	}
 
 	if pollReply.Poll.HasEnded {
-		return contract.StringResponse("Poll has ended."), nil
+		return contract.StringResponse("poll has ended"), nil
 	}
 
 	selectionRequest := &selectionpb.CreateSelectionRequest{
@@ -127,12 +127,12 @@ func (h Handler) PollEnd(request contract.Request) (*contract.Response, error) {
 		return FormatParseError(err)
 	}
 
-	_, err = h.client.EndPoll(context.Background(), req)
+	endPollReply, err := h.client.EndPoll(context.Background(), req)
 	if err != nil {
 		return FormatClientError(err)
 	}
 
-	return contract.StringResponse("Poll has ended."), nil
+	return contract.StringResponse(FormatEndPollReply(endPollReply)), nil
 }
 
 func (h Handler) Vote(request contract.Request) (*contract.Response, error) {
