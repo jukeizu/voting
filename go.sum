@@ -16,8 +16,8 @@ github.com/golang/protobuf v1.3.1 h1:YF8+flBXS5eO826T4nzqPrxfhQThhXl0YzfuUPu4SBg
 github.com/golang/protobuf v1.3.1/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/jnewmano/grpc-json-proxy v0.0.0-20180914194908-38a7fdf2bd5c h1:BabrRUCK8Y4SkFBZEFZbEhJRzOd5lh6IP6bHZIYcIjs=
 github.com/jnewmano/grpc-json-proxy v0.0.0-20180914194908-38a7fdf2bd5c/go.mod h1:p90weUVX4yVbP76ZY9TzApwCCr8WZ5xwIxh8+JeFY0Y=
-github.com/jukeizu/contract v0.1.1 h1:GsL6xn1MtvRmIFaj+SrCaj2lyXYemCbJPS6pyDKmyaM=
-github.com/jukeizu/contract v0.1.1/go.mod h1:ky1EwHEkgEXZXEh1WFLhJ+VjHGgaZvn4/3bCXXX2OrQ=
+github.com/jukeizu/contract v0.1.2 h1:xmEI2XaANJ37ApgKEkB09aYmPZqshbR4D+AF9vzrxi8=
+github.com/jukeizu/contract v0.1.2/go.mod h1:ky1EwHEkgEXZXEh1WFLhJ+VjHGgaZvn4/3bCXXX2OrQ=
 github.com/jukeizu/selection v0.0.3 h1:aonpR6Lo/S9mrwkVpxD7OZOXh//jrrAI84KrL1QTfXA=
 github.com/jukeizu/selection v0.0.3/go.mod h1:rXoKjoURax8eYsZQNRtv/Sw8C1qVFX4pCjPxDYLk0ik=
 github.com/lib/pq v1.0.0 h1:X5PMW56eZitiTeO7tKzZxFCSpbFZJtkMMooicw2us9A=

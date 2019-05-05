@@ -162,6 +162,10 @@ func (h Handler) Vote(request contract.Request) (*contract.Response, error) {
 		},
 	}
 
+	if request.Author.Discriminator != "" {
+		voteRequest.Voter.Username += "#" + request.Author.Discriminator
+	}
+
 	for _, rankedOption := range parseSelectionReply.RankedOptions {
 		ballotOption := &votingpb.BallotOption{
 			Rank:     rankedOption.Rank,

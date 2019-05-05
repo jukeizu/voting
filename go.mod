@@ -4,7 +4,7 @@ require (
 	github.com/cheapRoc/grpc-zerolog v0.0.0-20180425150930-27ca9d023ead
 	github.com/golang/protobuf v1.3.1
 	github.com/jnewmano/grpc-json-proxy v0.0.0-20180914194908-38a7fdf2bd5c
-	github.com/jukeizu/contract v0.1.1
+	github.com/jukeizu/contract v0.1.2
 	github.com/jukeizu/selection v0.0.3
 	github.com/lib/pq v1.1.0
 	github.com/mattn/go-shellwords v1.0.5
