@@ -66,7 +66,7 @@ func (h Handler) Poll(request contract.Request) (*contract.Response, error) {
 		InstanceId: pollReply.Poll.Id,
 		UserId:     request.Author.Id,
 		ServerId:   request.ServerId,
-		Randomize:  true,
+		BatchSize:  10,
 	}
 
 	for _, option := range pollReply.Poll.Options {
@@ -90,7 +90,7 @@ func (h Handler) Poll(request contract.Request) (*contract.Response, error) {
 	}
 
 	message := &contract.Message{
-		Content:          FormatPollReply(pollReply.Poll, selection),
+		Embed:            FormatPollReply(pollReply.Poll, selection),
 		IsPrivateMessage: true,
 	}
 

@@ -3,7 +3,6 @@ package treediagram
 import (
 	"bytes"
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/jukeizu/contract"
@@ -58,49 +57,59 @@ func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Vote
 	return buffer.String()
 }
 
-func FormatPollReply(poll *votingpb.Poll, reply *selectionpb.CreateSelectionReply) string {
-	buffer := bytes.Buffer{}
-
-	options := make([]int, 0, len(reply.Options))
-	for k := range reply.Options {
-		options = append(options, int(k))
+func FormatPollReply(poll *votingpb.Poll, reply *selectionpb.CreateSelectionReply) *contract.Embed {
+	embed := &contract.Embed{
+		Color: 0x5dadec,
 	}
 
-	sort.Ints(options)
+	title := ":inbox_tray: "
 
-	buffer.WriteString(":inbox_tray: ")
 	if poll.Title != "" {
-		buffer.WriteString(fmt.Sprintf("**%s** ", poll.Title))
-	}
-	buffer.WriteString(fmt.Sprintf("`%s`\n\n", poll.ShortId))
-
-	buffer.WriteString(fmt.Sprintf("You can vote for %d ", poll.AllowedUniqueVotes))
-	if poll.AllowedUniqueVotes == 1 {
-		buffer.WriteString("option")
-	} else {
-		buffer.WriteString("options")
-	}
-	buffer.WriteString(".\n\n")
-
-	for _, k := range options {
-		buffer.WriteString(fmt.Sprintf("%d. %s\n", k, reply.Options[int32(k)].Content))
+		title += fmt.Sprintf("**%s** ", poll.Title)
 	}
 
-	buffer.WriteString(FormatVoteHelp(poll.AllowedUniqueVotes))
+	title += fmt.Sprintf("`%s`\n\n", poll.ShortId)
 
-	return buffer.String()
+	embed.Title = title
+
+	embed.Description = fmt.Sprintf("You can vote for %d option", poll.AllowedUniqueVotes)
+	if poll.AllowedUniqueVotes != 1 {
+		embed.Description += "s"
+	}
+	embed.Description += "."
+
+	for _, batch := range reply.Batches {
+		buffer := bytes.Buffer{}
+
+		for _, batchOption := range batch.Options {
+			buffer.WriteString(fmt.Sprintf("%d. [%s](%s)\n", batchOption.Number, batchOption.Option.Content, batchOption.Option.Metadata["url"]))
+		}
+
+		field := &contract.EmbedField{
+			Name:  "\u2800",
+			Value: buffer.String(),
+		}
+
+		embed.Fields = append(embed.Fields, field)
+	}
+
+	embed.Footer = &contract.EmbedFooter{
+		Text: FormatVoteHelp(poll.AllowedUniqueVotes),
+	}
+
+	return embed
 }
 
 func FormatVoteHelp(allowedVotes int32) string {
 	buffer := bytes.Buffer{}
 
-	buffer.WriteString("\nTo vote type `!vote` followed by the numbers you would like to vote for ")
+	buffer.WriteString("\nTo vote type !vote followed by the numbers you would like to vote for ")
 
 	if allowedVotes > 1 {
-		buffer.WriteString("**in order of your most to least favorite**. e.g. `!vote 1 2` to vote for options 1 and 2 and you prefer option 1.")
-		buffer.WriteString("\n\nOnly your most recent `!vote` will be counted. Be sure to include all options you wish to vote for in a single command.")
+		buffer.WriteString("in order of your most to least favorite. e.g. \"!vote 1 2\" to vote for options 1 and 2 and you prefer option 1.")
+		buffer.WriteString("\n\nOnly your most recent !vote will be counted.")
 	} else {
-		buffer.WriteString("e.g. `!vote 1` to vote for option 1.")
+		buffer.WriteString("e.g. !vote 1 to vote for option 1.")
 	}
 
 	return buffer.String()
