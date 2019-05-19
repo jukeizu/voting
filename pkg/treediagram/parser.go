@@ -53,12 +53,21 @@ func ParsePollRequest(request contract.Request) (*votingpb.PollRequest, error) {
 		return nil, err
 	}
 
-	req := &votingpb.PollRequest{
-		ServerId: request.ServerId,
+	outputBuffer := bytes.NewBuffer([]byte{})
+
+	parser := flag.NewFlagSet("poll", flag.ContinueOnError)
+	parser.SetOutput(outputBuffer)
+
+	shortID := parser.String("id", "", "The poll id. Defaults to the most recent poll if not specified.")
+
+	err = parser.Parse(args[1:])
+	if err != nil {
+		return nil, ParseError{Message: outputBuffer.String()}
 	}
 
-	if len(args) > 1 {
-		req.ShortId = args[len(args)-1]
+	req := &votingpb.PollRequest{
+		ServerId: request.ServerId,
+		ShortId:  *shortID,
 	}
 
 	return req, nil

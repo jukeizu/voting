@@ -18,8 +18,8 @@ github.com/jnewmano/grpc-json-proxy v0.0.0-20180914194908-38a7fdf2bd5c h1:BabrRU
 github.com/jnewmano/grpc-json-proxy v0.0.0-20180914194908-38a7fdf2bd5c/go.mod h1:p90weUVX4yVbP76ZY9TzApwCCr8WZ5xwIxh8+JeFY0Y=
 github.com/jukeizu/contract v0.1.2 h1:xmEI2XaANJ37ApgKEkB09aYmPZqshbR4D+AF9vzrxi8=
 github.com/jukeizu/contract v0.1.2/go.mod h1:ky1EwHEkgEXZXEh1WFLhJ+VjHGgaZvn4/3bCXXX2OrQ=
-github.com/jukeizu/selection v0.1.0 h1:PtImwCkjGJ0ICRQjd6Lz5SZYqqjHToXqREsM3eXACW8=
-github.com/jukeizu/selection v0.1.0/go.mod h1:rXoKjoURax8eYsZQNRtv/Sw8C1qVFX4pCjPxDYLk0ik=
+github.com/jukeizu/selection v0.1.1 h1:OH1YGh5VQURfByJxZWhkfJPQCtkmNrx3vhyXFCxSeN4=
+github.com/jukeizu/selection v0.1.1/go.mod h1:rXoKjoURax8eYsZQNRtv/Sw8C1qVFX4pCjPxDYLk0ik=
 github.com/lib/pq v1.0.0 h1:X5PMW56eZitiTeO7tKzZxFCSpbFZJtkMMooicw2us9A=
 github.com/lib/pq v1.0.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/lib/pq v1.1.1 h1:sJZmqHoEaY7f+NPP8pgLB/WxulyR3fewgCM2qaSlBb4=
