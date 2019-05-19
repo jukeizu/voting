@@ -5,8 +5,8 @@ require (
 	github.com/golang/protobuf v1.3.1
 	github.com/jnewmano/grpc-json-proxy v0.0.0-20180914194908-38a7fdf2bd5c
 	github.com/jukeizu/contract v0.1.2
-	github.com/jukeizu/selection v0.0.3
-	github.com/lib/pq v1.1.0
+	github.com/jukeizu/selection v0.1.1
+	github.com/lib/pq v1.1.1
 	github.com/mattn/go-shellwords v1.0.5
 	github.com/oklog/run v1.0.0
 	github.com/rs/xid v1.2.1
@@ -17,10 +17,10 @@ require (
 	github.com/shawntoffel/math v0.0.0-20170730005841-fe1df356a34f // indirect
 	github.com/shawntoffel/meekstv v0.0.0-20180416032127-98fe3aa2c8f1 // indirect
 	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf
-	golang.org/x/net v0.0.0-20190424112056-4829fb13d2c6
-	golang.org/x/sys v0.0.0-20190426135247-a129542de9ae // indirect
+	golang.org/x/net v0.0.0-20190514140710-3ec191127204
+	golang.org/x/sys v0.0.0-20190516110030-61b9204099cb // indirect
 	golang.org/x/text v0.3.2 // indirect
 	google.golang.org/appengine v1.4.0 // indirect
-	google.golang.org/genproto v0.0.0-20190425155659-357c62f0e4bb // indirect
+	google.golang.org/genproto v0.0.0-20190516172635-bb713bdc0e52 // indirect
 	google.golang.org/grpc v1.20.1
 )

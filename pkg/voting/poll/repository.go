@@ -201,7 +201,7 @@ func (r *repository) Option(id string) (voting.Option, error) {
 func (r *repository) Options(pollId string) ([]voting.Option, error) {
 	options := []voting.Option{}
 
-	q := `SELECT id, pollid, content
+	q := `SELECT id, pollid, content, url
 		FROM option
 		WHERE pollid = $1`
 
@@ -217,6 +217,7 @@ func (r *repository) Options(pollId string) ([]voting.Option, error) {
 			&option.Id,
 			&option.PollId,
 			&option.Content,
+			&option.Url,
 		)
 		if err != nil {
 			return options, err
