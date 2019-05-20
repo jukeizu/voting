@@ -137,7 +137,12 @@ func (h Handler) PollEnd(request contract.Request) (*contract.Response, error) {
 }
 
 func (h Handler) Vote(request contract.Request) (*contract.Response, error) {
-	pollReply, err := h.client.Poll(context.Background(), &votingpb.PollRequest{ServerId: request.ServerId})
+	voterPollRequest := &votingpb.VoterPollRequest{
+		VoterId:  request.Author.Id,
+		ServerId: request.ServerId,
+	}
+
+	pollReply, err := h.client.VoterPoll(context.Background(), voterPollRequest)
 	if err != nil {
 		return FormatClientError(err)
 	}

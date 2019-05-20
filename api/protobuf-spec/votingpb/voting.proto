@@ -5,6 +5,7 @@ package votingpb;
 service Voting {
     rpc CreatePoll(CreatePollRequest) returns (CreatePollReply) {}
     rpc Poll(PollRequest) returns (PollReply) {}
+    rpc VoterPoll(VoterPollRequest) returns (PollReply) {}
     rpc EndPoll(EndPollRequest) returns (EndPollReply) {}
     rpc Status(StatusRequest) returns (StatusReply) {}
     rpc Voters(VotersRequest) returns (stream Voter) {}
@@ -34,6 +35,11 @@ message PollRequest {
     string shortId = 1;
     string serverId = 2;
     string voterId = 3;
+}
+
+message VoterPollRequest {
+    string voterId = 1;
+    string serverId = 2;
 }
 
 message PollReply {

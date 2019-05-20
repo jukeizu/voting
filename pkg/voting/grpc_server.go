@@ -42,6 +42,17 @@ func (s GrpcServer) Poll(ctx context.Context, req *votingpb.PollRequest) (*votin
 	return &votingpb.PollReply{Poll: pollReply}, nil
 }
 
+func (s GrpcServer) VoterPoll(ctx context.Context, req *votingpb.VoterPollRequest) (*votingpb.PollReply, error) {
+	poll, err := s.service.VoterPoll(req.VoterId, req.ServerId)
+	if err != nil {
+		return nil, toStatusErr(err)
+	}
+
+	pollReply := toPbPoll(poll)
+
+	return &votingpb.PollReply{Poll: pollReply}, nil
+}
+
 func (s GrpcServer) EndPoll(ctx context.Context, req *votingpb.EndPollRequest) (*votingpb.EndPollReply, error) {
 	poll, err := s.service.EndPoll(req.ShortId, req.ServerId, req.RequesterId)
 	if err != nil {
