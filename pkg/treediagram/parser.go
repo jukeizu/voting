@@ -10,6 +10,11 @@ import (
 	shellwords "github.com/mattn/go-shellwords"
 )
 
+type ParsedPollRequest struct {
+	pollRequest *votingpb.PollRequest
+	sortMethod  string
+}
+
 func ParseCreatePollRequest(request contract.Request) (*votingpb.CreatePollRequest, error) {
 	args, err := shellwords.Parse(request.Content)
 	if err != nil {
@@ -47,7 +52,7 @@ func ParseCreatePollRequest(request contract.Request) (*votingpb.CreatePollReque
 	return createPollRequest, nil
 }
 
-func ParsePollRequest(request contract.Request) (*votingpb.PollRequest, error) {
+func ParsePollRequest(request contract.Request) (*ParsedPollRequest, error) {
 	args, err := shellwords.Parse(request.Content)
 	if err != nil {
 		return nil, err
@@ -59,6 +64,7 @@ func ParsePollRequest(request contract.Request) (*votingpb.PollRequest, error) {
 	parser.SetOutput(outputBuffer)
 
 	shortID := parser.String("id", "", "The poll id. Defaults to the most recent poll if not specified.")
+	sortMethod := parser.String("sort", "number", "Sort the poll by [abc, number]")
 
 	err = parser.Parse(args[1:])
 	if err != nil {
@@ -71,7 +77,12 @@ func ParsePollRequest(request contract.Request) (*votingpb.PollRequest, error) {
 		VoterId:  request.Author.Id,
 	}
 
-	return req, nil
+	parsedPollRequest := &ParsedPollRequest{
+		pollRequest: req,
+		sortMethod:  parseSortMethod(*sortMethod),
+	}
+
+	return parsedPollRequest, nil
 }
 
 func ParsePollStatusRequest(request contract.Request) (*votingpb.StatusRequest, error) {
@@ -139,4 +150,12 @@ func ParseCountRequest(request contract.Request) (*votingpb.CountRequest, error)
 	}
 
 	return countRequest, nil
+}
+
+func parseSortMethod(input string) string {
+	if strings.EqualFold(input, "abc") {
+		return "alphabetical"
+	}
+
+	return input
 }
