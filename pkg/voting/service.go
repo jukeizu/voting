@@ -193,7 +193,7 @@ func (s DefaultService) Count(countRequest CountRequest) (countResult CountResul
 	config := election.Config{
 		Ballots:             ballots,
 		Candidates:          candidates,
-		Precision:           6,
+		Precision:           8,
 		Seed:                1,
 		NumSeats:            countRequest.NumToElect,
 		WithdrawnCandidates: countRequest.ToExclude,
