@@ -99,6 +99,8 @@ type PollService interface {
 type SessionService interface {
 	CurrentPoll(serverId string) (string, error)
 	SetCurrentPoll(serverId, pollId string) error
+	VoterPoll(voterId string, serverId string) (string, error)
+	SetVoterPoll(voterId string, serverId string, pollId string) error
 }
 
 type VoterService interface {

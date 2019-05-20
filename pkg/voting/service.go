@@ -13,7 +13,8 @@ var MaxStatusVoterCount = int64(50)
 
 type Service interface {
 	CreatePoll(poll Poll) (Poll, error)
-	Poll(shortId string, serverId string) (Poll, error)
+	Poll(shortId string, voterId string, serverId string) (Poll, error)
+	VoterPoll(voterId string, serverId string) (Poll, error)
 	EndPoll(shortId string, serverId string, userId string) (Poll, error)
 	Status(shortId string, serverId string) (Status, error)
 	Voters(shortId string, serverId string) ([]Voter, error)
@@ -61,8 +62,29 @@ func (s DefaultService) CreatePoll(poll Poll) (Poll, error) {
 	return poll, nil
 }
 
-func (s DefaultService) Poll(shortId string, serverId string) (Poll, error) {
-	return s.findPoll(shortId, serverId)
+func (s DefaultService) Poll(shortId string, voterId string, serverId string) (Poll, error) {
+	poll, err := s.findPoll(shortId, serverId)
+	if err != nil {
+		return Poll{}, err
+	}
+
+	if voterId != "" {
+		err = s.sessionService.SetVoterPoll(voterId, serverId, poll.ShortId)
+		if err != nil {
+			return Poll{}, err
+		}
+	}
+
+	return poll, nil
+}
+
+func (s DefaultService) VoterPoll(voterId string, serverId string) (Poll, error) {
+	pollId, err := s.sessionService.VoterPoll(voterId, serverId)
+	if err != nil {
+		return Poll{}, err
+	}
+
+	return s.findPoll(pollId, serverId)
 }
 
 func (s DefaultService) EndPoll(shortId string, serverId string, userId string) (Poll, error) {
@@ -113,7 +135,7 @@ func (s DefaultService) Voters(shortId string, serverId string) ([]Voter, error)
 }
 
 func (s DefaultService) Vote(voteRequest VoteRequest) (VoteReply, error) {
-	poll, err := s.findPoll(voteRequest.ShortId, voteRequest.ServerId)
+	poll, err := s.VoterPoll(voteRequest.Voter.ExternalId, voteRequest.ServerId)
 	if err != nil {
 		return VoteReply{}, err
 	}

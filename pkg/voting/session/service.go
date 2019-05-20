@@ -28,3 +28,17 @@ func (s DefaultService) SetCurrentPoll(serverId string, pollId string) error {
 
 	return s.repository.SetCurrentPoll(serverId, pollId)
 }
+
+func (s DefaultService) VoterPoll(voterId string, serverId string) (string, error) {
+	return s.repository.VoterPoll(voterId, serverId)
+}
+
+func (s DefaultService) SetVoterPoll(voterId string, serverId string, pollId string) error {
+	s.logger.Info().
+		Str("voterId", voterId).
+		Str("serverId", serverId).
+		Str("pollId", pollId).
+		Msg("setting voter poll")
+
+	return s.repository.SetVoterPoll(voterId, serverId, pollId)
+}

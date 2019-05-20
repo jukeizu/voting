@@ -16,6 +16,8 @@ type Repository interface {
 	Migrate() error
 	CurrentPoll(serverId string) (string, error)
 	SetCurrentPoll(serverId, pollId string) error
+	VoterPoll(voterId, serverId string) (string, error)
+	SetVoterPoll(voterId, serverId, pollId string) error
 }
 
 type repository struct {
@@ -50,6 +52,7 @@ func (r *repository) Migrate() error {
 
 	err = g.RegisterMigrations(
 		migrations.CreateTableCurrentPoll20190303044144{},
+		migrations.CreateTableVoterPoll20190519234636{},
 	)
 	if err != nil {
 		return err
@@ -75,6 +78,30 @@ func (r *repository) CurrentPoll(serverId string) (string, error) {
 	pollId := ""
 
 	err := r.Db.QueryRow(q, serverId).Scan(&pollId)
+	if err == sql.ErrNoRows {
+		return "", nil
+	}
+
+	return pollId, err
+}
+
+func (r *repository) SetVoterPoll(voterId string, serverId string, pollId string) error {
+	q := `INSERT INTO voter_poll (voterId, serverId, pollId)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (voterId, serverId)
+		DO UPDATE SET pollId = excluded.pollId, updated = now()`
+
+	_, err := r.Db.Exec(q, voterId, serverId, pollId)
+
+	return err
+}
+
+func (r *repository) VoterPoll(voterId string, serverId string) (string, error) {
+	q := `SELECT pollId FROM voter_poll WHERE voterId = $1 AND serverId = $2`
+
+	pollId := ""
+
+	err := r.Db.QueryRow(q, voterId, serverId).Scan(&pollId)
 	if err == sql.ErrNoRows {
 		return "", nil
 	}
