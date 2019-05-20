@@ -47,12 +47,12 @@ func (h Handler) CreatePoll(request contract.Request) (*contract.Response, error
 }
 
 func (h Handler) Poll(request contract.Request) (*contract.Response, error) {
-	req, err := ParsePollRequest(request)
+	parsedPollRequest, err := ParsePollRequest(request)
 	if err != nil {
 		return FormatParseError(err)
 	}
 
-	pollReply, err := h.client.Poll(context.Background(), req)
+	pollReply, err := h.client.Poll(context.Background(), parsedPollRequest.pollRequest)
 	if err != nil {
 		return FormatClientError(err)
 	}
@@ -68,6 +68,7 @@ func (h Handler) Poll(request contract.Request) (*contract.Response, error) {
 		ServerId:   request.ServerId,
 		Randomize:  true,
 		BatchSize:  10,
+		SortMethod: parsedPollRequest.sortMethod,
 	}
 
 	for _, option := range pollReply.Poll.Options {
