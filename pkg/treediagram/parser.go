@@ -68,6 +68,7 @@ func ParsePollRequest(request contract.Request) (*votingpb.PollRequest, error) {
 	req := &votingpb.PollRequest{
 		ServerId: request.ServerId,
 		ShortId:  *shortID,
+		VoterId:  request.Author.Id,
 	}
 
 	return req, nil
