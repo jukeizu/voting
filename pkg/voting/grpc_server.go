@@ -32,7 +32,7 @@ func (s GrpcServer) CreatePoll(ctx context.Context, req *votingpb.CreatePollRequ
 }
 
 func (s GrpcServer) Poll(ctx context.Context, req *votingpb.PollRequest) (*votingpb.PollReply, error) {
-	poll, err := s.service.Poll(req.ShortId, req.ServerId)
+	poll, err := s.service.Poll(req.ShortId, req.VoterId, req.ServerId)
 	if err != nil {
 		return nil, toStatusErr(err)
 	}

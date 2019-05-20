@@ -52,6 +52,7 @@ func (r *repository) Migrate() error {
 
 	err = g.RegisterMigrations(
 		migrations.CreateTableCurrentPoll20190303044144{},
+		migrations.CreateTableVoterPoll20190519234636{},
 	)
 	if err != nil {
 		return err
@@ -87,7 +88,7 @@ func (r *repository) CurrentPoll(serverId string) (string, error) {
 func (r *repository) SetVoterPoll(voterId string, serverId string, pollId string) error {
 	q := `INSERT INTO voter_poll (voterId, serverId, pollId)
 		VALUES ($1, $2, $3)
-		ON CONFLICT (serverId)
+		ON CONFLICT (voterId, serverId)
 		DO UPDATE SET pollId = excluded.pollId, updated = now()`
 
 	_, err := r.Db.Exec(q, voterId, serverId, pollId)

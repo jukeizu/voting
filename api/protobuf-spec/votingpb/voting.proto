@@ -33,6 +33,7 @@ message Option {
 message PollRequest {
     string shortId = 1;
     string serverId = 2;
+    string voterId = 3;
 }
 
 message PollReply {
