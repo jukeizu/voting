@@ -63,7 +63,7 @@ func ParsePollRequest(request contract.Request) (*ParsedPollRequest, error) {
 	parser := flag.NewFlagSet("poll", flag.ContinueOnError)
 	parser.SetOutput(outputBuffer)
 
-	shortID := parser.String("id", "", "The poll id. Defaults to the most recent poll if not specified.")
+	shortID := parser.String("id", "", "The poll id. Defaults to the most recent poll in a server.")
 	sortMethod := parser.String("sort", "number", "Sort the poll by [abc, number]")
 
 	err = parser.Parse(args[1:])
@@ -77,9 +77,14 @@ func ParsePollRequest(request contract.Request) (*ParsedPollRequest, error) {
 		VoterId:  request.Author.Id,
 	}
 
+	parsedSortMethod, err := parseSortMethod(*sortMethod)
+	if err != nil {
+		return nil, err
+	}
+
 	parsedPollRequest := &ParsedPollRequest{
 		pollRequest: req,
-		sortMethod:  parseSortMethod(*sortMethod),
+		sortMethod:  parsedSortMethod,
 	}
 
 	return parsedPollRequest, nil
@@ -131,7 +136,7 @@ func ParseCountRequest(request contract.Request) (*votingpb.CountRequest, error)
 	parser := flag.NewFlagSet("electioncount", flag.ContinueOnError)
 	parser.SetOutput(outputBuffer)
 
-	shortID := parser.String("id", "", "The poll id. Current poll if not specified.")
+	shortID := parser.String("id", "", "The poll id. Defaults to the most recent poll in a server.")
 	method := parser.String("m", "meekstv", "The counting method.")
 	numToElect := parser.Int("n", 1, "Number of seats to fill.")
 	exclude := parser.String("exclude", "", "Comma delimited list of candidates to exclude before counting.")
@@ -152,10 +157,16 @@ func ParseCountRequest(request contract.Request) (*votingpb.CountRequest, error)
 	return countRequest, nil
 }
 
-func parseSortMethod(input string) string {
-	if strings.EqualFold(input, "abc") {
-		return "alphabetical"
+func parseSortMethod(input string) (string, error) {
+	sortMethodMap := map[string]string{
+		"abc":    "alphabetical",
+		"number": "number",
 	}
 
-	return input
+	sortMethod, ok := sortMethodMap[strings.ToLower(input)]
+	if !ok {
+		return "", ParseError{Message: "invalid sort value"}
+	}
+
+	return sortMethod, nil
 }
