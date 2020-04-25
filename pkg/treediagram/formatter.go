@@ -82,7 +82,13 @@ func FormatPollReply(poll *votingpb.Poll, reply *selectionpb.CreateSelectionRepl
 		buffer := bytes.Buffer{}
 
 		for _, batchOption := range batch.Options {
-			buffer.WriteString(fmt.Sprintf("%d. [%s](%s)\n", batchOption.Number, batchOption.Option.Content, batchOption.Option.Metadata["url"]))
+			url, hasURLMetadata := batchOption.Option.Metadata["url"]
+
+			if hasURLMetadata {
+				buffer.WriteString(fmt.Sprintf("%d. [%s](%s)\n", batchOption.Number, batchOption.Option.Content, url))
+			} else {
+				buffer.WriteString(fmt.Sprintf("%d. %s\n", batchOption.Number, batchOption.Option.Content))
+			}
 		}
 
 		field := &contract.EmbedField{
