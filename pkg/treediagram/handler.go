@@ -221,7 +221,9 @@ func (h Handler) Count(request contract.Request) (*contract.Response, error) {
 	message := FormatCountResult(countReply)
 
 	resp := &contract.Response{Messages: []*contract.Message{message}}
-	resp.Messages = append(resp.Messages, clientErrs.Messages...)
+	if clientErrs != nil && clientErrs.Messages != nil {
+		resp.Messages = append(resp.Messages, clientErrs.Messages...)
+	}
 
 	return resp, nil
 }
