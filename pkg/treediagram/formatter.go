@@ -227,6 +227,10 @@ func FormatParseError(err error) (*contract.Response, error) {
 }
 
 func FormatClientError(err error) (*contract.Response, error) {
+	if err == nil {
+		return nil, nil
+	}
+
 	st, ok := status.FromError(err)
 	if !ok {
 		return nil, err

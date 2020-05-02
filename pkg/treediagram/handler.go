@@ -201,6 +201,18 @@ func (h Handler) Count(request contract.Request) (*contract.Response, error) {
 		return FormatParseError(err)
 	}
 
+	endPollRequest := &votingpb.EndPollRequest{
+		ShortId:     countRequest.ShortId,
+		ServerId:    countRequest.ServerId,
+		RequesterId: request.Author.Id,
+	}
+
+	_, err = h.client.EndPoll(context.Background(), endPollRequest)
+	clientErrs, err := FormatClientError(err)
+	if err != nil {
+		return nil, err
+	}
+
 	countReply, err := h.client.Count(context.Background(), countRequest)
 	if err != nil {
 		return FormatClientError(err)
@@ -208,7 +220,10 @@ func (h Handler) Count(request contract.Request) (*contract.Response, error) {
 
 	message := FormatCountResult(countReply)
 
-	return &contract.Response{Messages: []*contract.Message{message}}, nil
+	resp := &contract.Response{Messages: []*contract.Message{message}}
+	resp.Messages = append(resp.Messages, clientErrs.Messages...)
+
+	return resp, nil
 }
 
 func (h Handler) voters(shortId string, serverId string) ([]*votingpb.Voter, error) {
