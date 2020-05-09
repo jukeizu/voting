@@ -29,11 +29,16 @@ func ParseCreatePollRequest(request contract.Request) (*votingpb.CreatePollReque
 
 	title := parser.String("t", "", "The poll title")
 	allowedUniqueVotes := parser.Int("n", 1, "The number of unique votes a user can submit.")
-	days := parser.Int("d", 5, "The number of days the poll will remain open.")
+	days := parser.Int("d", 0, "The number of days the poll will remain open. By default the poll will remain open until manually ended.")
 
 	err = parser.Parse(args[1:])
 	if err != nil {
 		return nil, ParseError{Message: outputBuffer.String()}
+	}
+
+	var expires int64
+	if *days > 0 {
+		expires = time.Now().AddDate(0, 0, *days).Unix()
 	}
 
 	createPollRequest := &votingpb.CreatePollRequest{
@@ -41,7 +46,7 @@ func ParseCreatePollRequest(request contract.Request) (*votingpb.CreatePollReque
 		AllowedUniqueVotes: int32(*allowedUniqueVotes),
 		ServerId:           request.ServerId,
 		CreatorId:          request.Author.Id,
-		Expires:            time.Now().AddDate(0, 0, *days).Unix(),
+		Expires:            expires,
 	}
 
 	for _, content := range parser.Args() {

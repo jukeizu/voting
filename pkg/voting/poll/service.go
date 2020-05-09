@@ -50,6 +50,9 @@ func (h DefaultService) Poll(shortId string, serverId string) (voting.Poll, erro
 	if err == sql.ErrNoRows {
 		return voting.Poll{}, voting.ErrPollNotFound(shortId)
 	}
+	if err != nil {
+		return voting.Poll{}, err
+	}
 
 	return poll, nil
 }

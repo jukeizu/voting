@@ -186,6 +186,7 @@ func toPbPoll(poll Poll) *votingpb.Poll {
 		Title:              poll.Title,
 		AllowedUniqueVotes: poll.AllowedUniqueVotes,
 		HasEnded:           poll.HasEnded(),
+		Expires:            poll.Expires,
 		Options:            toPbOptions(poll.Options),
 	}
 
