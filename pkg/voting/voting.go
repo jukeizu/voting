@@ -15,7 +15,7 @@ type Poll struct {
 }
 
 func (p Poll) HasEnded() bool {
-	return p.ManuallyEnded || p.Expires <= time.Now().UTC().Unix()
+	return p.ManuallyEnded || (p.Expires > 0 && p.Expires <= time.Now().UTC().Unix())
 }
 
 type Option struct {
