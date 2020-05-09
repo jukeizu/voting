@@ -1,6 +1,6 @@
 module github.com/jukeizu/voting
 
-go 1.14
+go 1.11
 
 require (
 	github.com/cheapRoc/grpc-zerolog v0.0.0-20180425150930-27ca9d023ead
