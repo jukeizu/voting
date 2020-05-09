@@ -134,6 +134,7 @@ func createPollRequestToPoll(req *votingpb.CreatePollRequest) Poll {
 		CreatorId:          req.CreatorId,
 		Title:              req.Title,
 		AllowedUniqueVotes: req.AllowedUniqueVotes,
+		Expires:            req.Expires,
 	}
 
 	for _, createOption := range req.Options {
@@ -184,7 +185,7 @@ func toPbPoll(poll Poll) *votingpb.Poll {
 		CreatorId:          poll.CreatorId,
 		Title:              poll.Title,
 		AllowedUniqueVotes: poll.AllowedUniqueVotes,
-		HasEnded:           poll.HasEnded,
+		HasEnded:           poll.HasEnded(),
 		Options:            toPbOptions(poll.Options),
 	}
 

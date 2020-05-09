@@ -71,10 +71,6 @@ func (h DefaultService) End(shortId string, serverId string) (voting.Poll, error
 	return poll, nil
 }
 
-func (h DefaultService) HasEnded(shortId string, serverId string) (bool, error) {
-	return h.repository.HasEnded(shortId, serverId)
-}
-
 func (h DefaultService) UniqueOptions(pollId string, optionIds []string) ([]voting.Option, error) {
 	return h.repository.UniqueOptions(pollId, optionIds)
 }

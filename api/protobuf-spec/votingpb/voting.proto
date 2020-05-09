@@ -57,6 +57,7 @@ message Poll {
     int32 allowedUniqueVotes = 6;
     bool hasEnded = 7;
     repeated Option options = 8;
+    int64 expires = 9;
 }
 
 message EndPollRequest {

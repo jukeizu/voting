@@ -81,7 +81,7 @@ func (s ValidationService) Vote(voteRequest VoteRequest) (VoteReply, error) {
 		return VoteReply{}, err
 	}
 
-	if poll.HasEnded {
+	if poll.HasEnded() {
 		return VoteReply{}, ErrPollHasEnded
 	}
 
@@ -108,7 +108,7 @@ func (s ValidationService) validatePollHasEnded(shortId string, serverId string)
 		return err
 	}
 
-	if !poll.HasEnded {
+	if !poll.HasEnded() {
 		return ErrPollHasNotEnded
 	}
 
