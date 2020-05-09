@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"strings"
+	"time"
 
 	"github.com/jukeizu/contract"
 	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
@@ -28,6 +29,7 @@ func ParseCreatePollRequest(request contract.Request) (*votingpb.CreatePollReque
 
 	title := parser.String("t", "", "The poll title")
 	allowedUniqueVotes := parser.Int("n", 1, "The number of unique votes a user can submit.")
+	days := parser.Int("d", 5, "The number of days the poll will remain open.")
 
 	err = parser.Parse(args[1:])
 	if err != nil {
@@ -39,6 +41,7 @@ func ParseCreatePollRequest(request contract.Request) (*votingpb.CreatePollReque
 		AllowedUniqueVotes: int32(*allowedUniqueVotes),
 		ServerId:           request.ServerId,
 		CreatorId:          request.Author.Id,
+		Expires:            time.Now().AddDate(0, 0, *days).Unix(),
 	}
 
 	for _, content := range parser.Args() {
