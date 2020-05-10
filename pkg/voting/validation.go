@@ -1,6 +1,8 @@
 package voting
 
 import (
+	"time"
+
 	"github.com/rs/zerolog"
 )
 
@@ -30,6 +32,11 @@ func (s ValidationService) CreatePoll(poll Poll) (Poll, error) {
 		return Poll{}, ErrNoOptions
 
 	}
+
+	if !poll.Expires.IsZero() && poll.Expires.UTC().Before(time.Now().UTC()) {
+		return Poll{}, ErrPastPollExpiration
+	}
+
 	return s.service.CreatePoll(poll)
 }
 

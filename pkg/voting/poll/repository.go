@@ -85,9 +85,17 @@ func (r *repository) CreatePoll(req voting.Poll) (voting.Poll, error) {
 			creatorId,
 			title,
 			allowedUniqueVotes,
-			expires::INT`
+			expires`
 
 	poll := voting.Poll{}
+
+	var t *time.Time
+
+	if !req.Expires.IsZero() {
+		t = &req.Expires
+	}
+
+	var scannedExpires sql.NullTime
 
 	err := r.Db.QueryRow(q,
 		req.ShortId,
@@ -95,7 +103,7 @@ func (r *repository) CreatePoll(req voting.Poll) (voting.Poll, error) {
 		req.Title,
 		req.CreatorId,
 		req.AllowedUniqueVotes,
-		time.Unix(req.Expires, 0).UTC(),
+		t,
 	).Scan(
 		&poll.Id,
 		&poll.ShortId,
@@ -103,11 +111,13 @@ func (r *repository) CreatePoll(req voting.Poll) (voting.Poll, error) {
 		&poll.CreatorId,
 		&poll.Title,
 		&poll.AllowedUniqueVotes,
-		&poll.Expires,
+		&scannedExpires,
 	)
 	if err != nil {
 		return voting.Poll{}, err
 	}
+
+	poll.Expires = scannedExpires.Time
 
 	err = r.createOptions(poll.Id, req.Options)
 	if err != nil {
@@ -132,10 +142,12 @@ func (r *repository) Poll(shortId string, serverId string) (voting.Poll, error) 
 		title, 
 		allowedUniqueVotes, 
 		manuallyEnded,
-		expires::INT
+		expires
 	FROM poll WHERE shortid = $1 AND serverid = $2`
 
 	poll := voting.Poll{}
+
+	var scannedExpires sql.NullTime
 
 	err := r.Db.QueryRow(q, shortId, serverId).Scan(
 		&poll.Id,
@@ -145,11 +157,13 @@ func (r *repository) Poll(shortId string, serverId string) (voting.Poll, error) 
 		&poll.Title,
 		&poll.AllowedUniqueVotes,
 		&poll.ManuallyEnded,
-		&poll.Expires,
+		&scannedExpires,
 	)
 	if err != nil {
 		return voting.Poll{}, err
 	}
+
+	poll.Expires = scannedExpires.Time
 
 	options, err := r.Options(poll.Id)
 	if err != nil {

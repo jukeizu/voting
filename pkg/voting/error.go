@@ -5,6 +5,7 @@ import "fmt"
 var (
 	ErrPollHasEnded              = ValidationError{Message: "poll has ended"}
 	ErrPollHasNotEnded           = ValidationError{Message: "poll has not ended"}
+	ErrPastPollExpiration        = ValidationError{Message: "poll expiration must be in the future"}
 	ErrNotOwner                  = ValidationError{Message: "only the poll creator may end the poll"}
 	ErrNoOptions                 = ValidationError{Message: "at least one option must be provided"}
 	ErrInvalidOrDuplicateOptions = ValidationError{Message: "vote contains invalid or duplicate options"}

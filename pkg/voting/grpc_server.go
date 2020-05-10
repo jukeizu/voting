@@ -2,6 +2,7 @@ package voting
 
 import (
 	"context"
+	"time"
 
 	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
 	"google.golang.org/grpc/codes"
@@ -134,7 +135,7 @@ func createPollRequestToPoll(req *votingpb.CreatePollRequest) Poll {
 		CreatorId:          req.CreatorId,
 		Title:              req.Title,
 		AllowedUniqueVotes: req.AllowedUniqueVotes,
-		Expires:            req.Expires,
+		Expires:            time.Unix(req.Expires, 0),
 	}
 
 	for _, createOption := range req.Options {
@@ -186,8 +187,8 @@ func toPbPoll(poll Poll) *votingpb.Poll {
 		Title:              poll.Title,
 		AllowedUniqueVotes: poll.AllowedUniqueVotes,
 		HasEnded:           poll.HasEnded(),
-		Expires:            poll.Expires,
 		Options:            toPbOptions(poll.Options),
+		Expires:            poll.Expires.UTC().Unix(),
 	}
 
 	return pbPoll

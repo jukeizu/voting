@@ -9,13 +9,13 @@ type Poll struct {
 	CreatorId          string
 	Title              string
 	AllowedUniqueVotes int32
-	Expires            int64
+	Expires            time.Time
 	ManuallyEnded      bool
 	Options            []Option
 }
 
 func (p Poll) HasEnded() bool {
-	return p.ManuallyEnded || (p.Expires > 0 && p.Expires <= time.Now().UTC().Unix())
+	return p.ManuallyEnded || (!p.Expires.IsZero() && p.Expires.Before(time.Now().UTC()))
 }
 
 type Option struct {

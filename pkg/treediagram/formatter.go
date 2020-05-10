@@ -21,7 +21,7 @@ func FormatNewPollReply(poll *votingpb.Poll) string {
 		buffer.WriteString(fmt.Sprintf("\n**%s**\n", poll.Title))
 	}
 
-	if poll.Expires > 0 {
+	if poll.Expires > (time.Time{}).Unix() {
 		formatedTime := time.Unix(poll.Expires, 0).UTC().Format("Jan 2, 2006 15:04:05 MST")
 
 		buffer.WriteString(fmt.Sprintf("\nEnds `%s`\n", formatedTime))
