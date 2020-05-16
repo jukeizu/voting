@@ -13,7 +13,9 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func FormatNewPollReply(poll *votingpb.Poll) string {
+func FormatNewPollReplyMessage(poll *votingpb.Poll) *contract.Message {
+	message := &contract.Message{}
+
 	buffer := bytes.Buffer{}
 	buffer.WriteString(fmt.Sprintf(":ballot_box: **A new poll has started** `%s`\n", poll.ShortId))
 
@@ -24,12 +26,16 @@ func FormatNewPollReply(poll *votingpb.Poll) string {
 	if poll.Expires > (time.Time{}).Unix() {
 		formatedTime := time.Unix(poll.Expires, 0).UTC().Format("Jan 2, 2006 15:04:05 MST")
 
-		buffer.WriteString(fmt.Sprintf("\nEnds `%s`\n", formatedTime))
+		buffer.WriteString(fmt.Sprintf("\nEnds: `%s`\n", formatedTime))
+		buffer.WriteString("React with :alarm_clock: for reminders.\n")
+
+		message.Reactions = []string{"⏰"}
 	}
 
-	buffer.WriteString(fmt.Sprintf("\nType `!poll` to view the poll. A previous poll can be viewed via id. e.g. `!poll -id %s`", poll.ShortId))
+	buffer.WriteString(fmt.Sprintf("\nView the poll with `!poll` or `!poll -id %s`", poll.ShortId))
 
-	return buffer.String()
+	message.Content = buffer.String()
+	return message
 }
 
 func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Voter) string {

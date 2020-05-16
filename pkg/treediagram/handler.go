@@ -43,7 +43,11 @@ func (h Handler) CreatePoll(request contract.Request) (*contract.Response, error
 		return FormatClientError(err)
 	}
 
-	return contract.StringResponse(FormatNewPollReply(reply.Poll)), nil
+	response := &contract.Response{
+		Messages: []*contract.Message{FormatNewPollReplyMessage(reply.Poll)},
+	}
+
+	return response, nil
 }
 
 func (h Handler) Poll(request contract.Request) (*contract.Response, error) {
