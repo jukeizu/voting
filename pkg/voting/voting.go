@@ -1,5 +1,7 @@
 package voting
 
+import "time"
+
 type Poll struct {
 	Id                 string
 	ShortId            string
@@ -7,8 +9,13 @@ type Poll struct {
 	CreatorId          string
 	Title              string
 	AllowedUniqueVotes int32
-	HasEnded           bool
+	Expires            time.Time
+	ManuallyEnded      bool
 	Options            []Option
+}
+
+func (p Poll) HasEnded() bool {
+	return p.ManuallyEnded || (!p.Expires.IsZero() && p.Expires.Before(time.Now().UTC()))
 }
 
 type Option struct {
@@ -91,7 +98,6 @@ type PollService interface {
 	Poll(shortId string, serverId string) (Poll, error)
 	PollCreator(shortId string, serverId string) (string, error)
 	End(shortId string, serverId string) (Poll, error)
-	HasEnded(shortId string, serverId string) (bool, error)
 	UniqueOptions(pollId string, optionIds []string) ([]Option, error)
 	Option(id string) (Option, error)
 }

@@ -50,6 +50,9 @@ func (h DefaultService) Poll(shortId string, serverId string) (voting.Poll, erro
 	if err == sql.ErrNoRows {
 		return voting.Poll{}, voting.ErrPollNotFound(shortId)
 	}
+	if err != nil {
+		return voting.Poll{}, err
+	}
 
 	return poll, nil
 }
@@ -69,10 +72,6 @@ func (h DefaultService) End(shortId string, serverId string) (voting.Poll, error
 		Msg("poll has ended")
 
 	return poll, nil
-}
-
-func (h DefaultService) HasEnded(shortId string, serverId string) (bool, error) {
-	return h.repository.HasEnded(shortId, serverId)
 }
 
 func (h DefaultService) UniqueOptions(pollId string, optionIds []string) ([]voting.Option, error) {

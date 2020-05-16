@@ -3,6 +3,7 @@ package poll
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/jukeizu/voting/pkg/voting"
 	"github.com/jukeizu/voting/pkg/voting/poll/migrations"
@@ -18,7 +19,6 @@ type Repository interface {
 	Migrate() error
 	CreatePoll(voting.Poll) (voting.Poll, error)
 	Poll(shortId string, serverId string) (voting.Poll, error)
-	HasEnded(shortId string, serverId string) (bool, error)
 	PollCreator(shortId string, serverId string) (string, error)
 	Option(id string) (voting.Option, error)
 	Options(pollId string) ([]voting.Option, error)
@@ -59,6 +59,8 @@ func (r *repository) Migrate() error {
 	err = g.RegisterMigrations(
 		migrations.CreateTablePoll20190219024013{},
 		migrations.CreateTableOption20190220043255{},
+		migrations.AlterTablePollRenameColumn20200420045414{},
+		migrations.AlterTablePollAddColumnExpires20200420050140{},
 	)
 	if err != nil {
 		return err
@@ -73,17 +75,27 @@ func (r *repository) CreatePoll(req voting.Poll) (voting.Poll, error) {
 			serverId,
 			title, 
 			creatorId, 
-			allowedUniqueVotes)
-		VALUES ($1, $2, $3, $4, $5)
+			allowedUniqueVotes,
+			expires)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING 
 			id,
 			shortId,
 			serverId,
 			creatorId,
 			title,
-			allowedUniqueVotes`
+			allowedUniqueVotes,
+			expires`
 
 	poll := voting.Poll{}
+
+	var t *time.Time
+
+	if !req.Expires.IsZero() {
+		t = &req.Expires
+	}
+
+	var scannedExpires sql.NullTime
 
 	err := r.Db.QueryRow(q,
 		req.ShortId,
@@ -91,6 +103,7 @@ func (r *repository) CreatePoll(req voting.Poll) (voting.Poll, error) {
 		req.Title,
 		req.CreatorId,
 		req.AllowedUniqueVotes,
+		t,
 	).Scan(
 		&poll.Id,
 		&poll.ShortId,
@@ -98,10 +111,13 @@ func (r *repository) CreatePoll(req voting.Poll) (voting.Poll, error) {
 		&poll.CreatorId,
 		&poll.Title,
 		&poll.AllowedUniqueVotes,
+		&scannedExpires,
 	)
 	if err != nil {
 		return voting.Poll{}, err
 	}
+
+	poll.Expires = scannedExpires.Time
 
 	err = r.createOptions(poll.Id, req.Options)
 	if err != nil {
@@ -125,10 +141,13 @@ func (r *repository) Poll(shortId string, serverId string) (voting.Poll, error) 
 		creatorId, 
 		title, 
 		allowedUniqueVotes, 
-		hasEnded
+		manuallyEnded,
+		expires
 	FROM poll WHERE shortid = $1 AND serverid = $2`
 
 	poll := voting.Poll{}
+
+	var scannedExpires sql.NullTime
 
 	err := r.Db.QueryRow(q, shortId, serverId).Scan(
 		&poll.Id,
@@ -137,11 +156,14 @@ func (r *repository) Poll(shortId string, serverId string) (voting.Poll, error) 
 		&poll.CreatorId,
 		&poll.Title,
 		&poll.AllowedUniqueVotes,
-		&poll.HasEnded,
+		&poll.ManuallyEnded,
+		&scannedExpires,
 	)
 	if err != nil {
 		return voting.Poll{}, err
 	}
+
+	poll.Expires = scannedExpires.Time
 
 	options, err := r.Options(poll.Id)
 	if err != nil {
@@ -151,21 +173,6 @@ func (r *repository) Poll(shortId string, serverId string) (voting.Poll, error) 
 	poll.Options = options
 
 	return poll, nil
-}
-
-func (r *repository) HasEnded(shortId string, serverId string) (bool, error) {
-	q := `SELECT hasEnded FROM poll WHERE shortid = $1 AND serverid = $2`
-
-	poll := voting.Poll{}
-
-	err := r.Db.QueryRow(q, shortId, serverId).Scan(
-		&poll.HasEnded,
-	)
-	if err != nil {
-		return false, err
-	}
-
-	return poll.HasEnded, nil
 }
 
 func (r *repository) PollCreator(shortId string, serverId string) (string, error) {
@@ -230,7 +237,7 @@ func (r *repository) Options(pollId string) ([]voting.Option, error) {
 }
 
 func (r *repository) EndPoll(pollShortId string, serverId string) (voting.Poll, error) {
-	q := `UPDATE poll SET hasEnded = true WHERE shortId = $1 AND serverId = $2`
+	q := `UPDATE poll SET manuallyEnded = true WHERE shortId = $1 AND serverId = $2`
 
 	_, err := r.Db.Exec(q, pollShortId, serverId)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"strings"
+	"time"
 
 	"github.com/jukeizu/contract"
 	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
@@ -28,10 +29,20 @@ func ParseCreatePollRequest(request contract.Request) (*votingpb.CreatePollReque
 
 	title := parser.String("t", "", "The poll title")
 	allowedUniqueVotes := parser.Int("n", 1, "The number of unique votes a user can submit.")
+	ends := parser.String("ends", "", "When the poll will end in format 'M/d/yy H:mm'")
 
 	err = parser.Parse(args[1:])
 	if err != nil {
 		return nil, ParseError{Message: outputBuffer.String()}
+	}
+
+	t, err := parseEndTime("1/2/06 15:04", *ends)
+	if err != nil {
+		return nil, ParseError{Message: err.Error()}
+	}
+
+	if *ends != "" && t.Before(time.Now().UTC()) {
+		return nil, ParseError{Message: "Poll end time must be in the future."}
 	}
 
 	createPollRequest := &votingpb.CreatePollRequest{
@@ -39,6 +50,7 @@ func ParseCreatePollRequest(request contract.Request) (*votingpb.CreatePollReque
 		AllowedUniqueVotes: int32(*allowedUniqueVotes),
 		ServerId:           request.ServerId,
 		CreatorId:          request.Author.Id,
+		Expires:            t.Unix(),
 	}
 
 	for _, content := range parser.Args() {
@@ -169,4 +181,12 @@ func parseSortMethod(input string) (string, error) {
 	}
 
 	return sortMethod, nil
+}
+
+func parseEndTime(layout string, value string) (time.Time, error) {
+	if value == "" {
+		return time.Time{}, nil
+	}
+
+	return time.Parse(layout, value)
 }

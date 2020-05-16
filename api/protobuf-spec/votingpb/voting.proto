@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+option go_package = ".;votingpb";
 package votingpb;
 
 service Voting {
@@ -19,6 +20,7 @@ message CreatePollRequest {
     string title = 3;
     int32 allowedUniqueVotes = 4;
     repeated Option options = 5;
+    int64 expires = 6;
 }
 
 message CreatePollReply {
@@ -55,6 +57,7 @@ message Poll {
     int32 allowedUniqueVotes = 6;
     bool hasEnded = 7;
     repeated Option options = 8;
+    int64 expires = 9;
 }
 
 message EndPollRequest {
