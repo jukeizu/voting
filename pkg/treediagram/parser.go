@@ -32,7 +32,7 @@ func ParseCreatePollRequest(request contract.Request) (*votingpb.CreatePollReque
 
 	title := parser.String("t", "", "The poll title")
 	allowedUniqueVotes := parser.Int("n", 1, "The number of unique votes a user can submit.")
-	ends := parser.String("ends", "", fmt.Sprintf("The UTC end time for the poll such as '%s' (format M/d/yy H:mm)", endsFormatExample))
+	ends := parser.String("ends", "", fmt.Sprintf("The UTC end time for the poll such as '%s' (format \"M/d/yy H:mm\")", endsFormatExample))
 
 	err = parser.Parse(args[1:])
 	if err != nil {

@@ -44,6 +44,10 @@ func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Vote
 
 	if status.Poll.HasEnded {
 		buffer.WriteString("\nPoll has ended!\n")
+	} else if status.Poll.Expires > (time.Time{}).Unix() {
+		formatedTime := time.Unix(status.Poll.Expires, 0).UTC().Format("Jan 2, 2006 15:04:05 MST")
+
+		buffer.WriteString(fmt.Sprintf("\nPoll ends `%s`\n", formatedTime))
 	}
 
 	voterCount := status.VoterCount
