@@ -24,10 +24,10 @@ func FormatNewPollReply(poll *votingpb.Poll) string {
 	if poll.Expires > (time.Time{}).Unix() {
 		formatedTime := time.Unix(poll.Expires, 0).UTC().Format("Jan 2, 2006 15:04:05 MST")
 
-		buffer.WriteString(fmt.Sprintf("\nEnding `%s`\n", formatedTime))
+		buffer.WriteString(fmt.Sprintf("\nPoll ends `%s`\n", formatedTime))
 	}
 
-	buffer.WriteString(fmt.Sprintf("\nType `!poll` to view the poll. A previous poll can be viewed via id. e.g. `!poll -id %s`", poll.ShortId))
+	buffer.WriteString(fmt.Sprintf("\nView the poll with `!poll` or `!poll -id %s`", poll.ShortId))
 
 	return buffer.String()
 }
