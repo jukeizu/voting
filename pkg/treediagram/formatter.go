@@ -26,7 +26,7 @@ func FormatNewPollReplyMessage(poll *votingpb.Poll) *contract.Message {
 	if poll.Expires > (time.Time{}).Unix() {
 		formatedTime := time.Unix(poll.Expires, 0).UTC().Format("Jan 2, 2006 15:04:05 MST")
 
-		buffer.WriteString(fmt.Sprintf("\nEnds: `%s`\n", formatedTime))
+		buffer.WriteString(fmt.Sprintf("\nEnding `%s`\n", formatedTime))
 		buffer.WriteString("React with :alarm_clock: for reminders.\n")
 
 		message.Reactions = []string{"⏰"}

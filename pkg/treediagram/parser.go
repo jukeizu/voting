@@ -3,6 +3,7 @@ package treediagram
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"strings"
 	"time"
 
@@ -27,9 +28,11 @@ func ParseCreatePollRequest(request contract.Request) (*votingpb.CreatePollReque
 	parser := flag.NewFlagSet("pollnew", flag.ContinueOnError)
 	parser.SetOutput(outputBuffer)
 
+	endsFormatExample := time.Now().UTC().Add(time.Hour * 36).Format("1/2/06 15:04")
+
 	title := parser.String("t", "", "The poll title")
 	allowedUniqueVotes := parser.Int("n", 1, "The number of unique votes a user can submit.")
-	ends := parser.String("ends", "", "When the poll will end in format 'M/d/yy H:mm'")
+	ends := parser.String("ends", "", fmt.Sprintf("The UTC end time for the poll such as '%s' (format M/d/yy H:mm)", endsFormatExample))
 
 	err = parser.Parse(args[1:])
 	if err != nil {
