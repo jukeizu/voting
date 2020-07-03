@@ -3,6 +3,7 @@ package voting
 import (
 	"fmt"
 	"runtime/debug"
+	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/shawntoffel/election"
@@ -16,6 +17,7 @@ type Service interface {
 	Poll(shortId string, voterId string, serverId string) (Poll, error)
 	VoterPoll(voterId string, serverId string) (Poll, error)
 	EndPoll(shortId string, serverId string, userId string) (Poll, error)
+	ExtendPoll(shortId string, serverId string, userId string, expires time.Time) (Poll, error)
 	Status(shortId string, serverId string) (Status, error)
 	Voters(shortId string, serverId string) ([]Voter, error)
 	Vote(voteRequest VoteRequest) (VoteReply, error)
@@ -94,6 +96,15 @@ func (s DefaultService) EndPoll(shortId string, serverId string, userId string) 
 	}
 
 	return s.pollService.End(shortId, serverId)
+}
+
+func (s DefaultService) ExtendPoll(shortId string, serverId string, userId string, expires time.Time) (Poll, error) {
+	shortId, err := s.findPollShortId(shortId, serverId)
+	if err != nil {
+		return Poll{}, err
+	}
+
+	return s.pollService.Extend(shortId, serverId, expires)
 }
 
 func (s DefaultService) Status(shortId string, serverId string) (Status, error) {

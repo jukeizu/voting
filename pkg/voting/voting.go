@@ -98,6 +98,7 @@ type PollService interface {
 	Poll(shortId string, serverId string) (Poll, error)
 	PollCreator(shortId string, serverId string) (string, error)
 	End(shortId string, serverId string) (Poll, error)
+	Extend(shortId string, serverId string, expires time.Time) (Poll, error)
 	UniqueOptions(pollId string, optionIds []string) ([]Option, error)
 	Option(id string) (Option, error)
 }

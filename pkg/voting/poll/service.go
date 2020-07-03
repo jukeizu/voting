@@ -3,6 +3,7 @@ package poll
 import (
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/jukeizu/voting/pkg/voting"
 	"github.com/rs/zerolog"
@@ -70,6 +71,20 @@ func (h DefaultService) End(shortId string, serverId string) (voting.Poll, error
 	h.logger.Info().
 		Str("pollId", poll.Id).
 		Msg("poll has ended")
+
+	return poll, nil
+}
+
+func (h DefaultService) Extend(shortId string, serverId string, expires time.Time) (voting.Poll, error) {
+	poll, err := h.repository.ExtendPoll(shortId, serverId, expires)
+	if err != nil {
+		return voting.Poll{}, err
+	}
+
+	h.logger.Info().
+		Str("pollId", poll.Id).
+		Time("newExpires", poll.Expires).
+		Msg("poll has been extended")
 
 	return poll, nil
 }

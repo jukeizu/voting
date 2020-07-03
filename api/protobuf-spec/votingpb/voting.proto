@@ -8,6 +8,7 @@ service Voting {
     rpc Poll(PollRequest) returns (PollReply) {}
     rpc VoterPoll(VoterPollRequest) returns (PollReply) {}
     rpc EndPoll(EndPollRequest) returns (EndPollReply) {}
+    rpc ExtendPoll(ExtendPollRequest) returns (ExtendPollReply) {}
     rpc Status(StatusRequest) returns (StatusReply) {}
     rpc Voters(VotersRequest) returns (stream Voter) {}
     rpc Vote(VoteRequest) returns (VoteReply) {}
@@ -67,6 +68,17 @@ message EndPollRequest {
 }
 
 message EndPollReply {
+    Poll poll = 1;
+}
+
+message ExtendPollRequest {
+    string shortId = 1;
+    string serverId = 2;
+    string requesterId = 3;
+    int64 expires = 4;
+}
+
+message ExtendPollReply {
     Poll poll = 1;
 }
 
