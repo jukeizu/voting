@@ -123,8 +123,11 @@ func (h Handler) PollStatus(request contract.Request) (*contract.Response, error
 
 		voters = v
 	}
+	message := &contract.Message{
+		Embed: FormatPollStatusReply(status, voters),
+	}
 
-	return contract.StringResponse(FormatPollStatusReply(status, voters)), nil
+	return &contract.Response{Messages: []*contract.Message{message}}, nil
 }
 
 func (h Handler) PollEnd(request contract.Request) (*contract.Response, error) {

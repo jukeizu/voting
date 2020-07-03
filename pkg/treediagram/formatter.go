@@ -43,22 +43,27 @@ func FormatNewPollReply(poll *votingpb.Poll) *contract.Embed {
 	return embed
 }
 
-func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Voter) string {
-	buffer := bytes.Buffer{}
-
-	buffer.WriteString(":ballot_box: ")
-	if status.Poll.Title != "" {
-		buffer.WriteString(fmt.Sprintf("**%s** ", status.Poll.Title))
+func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Voter) *contract.Embed {
+	embed := &contract.Embed{
+		Color:        0x5dadec,
+		ThumbnailUrl: ThumbnailURL,
 	}
 
-	buffer.WriteString(fmt.Sprintf("`%s`\n", status.Poll.ShortId))
+	title := ""
+	if status.Poll.Title != "" {
+		title += fmt.Sprintf("**%s** ", status.Poll.Title)
+	}
+	title += fmt.Sprintf("`%s`\n", status.Poll.ShortId)
 
+	embed.Title = title
+
+	buffer := bytes.Buffer{}
 	if status.Poll.HasEnded {
 		buffer.WriteString("\nPoll has ended!\n")
 	} else if status.Poll.Expires > (time.Time{}).Unix() {
-		formatedTime := time.Unix(status.Poll.Expires, 0).UTC().Format("Jan 2, 2006 15:04:05 MST")
+		formatedTime := time.Unix(status.Poll.Expires, 0).UTC().Format("Jan 2, 2006 15:04 MST")
 
-		buffer.WriteString(fmt.Sprintf("\nPoll ends `%s`\n", formatedTime))
+		buffer.WriteString(fmt.Sprintf("\nPoll ends: [%s](%s?t=%d)\n", formatedTime, CountdownURL, status.Poll.Expires))
 	}
 
 	voterCount := status.VoterCount
@@ -76,7 +81,9 @@ func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Vote
 
 	buffer.WriteString(strings.Join(voterUsernames, ", "))
 
-	return buffer.String()
+	embed.Description = buffer.String()
+
+	return embed
 }
 
 func FormatPollReply(poll *votingpb.Poll, reply *selectionpb.CreateSelectionReply) *contract.Embed {
