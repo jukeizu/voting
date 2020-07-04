@@ -109,25 +109,7 @@ func (h Handler) PollStatus(request contract.Request) (*contract.Response, error
 		return FormatParseError(err)
 	}
 
-	status, err := h.client.Status(context.Background(), req)
-	if err != nil {
-		return FormatClientError(err)
-	}
-
-	voters := []*votingpb.Voter{}
-	if status.VoterCount <= 30 {
-		v, err := h.voters(req.ShortId, req.ServerId)
-		if err != nil {
-			return FormatClientError(err)
-		}
-
-		voters = v
-	}
-	message := &contract.Message{
-		Embed: FormatPollStatusReply(status, voters),
-	}
-
-	return &contract.Response{Messages: []*contract.Message{message}}, nil
+	return h.pollStatus(req.ShortId, req.ServerId)
 }
 
 func (h Handler) PollEnd(request contract.Request) (*contract.Response, error) {
@@ -136,30 +118,12 @@ func (h Handler) PollEnd(request contract.Request) (*contract.Response, error) {
 		return FormatParseError(err)
 	}
 
-	endPollReply, err := h.client.EndPoll(context.Background(), req)
+	_, err = h.client.EndPoll(context.Background(), req)
 	if err != nil {
 		return FormatClientError(err)
 	}
 
-	numToElect := endPollReply.Poll.AllowedUniqueVotes
-	if numToElect > 5 {
-		numToElect = 5
-	}
-
-	countRequest := &votingpb.CountRequest{
-		ShortId:    req.ShortId,
-		ServerId:   request.ServerId,
-		NumToElect: numToElect,
-		Method:     "meekstv",
-	}
-
-	countReply, _ := h.client.Count(context.Background(), countRequest)
-
-	message := &contract.Message{
-		Embed: FormatEndPollReply(endPollReply, countReply),
-	}
-
-	return &contract.Response{Messages: []*contract.Message{message}}, nil
+	return h.pollStatus(req.ShortId, req.ServerId)
 }
 
 func (h Handler) PollOpen(request contract.Request) (*contract.Response, error) {
@@ -250,6 +214,48 @@ func (h Handler) Count(request contract.Request) (*contract.Response, error) {
 	}
 
 	message := FormatCountResult(countReply)
+
+	return &contract.Response{Messages: []*contract.Message{message}}, nil
+}
+
+func (h Handler) pollStatus(shortID string, serverID string) (*contract.Response, error) {
+	req := &votingpb.StatusRequest{
+		ShortId:  shortID,
+		ServerId: serverID,
+	}
+
+	status, err := h.client.Status(context.Background(), req)
+	if err != nil {
+		return FormatClientError(err)
+	}
+
+	voters := []*votingpb.Voter{}
+	if status.VoterCount <= 30 {
+		v, err := h.voters(req.ShortId, req.ServerId)
+		if err != nil {
+			return FormatClientError(err)
+		}
+
+		voters = v
+	}
+
+	numToElect := status.Poll.AllowedUniqueVotes
+	if numToElect > 5 {
+		numToElect = 5
+	}
+
+	countRequest := &votingpb.CountRequest{
+		ShortId:    req.ShortId,
+		ServerId:   req.ServerId,
+		NumToElect: numToElect,
+		Method:     "meekstv",
+	}
+
+	countReply, _ := h.client.Count(context.Background(), countRequest)
+
+	message := &contract.Message{
+		Embed: FormatPollStatusReply(status, voters, countReply),
+	}
 
 	return &contract.Response{Messages: []*contract.Message{message}}, nil
 }

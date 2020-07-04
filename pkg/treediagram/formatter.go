@@ -43,47 +43,86 @@ func FormatNewPollReply(poll *votingpb.Poll) *contract.Embed {
 	return embed
 }
 
-func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Voter) *contract.Embed {
+func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Voter, countReply *votingpb.CountReply) *contract.Embed {
 	embed := &contract.Embed{
 		Color:        0x5dadec,
 		ThumbnailUrl: ThumbnailURL,
+		Title:        generateTitle(status.Poll),
 	}
-
-	title := ""
-	if status.Poll.Title != "" {
-		title += fmt.Sprintf("**%s** ", status.Poll.Title)
-	}
-	title += fmt.Sprintf("`%s`\n", status.Poll.ShortId)
-
-	embed.Title = title
 
 	buffer := bytes.Buffer{}
 	if status.Poll.HasEnded {
 		buffer.WriteString("\nPoll has ended!\n")
+
+		embed.Footer = &contract.EmbedFooter{
+			Text: "Use !electioncount for a custom count.",
+		}
+
+		if countReply != nil {
+			results := generateCountResultsEmbedField(countReply)
+			embed.Fields = append(embed.Fields, results)
+		}
+
 	} else if status.Poll.Expires > (time.Time{}).Unix() {
 		formatedTime := time.Unix(status.Poll.Expires, 0).UTC().Format("Jan 2, 2006 15:04 MST")
 
 		buffer.WriteString(fmt.Sprintf("\nPoll ends: [%s](%s?t=%d)\n", formatedTime, CountdownURL, status.Poll.Expires))
 	}
 
-	voterCount := status.VoterCount
-	voterUsernames := []string{}
+	embed.Description = buffer.String()
 
+	if status.VoterCount > 0 {
+		votersField := generateVotersEmbedField(status.VoterCount, voters)
+		embed.Fields = append(embed.Fields, votersField)
+	}
+
+	return embed
+}
+
+func generateTitle(poll *votingpb.Poll) string {
+	title := ""
+
+	if poll.Title != "" {
+		title += fmt.Sprintf("**%s** ", poll.Title)
+	}
+
+	title += fmt.Sprintf("`%s`\n", poll.ShortId)
+
+	return title
+}
+
+func generateVotersEmbedField(voterCount int64, voters []*votingpb.Voter) *contract.EmbedField {
+	voterUsernames := []string{}
 	for _, voter := range voters {
 		voterUsernames = append(voterUsernames, voter.Username)
 	}
 
-	if voterCount == 1 {
-		buffer.WriteString("\n**1 user voted**\n\n")
-	} else {
-		buffer.WriteString(fmt.Sprintf("\n**%d users voted**\n\n", voterCount))
+	votersField := &contract.EmbedField{
+		Value: strings.Join(voterUsernames, ", "),
 	}
 
-	buffer.WriteString(strings.Join(voterUsernames, ", "))
+	if voterCount == 1 {
+		votersField.Name = "\n**1 user voted**\n\n"
+	} else {
+		votersField.Name = fmt.Sprintf("\n**%d users voted**\n\n", voterCount)
+	}
 
-	embed.Description = buffer.String()
+	return votersField
+}
 
-	return embed
+func generateCountResultsEmbedField(countReply *votingpb.CountReply) *contract.EmbedField {
+	buffer := bytes.Buffer{}
+
+	for _, candidate := range countReply.Elected {
+		buffer.WriteString(fmt.Sprintf("\n%d. %s", candidate.Rank, candidate.Option.Content))
+	}
+
+	results := &contract.EmbedField{
+		Name:  "Results",
+		Value: buffer.String(),
+	}
+
+	return results
 }
 
 func FormatPollReply(poll *votingpb.Poll, reply *selectionpb.CreateSelectionReply) *contract.Embed {
