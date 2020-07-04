@@ -23,7 +23,7 @@ type Repository interface {
 	Option(id string) (voting.Option, error)
 	Options(pollId string) ([]voting.Option, error)
 	EndPoll(pollShortId, serverId string) (voting.Poll, error)
-	ExtendPoll(pollShortId, serverId string, expires time.Time) (voting.Poll, error)
+	OpenPoll(pollShortId, serverId string, expires time.Time) (voting.Poll, error)
 	UniqueOptions(pollId string, optionIds []string) ([]voting.Option, error)
 }
 
@@ -248,7 +248,7 @@ func (r *repository) EndPoll(pollShortId string, serverId string) (voting.Poll, 
 	return r.Poll(pollShortId, serverId)
 }
 
-func (r *repository) ExtendPoll(pollShortId string, serverId string, expires time.Time) (voting.Poll, error) {
+func (r *repository) OpenPoll(pollShortId string, serverId string, expires time.Time) (voting.Poll, error) {
 	q := `UPDATE poll SET manuallyEnded = false, expires = $1 WHERE shortId = $2 AND serverId = $3`
 
 	var t *time.Time

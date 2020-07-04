@@ -144,6 +144,24 @@ func (h Handler) PollEnd(request contract.Request) (*contract.Response, error) {
 	return contract.StringResponse(FormatEndPollReply(endPollReply)), nil
 }
 
+func (h Handler) PollOpen(request contract.Request) (*contract.Response, error) {
+	req, err := ParseOpenPollRequest(request)
+	if err != nil {
+		return FormatParseError(err)
+	}
+
+	openPollReply, err := h.client.OpenPoll(context.Background(), req)
+	if err != nil {
+		return FormatClientError(err)
+	}
+
+	message := &contract.Message{
+		Embed: FormatOpenPollReply(openPollReply),
+	}
+
+	return &contract.Response{Messages: []*contract.Message{message}}, nil
+}
+
 func (h Handler) Vote(request contract.Request) (*contract.Response, error) {
 	voterPollRequest := &votingpb.VoterPollRequest{
 		VoterId:  request.Author.Id,
@@ -255,6 +273,7 @@ func (h Handler) Start() error {
 	mux.HandleFunc("/poll", h.makeLoggingHttpHandlerFunc("poll", h.Poll))
 	mux.HandleFunc("/pollstatus", h.makeLoggingHttpHandlerFunc("pollstatus", h.PollStatus))
 	mux.HandleFunc("/pollend", h.makeLoggingHttpHandlerFunc("pollend", h.PollEnd))
+	mux.HandleFunc("/pollopen", h.makeLoggingHttpHandlerFunc("pollopen", h.PollOpen))
 	mux.HandleFunc("/vote", h.makeLoggingHttpHandlerFunc("vote", h.Vote))
 	mux.HandleFunc("/electioncount", h.makeLoggingHttpHandlerFunc("electioncount", h.Count))
 

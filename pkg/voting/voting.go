@@ -93,12 +93,18 @@ type CountEvent struct {
 	Description string
 }
 
+type OpenPollResult struct {
+	Poll               Poll
+	PreviouslyEnded    bool
+	PreviousExpiration time.Time
+}
+
 type PollService interface {
 	Create(poll Poll) (Poll, error)
 	Poll(shortId string, serverId string) (Poll, error)
 	PollCreator(shortId string, serverId string) (string, error)
 	End(shortId string, serverId string) (Poll, error)
-	Extend(shortId string, serverId string, expires time.Time) (Poll, error)
+	Open(shortId string, serverId string, expires time.Time) (OpenPollResult, error)
 	UniqueOptions(pollId string, optionIds []string) ([]Option, error)
 	Option(id string) (Option, error)
 }

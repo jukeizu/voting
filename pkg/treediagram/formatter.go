@@ -154,6 +154,41 @@ func FormatEndPollReply(endPollReply *votingpb.EndPollReply) string {
 	return fmt.Sprintf("ended poll `%s` %s", endPollReply.Poll.ShortId, endPollReply.Poll.Title)
 }
 
+func FormatOpenPollReply(openPollReply *votingpb.OpenPollReply) *contract.Embed {
+	embed := &contract.Embed{
+		Color:        0x5dadec,
+		ThumbnailUrl: ThumbnailURL,
+	}
+
+	titleText := "Poll is open"
+	if openPollReply.PreviouslyEnded {
+		titleText = "Poll has been reopened"
+	} else if openPollReply.PreviousExpiration != openPollReply.Poll.Expires && openPollReply.Poll.Expires > (time.Time{}).Unix() {
+		titleText = "Poll end time has changed"
+	}
+
+	embed.Title = fmt.Sprintf("**%s** `%s`\n", titleText, openPollReply.Poll.ShortId)
+
+	buffer := bytes.Buffer{}
+
+	if openPollReply.Poll.Title != "" {
+		buffer.WriteString(fmt.Sprintf("\n**%s**\n", openPollReply.Poll.Title))
+	}
+
+	if openPollReply.Poll.Expires > (time.Time{}).Unix() {
+		t := time.Unix(openPollReply.Poll.Expires, 0).UTC()
+		displayTime := t.Format("Jan 2, 2006 15:04 MST")
+
+		buffer.WriteString(fmt.Sprintf("\nPoll ends: [%s](%s?t=%d)\n", displayTime, CountdownURL, openPollReply.Poll.Expires))
+	}
+
+	buffer.WriteString(fmt.Sprintf("\nView the poll with `!poll -id %s`", openPollReply.Poll.ShortId))
+
+	embed.Description = buffer.String()
+
+	return embed
+}
+
 func FormatVoteReply(poll *votingpb.Poll, voteReply *votingpb.VoteReply) string {
 	if !voteReply.Success {
 		return voteReply.Message

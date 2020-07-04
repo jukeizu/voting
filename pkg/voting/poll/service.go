@@ -75,18 +75,31 @@ func (h DefaultService) End(shortId string, serverId string) (voting.Poll, error
 	return poll, nil
 }
 
-func (h DefaultService) Extend(shortId string, serverId string, expires time.Time) (voting.Poll, error) {
-	poll, err := h.repository.ExtendPoll(shortId, serverId, expires)
+func (h DefaultService) Open(shortId string, serverId string, expires time.Time) (voting.OpenPollResult, error) {
+	previous, err := h.Poll(shortId, serverId)
 	if err != nil {
-		return voting.Poll{}, err
+		return voting.OpenPollResult{}, err
+	}
+
+	poll, err := h.repository.OpenPoll(shortId, serverId, expires)
+	if err != nil {
+		return voting.OpenPollResult{}, err
+	}
+
+	openPollResult := voting.OpenPollResult{
+		Poll:               poll,
+		PreviouslyEnded:    previous.HasEnded(),
+		PreviousExpiration: previous.Expires,
 	}
 
 	h.logger.Info().
 		Str("pollId", poll.Id).
+		Bool("previouslyEnded", openPollResult.PreviouslyEnded).
+		Time("previousExpiration", openPollResult.PreviousExpiration).
 		Time("newExpires", poll.Expires).
-		Msg("poll has been extended")
+		Msg("poll has been opened")
 
-	return poll, nil
+	return openPollResult, nil
 }
 
 func (h DefaultService) UniqueOptions(pollId string, optionIds []string) ([]voting.Option, error) {

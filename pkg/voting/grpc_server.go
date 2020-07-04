@@ -65,15 +65,19 @@ func (s GrpcServer) EndPoll(ctx context.Context, req *votingpb.EndPollRequest) (
 	return &votingpb.EndPollReply{Poll: pollReply}, nil
 }
 
-func (s GrpcServer) ExtendPoll(ctx context.Context, req *votingpb.ExtendPollRequest) (*votingpb.ExtendPollReply, error) {
-	poll, err := s.service.ExtendPoll(req.ShortId, req.ServerId, req.RequesterId, time.Unix(req.Expires, 0))
+func (s GrpcServer) OpenPoll(ctx context.Context, req *votingpb.OpenPollRequest) (*votingpb.OpenPollReply, error) {
+	openPollResult, err := s.service.OpenPoll(req.ShortId, req.ServerId, req.RequesterId, time.Unix(req.Expires, 0))
 	if err != nil {
 		return nil, toStatusErr(err)
 	}
 
-	pollReply := toPbPoll(poll)
+	pollReply := toPbPoll(openPollResult.Poll)
 
-	return &votingpb.ExtendPollReply{Poll: pollReply}, nil
+	return &votingpb.OpenPollReply{
+		Poll:               pollReply,
+		PreviouslyEnded:    openPollResult.PreviouslyEnded,
+		PreviousExpiration: openPollResult.PreviousExpiration.UTC().Unix(),
+	}, nil
 }
 
 func (s GrpcServer) Status(ctx context.Context, req *votingpb.StatusRequest) (*votingpb.StatusReply, error) {
