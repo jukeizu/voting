@@ -74,9 +74,9 @@ func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Vote
 	}
 
 	if voterCount == 1 {
-		buffer.WriteString("\n**1 user has voted**\n\n")
+		buffer.WriteString("\n**1 user voted**\n\n")
 	} else {
-		buffer.WriteString(fmt.Sprintf("\n**%d users have voted**\n\n", voterCount))
+		buffer.WriteString(fmt.Sprintf("\n**%d users voted**\n\n", voterCount))
 	}
 
 	buffer.WriteString(strings.Join(voterUsernames, ", "))
@@ -150,8 +150,42 @@ func FormatVoteHelp(allowedVotes int32) string {
 	return buffer.String()
 }
 
-func FormatEndPollReply(endPollReply *votingpb.EndPollReply) string {
-	return fmt.Sprintf("ended poll `%s` %s", endPollReply.Poll.ShortId, endPollReply.Poll.Title)
+func FormatEndPollReply(endPollReply *votingpb.EndPollReply, countReply *votingpb.CountReply) *contract.Embed {
+
+	title := ""
+	if endPollReply.Poll.Title != "" {
+		title += fmt.Sprintf("**%s** ", endPollReply.Poll.Title)
+	}
+	title += fmt.Sprintf("`%s`\n", endPollReply.Poll.ShortId)
+
+	embed := &contract.Embed{
+		Color:        0x5dadec,
+		ThumbnailUrl: ThumbnailURL,
+		Title:        title,
+		Description:  "Poll has ended!",
+		Footer: &contract.EmbedFooter{
+			Text: "Use !electioncount for a custom count.",
+		},
+	}
+
+	if countReply == nil {
+		return embed
+	}
+
+	buffer := bytes.Buffer{}
+
+	for _, candidate := range countReply.Elected {
+		buffer.WriteString(fmt.Sprintf("\n%d. %s", candidate.Rank, candidate.Option.Content))
+	}
+
+	results := &contract.EmbedField{
+		Name:  "Results",
+		Value: buffer.String(),
+	}
+
+	embed.Fields = append(embed.Fields, results)
+
+	return embed
 }
 
 func FormatOpenPollReply(openPollReply *votingpb.OpenPollReply) *contract.Embed {
@@ -160,20 +194,24 @@ func FormatOpenPollReply(openPollReply *votingpb.OpenPollReply) *contract.Embed 
 		ThumbnailUrl: ThumbnailURL,
 	}
 
-	titleText := "Poll is open"
-	if openPollReply.PreviouslyEnded {
-		titleText = "Poll has been reopened"
-	} else if openPollReply.PreviousExpiration != openPollReply.Poll.Expires && openPollReply.Poll.Expires > (time.Time{}).Unix() {
-		titleText = "Poll end time has changed"
+	title := ""
+	if openPollReply.Poll.Title != "" {
+		title += fmt.Sprintf("**%s** ", openPollReply.Poll.Title)
 	}
+	title += fmt.Sprintf("`%s`\n", openPollReply.Poll.ShortId)
 
-	embed.Title = fmt.Sprintf("**%s** `%s`\n", titleText, openPollReply.Poll.ShortId)
+	embed.Title = title
+
+	text := ""
+	if openPollReply.PreviouslyEnded {
+		text = "Poll has reopened!"
+	} else if openPollReply.PreviousExpiration != openPollReply.Poll.Expires && openPollReply.Poll.Expires > (time.Time{}).Unix() {
+		text = "End time has changed!"
+	}
 
 	buffer := bytes.Buffer{}
 
-	if openPollReply.Poll.Title != "" {
-		buffer.WriteString(fmt.Sprintf("\n**%s**\n", openPollReply.Poll.Title))
-	}
+	buffer.WriteString(fmt.Sprintf("\n%s", text))
 
 	if openPollReply.Poll.Expires > (time.Time{}).Unix() {
 		t := time.Unix(openPollReply.Poll.Expires, 0).UTC()
@@ -213,7 +251,6 @@ func FormatVoteReply(poll *votingpb.Poll, voteReply *votingpb.VoteReply) string 
 }
 
 func FormatCountResult(countReply *votingpb.CountReply) *contract.Message {
-
 	embed := &contract.Embed{
 		Title:       ":ballot_box: Election Result",
 		Description: fmt.Sprintf("%s `%s`", countReply.Poll.Title, countReply.Poll.ShortId),

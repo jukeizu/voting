@@ -141,7 +141,25 @@ func (h Handler) PollEnd(request contract.Request) (*contract.Response, error) {
 		return FormatClientError(err)
 	}
 
-	return contract.StringResponse(FormatEndPollReply(endPollReply)), nil
+	numToElect := endPollReply.Poll.AllowedUniqueVotes
+	if numToElect > 5 {
+		numToElect = 5
+	}
+
+	countRequest := &votingpb.CountRequest{
+		ShortId:    req.ShortId,
+		ServerId:   request.ServerId,
+		NumToElect: numToElect,
+		Method:     "meekstv",
+	}
+
+	countReply, _ := h.client.Count(context.Background(), countRequest)
+
+	message := &contract.Message{
+		Embed: FormatEndPollReply(endPollReply, countReply),
+	}
+
+	return &contract.Response{Messages: []*contract.Message{message}}, nil
 }
 
 func (h Handler) PollOpen(request contract.Request) (*contract.Response, error) {
