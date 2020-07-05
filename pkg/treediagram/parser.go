@@ -140,6 +140,46 @@ func ParseEndPollRequest(request contract.Request) (*votingpb.EndPollRequest, er
 	return req, nil
 }
 
+func ParseOpenPollRequest(request contract.Request) (*votingpb.OpenPollRequest, error) {
+	args, err := shellwords.Parse(request.Content)
+	if err != nil {
+		return nil, err
+	}
+
+	outputBuffer := bytes.NewBuffer([]byte{})
+
+	parser := flag.NewFlagSet("pollopen", flag.ContinueOnError)
+	parser.SetOutput(outputBuffer)
+
+	endsFormatExample := time.Now().UTC().Add(time.Hour * 36).Format("1/2/06 15:04")
+
+	shortID := parser.String("id", "", "The poll id. Defaults to the most recent poll in a server.")
+	ends := parser.String("ends", "", fmt.Sprintf("The UTC end time for the poll such as '%s' (format \"M/d/yy H:mm\")", endsFormatExample))
+
+	err = parser.Parse(args[1:])
+	if err != nil {
+		return nil, ParseError{Message: outputBuffer.String()}
+	}
+
+	t, err := parseEndTime("1/2/06 15:04", *ends)
+	if err != nil {
+		return nil, ParseError{Message: err.Error()}
+	}
+
+	if *ends != "" && t.Before(time.Now().UTC()) {
+		return nil, ParseError{Message: "Poll end time must be in the future."}
+	}
+
+	req := &votingpb.OpenPollRequest{
+		ShortId:     *shortID,
+		ServerId:    request.ServerId,
+		RequesterId: request.Author.Id,
+		Expires:     t.Unix(),
+	}
+
+	return req, nil
+}
+
 func ParseCountRequest(request contract.Request) (*votingpb.CountRequest, error) {
 	args, err := shellwords.Parse(request.Content)
 	if err != nil {

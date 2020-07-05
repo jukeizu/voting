@@ -3,6 +3,7 @@ package poll
 import (
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/jukeizu/voting/pkg/voting"
 	"github.com/rs/zerolog"
@@ -72,6 +73,33 @@ func (h DefaultService) End(shortId string, serverId string) (voting.Poll, error
 		Msg("poll has ended")
 
 	return poll, nil
+}
+
+func (h DefaultService) Open(shortId string, serverId string, expires time.Time) (voting.OpenPollResult, error) {
+	previous, err := h.Poll(shortId, serverId)
+	if err != nil {
+		return voting.OpenPollResult{}, err
+	}
+
+	poll, err := h.repository.OpenPoll(shortId, serverId, expires)
+	if err != nil {
+		return voting.OpenPollResult{}, err
+	}
+
+	openPollResult := voting.OpenPollResult{
+		Poll:               poll,
+		PreviouslyEnded:    previous.HasEnded(),
+		PreviousExpiration: previous.Expires,
+	}
+
+	h.logger.Info().
+		Str("pollId", poll.Id).
+		Bool("previouslyEnded", openPollResult.PreviouslyEnded).
+		Time("previousExpiration", openPollResult.PreviousExpiration).
+		Time("newExpires", poll.Expires).
+		Msg("poll has been opened")
+
+	return openPollResult, nil
 }
 
 func (h DefaultService) UniqueOptions(pollId string, optionIds []string) ([]voting.Option, error) {

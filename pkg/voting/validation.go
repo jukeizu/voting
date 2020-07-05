@@ -61,6 +61,19 @@ func (s ValidationService) EndPoll(shortId string, serverId string, userId strin
 	return s.service.EndPoll(shortId, serverId, userId)
 }
 
+func (s ValidationService) OpenPoll(shortId string, serverId string, userId string, expires time.Time) (OpenPollResult, error) {
+	poll, err := s.service.Poll(shortId, "", serverId)
+	if err != nil {
+		return OpenPollResult{}, err
+	}
+
+	if userId != poll.CreatorId {
+		return OpenPollResult{}, ErrNotOwner
+	}
+
+	return s.service.OpenPoll(shortId, serverId, userId, expires)
+}
+
 func (s ValidationService) Status(shortId string, serverId string) (Status, error) {
 	return s.service.Status(shortId, serverId)
 }
