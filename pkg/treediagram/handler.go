@@ -14,6 +14,7 @@ import (
 )
 
 const AppId = "intent.endpoint.voting"
+const DefaultStatusMaxNumToElect = 4
 
 type Handler struct {
 	logger          zerolog.Logger
@@ -240,8 +241,8 @@ func (h Handler) pollStatus(shortID string, serverID string) (*contract.Response
 	}
 
 	numToElect := status.Poll.AllowedUniqueVotes
-	if numToElect > 5 {
-		numToElect = 5
+	if numToElect > DefaultStatusMaxNumToElect {
+		numToElect = DefaultStatusMaxNumToElect
 	}
 
 	countRequest := &votingpb.CountRequest{
