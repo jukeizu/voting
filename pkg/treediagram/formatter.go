@@ -122,7 +122,7 @@ func FormatVoteHelp(allowedVotes int32) string {
 		buffer.WriteString(" in order of your most to least favorite. e.g. \"!vote 1 2\" to vote for options 1 and 2 and you prefer option 1.")
 		buffer.WriteString("\n\nOnly your most recent !vote will be counted.")
 	} else {
-		buffer.WriteString(". \n e.g. \"!vote 1\" to vote for option 1.")
+		buffer.WriteString(". e.g. \"!vote 1\" to vote for option 1.")
 	}
 
 	return buffer.String()
