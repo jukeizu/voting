@@ -116,13 +116,13 @@ func FormatPollReply(poll *votingpb.Poll, reply *selectionpb.CreateSelectionRepl
 func FormatVoteHelp(allowedVotes int32) string {
 	buffer := bytes.Buffer{}
 
-	buffer.WriteString("\nTo vote type !vote followed by the numbers you would like to vote for ")
+	buffer.WriteString("\nTo vote type \"!vote\" followed by the numbers you would like to vote for")
 
 	if allowedVotes > 1 {
-		buffer.WriteString("in order of your most to least favorite. e.g. \"!vote 1 2\" to vote for options 1 and 2 and you prefer option 1.")
+		buffer.WriteString(" in order of your most to least favorite. e.g. \"!vote 1 2\" to vote for options 1 and 2 and you prefer option 1.")
 		buffer.WriteString("\n\nOnly your most recent !vote will be counted.")
 	} else {
-		buffer.WriteString("e.g. !vote 1 to vote for option 1.")
+		buffer.WriteString(". e.g. \"!vote 1\" to vote for option 1.")
 	}
 
 	return buffer.String()
@@ -248,20 +248,29 @@ func FormatParseError(err error) (*contract.Response, error) {
 	return nil, err
 }
 
-func FormatClientError(err error) (*contract.Response, error) {
+func FormatClientErrorWithMessage(err error, additionalContent string) (*contract.Response, error) {
 	st, ok := status.FromError(err)
 	if !ok {
 		return nil, err
 	}
 
+	additional := ""
+	if len(additionalContent) > 0 {
+		additional = "\n" + additionalContent
+	}
+
 	switch st.Code() {
 	case codes.InvalidArgument:
-		return contract.StringResponse(st.Message()), nil
+		return contract.StringResponse(st.Message() + additional), nil
 	case codes.NotFound:
-		return contract.StringResponse(st.Message()), nil
+		return contract.StringResponse(st.Message() + additional), nil
 	}
 
 	return nil, err
+}
+
+func FormatClientError(err error) (*contract.Response, error) {
+	return FormatClientErrorWithMessage(err, "")
 }
 
 func generateTitle(poll *votingpb.Poll) string {

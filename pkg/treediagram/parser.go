@@ -226,6 +226,29 @@ func parseSortMethod(input string) (string, error) {
 	return sortMethod, nil
 }
 
+func ParseVoteRequest(request contract.Request, allowedUniqueVotes int) (string, error) {
+	args, err := shellwords.Parse(request.Content)
+	if err != nil {
+		return "", err
+	}
+
+	outputBuffer := bytes.NewBuffer([]byte{})
+
+	parser := flag.NewFlagSet("vote", flag.ContinueOnError)
+	parser.SetOutput(outputBuffer)
+
+	parser.Usage = func() {
+		fmt.Fprintf(parser.Output(), FormatVoteHelp(int32(allowedUniqueVotes)))
+	}
+
+	err = parser.Parse(args[1:])
+	if err != nil {
+		return "", ParseError{Message: outputBuffer.String()}
+	}
+
+	return strings.Join(parser.Args(), " "), nil
+}
+
 func parseEndTime(layout string, value string) (time.Time, error) {
 	if value == "" {
 		return time.Time{}, nil
