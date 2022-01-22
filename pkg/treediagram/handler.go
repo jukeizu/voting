@@ -10,6 +10,7 @@ import (
 	"github.com/jukeizu/contract"
 	"github.com/jukeizu/selection/api/protobuf-spec/selectionpb"
 	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
+	"github.com/jukeizu/voting/pkg/voting"
 	"github.com/rs/zerolog"
 )
 
@@ -156,17 +157,26 @@ func (h Handler) Vote(request contract.Request) (*contract.Response, error) {
 		return FormatClientError(err)
 	}
 
+	if pollReply.Poll.HasEnded {
+		return FormatParseError(ParseError{Message: voting.ErrPollHasEnded.Message})
+	}
+
+	options, err := ParseVoteRequest(request, int(pollReply.Poll.AllowedUniqueVotes))
+	if err != nil {
+		return FormatParseError(err)
+	}
+
 	parseSelectionRequest := &selectionpb.ParseSelectionRequest{
 		AppId:      AppId + ".poll",
 		InstanceId: pollReply.Poll.Id,
 		UserId:     request.Author.Id,
 		ServerId:   request.ServerId,
-		Content:    request.Content,
+		Content:    options,
 	}
 
 	parseSelectionReply, err := h.selectionClient.ParseSelection(context.Background(), parseSelectionRequest)
 	if err != nil {
-		return FormatClientError(err)
+		return FormatClientErrorWithMessage(err, FormatVoteHelp(pollReply.Poll.AllowedUniqueVotes))
 	}
 
 	voteRequest := &votingpb.VoteRequest{
