@@ -144,6 +144,23 @@ func (s GrpcServer) Count(ctx context.Context, req *votingpb.CountRequest) (*vot
 	return toPbCountReply(countResult), nil
 }
 
+func (s GrpcServer) Export(ctx context.Context, req *votingpb.ExportRequest) (*votingpb.ExportReply, error) {
+	exportRequest := ExportRequest{
+		ShortId:    req.ShortId,
+		ServerId:   req.ServerId,
+		NumToElect: int(req.NumToElect),
+		Method:     req.Method,
+		ToExclude:  req.ToExclude,
+	}
+
+	result, err := s.service.Export(exportRequest)
+	if err != nil {
+		return nil, toStatusErr(err)
+	}
+
+	return &votingpb.ExportReply{Content: result.Content}, nil
+}
+
 func createPollRequestToPoll(req *votingpb.CreatePollRequest) Poll {
 	poll := Poll{
 		ServerId:           req.ServerId,

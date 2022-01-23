@@ -79,6 +79,18 @@ type CountRequest struct {
 	ToExclude  []string
 }
 
+type ExportRequest struct {
+	ShortId    string
+	ServerId   string
+	NumToElect int
+	Method     string
+	ToExclude  []string
+}
+
+type ExportResult struct {
+	Content string
+}
+
 type CountResult struct {
 	Success   bool
 	Message   string
