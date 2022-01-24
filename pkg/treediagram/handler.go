@@ -219,6 +219,22 @@ func (h Handler) Count(request contract.Request) (*contract.Response, error) {
 	return &contract.Response{Messages: []*contract.Message{message}}, nil
 }
 
+func (h Handler) Export(request contract.Request) (*contract.Response, error) {
+	exportRequest, err := ParseExportRequest(request)
+	if err != nil {
+		return FormatParseError(err)
+	}
+
+	exportReply, err := h.client.Export(context.Background(), exportRequest)
+	if err != nil {
+		return FormatClientError(err)
+	}
+
+	message := FormatExportResult(exportReply)
+
+	return &contract.Response{Messages: []*contract.Message{message}}, nil
+}
+
 func (h Handler) pollStatus(shortID string, serverID string) (*contract.Response, error) {
 	req := &votingpb.StatusRequest{
 		ShortId:  shortID,

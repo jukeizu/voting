@@ -146,6 +146,8 @@ message ExportRequest {
 
 message ExportReply {
     string content = 1;
+    Poll poll = 2;
+    string method = 3;
 }
 
 message CountReply {
@@ -160,15 +162,4 @@ message CountReply {
 
 message CountEvent {
     string description = 1;
-}
-
-message BltRequest {
-    string shortId = 1;
-    string serverId = 2;
-    int32 numToElect = 3;
-    repeated string toExclude = 4;
-}
-
-message BltReply {
-    string data = 1;
 }

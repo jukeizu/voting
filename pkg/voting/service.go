@@ -269,6 +269,8 @@ func (s DefaultService) Export(exportRequest ExportRequest) (ExportResult, error
 
 	result := ExportResult{
 		Content: exporter.Export(config),
+		Poll:    poll,
+		Method:  exportRequest.Method,
 	}
 
 	return result, nil

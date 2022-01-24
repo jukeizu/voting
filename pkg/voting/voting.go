@@ -89,6 +89,8 @@ type ExportRequest struct {
 
 type ExportResult struct {
 	Content string
+	Poll    Poll
+	Method  string
 }
 
 type CountResult struct {
