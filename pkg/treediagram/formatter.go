@@ -240,7 +240,12 @@ func FormatCountResult(countReply *votingpb.CountReply) *contract.Message {
 }
 
 func FormatExportResult(exportReply *votingpb.ExportReply) *contract.Message {
-	fileName := fmt.Sprintf("%s.%s", exportReply.Poll.Title, exportReply.Method)
+	title := exportReply.Poll.Title
+	if len(title) < 1 {
+		title = exportReply.Poll.ShortId
+	}
+
+	fileName := fmt.Sprintf("%s_%s.txt", title, exportReply.Method)
 
 	content := bytes.Buffer{}
 	content.WriteString(exportReply.Content)

@@ -259,8 +259,6 @@ func (s DefaultService) Export(exportRequest ExportRequest) (ExportResult, error
 	config := election.Config{
 		Ballots:             ballots,
 		Candidates:          candidates,
-		Precision:           8,
-		Seed:                1,
 		NumSeats:            exportRequest.NumToElect,
 		WithdrawnCandidates: exportRequest.ToExclude,
 	}

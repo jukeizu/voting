@@ -128,6 +128,11 @@ func (s ValidationService) Export(exportRequest ExportRequest) (ExportResult, er
 		return ExportResult{}, ErrUnkownExportMethod(exportRequest.Method)
 	}
 
+	err := s.validatePollHasEnded(exportRequest.ShortId, exportRequest.ServerId)
+	if err != nil {
+		return ExportResult{}, err
+	}
+
 	return s.service.Export(exportRequest)
 }
 

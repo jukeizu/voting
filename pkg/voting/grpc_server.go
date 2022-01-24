@@ -157,8 +157,7 @@ func (s GrpcServer) Export(ctx context.Context, req *votingpb.ExportRequest) (*v
 	if err != nil {
 		return nil, toStatusErr(err)
 	}
-
-	return &votingpb.ExportReply{Content: result.Content}, nil
+	return toPbExportReply(result), nil
 }
 
 func createPollRequestToPoll(req *votingpb.CreatePollRequest) Poll {
@@ -306,6 +305,16 @@ func toPbCountEvents(countEvents []CountEvent) []*votingpb.CountEvent {
 	}
 
 	return pbCountEvents
+}
+
+func toPbExportReply(exportResult ExportResult) *votingpb.ExportReply {
+	exportReply := &votingpb.ExportReply{
+		Content: exportResult.Content,
+		Poll:    toPbPoll(exportResult.Poll),
+		Method:  exportResult.Method,
+	}
+
+	return exportReply
 }
 
 func toStatusErr(err error) error {

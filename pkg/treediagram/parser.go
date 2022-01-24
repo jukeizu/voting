@@ -220,7 +220,7 @@ func ParseExportRequest(request contract.Request) (*votingpb.ExportRequest, erro
 
 	outputBuffer := bytes.NewBuffer([]byte{})
 
-	parser := flag.NewFlagSet("pollexport", flag.ContinueOnError)
+	parser := flag.NewFlagSet("electionexport", flag.ContinueOnError)
 	parser.SetOutput(outputBuffer)
 
 	shortID := parser.String("id", "", "The poll id. Defaults to the most recent poll in a server.")
@@ -238,7 +238,10 @@ func ParseExportRequest(request contract.Request) (*votingpb.ExportRequest, erro
 		ServerId:   request.ServerId,
 		NumToElect: int32(*numToElect),
 		Method:     *method,
-		ToExclude:  strings.Split(*exclude, ","),
+	}
+
+	if len(*exclude) > 0 {
+		exportRequest.ToExclude = strings.Split(*exclude, ",")
 	}
 
 	return exportRequest, nil
