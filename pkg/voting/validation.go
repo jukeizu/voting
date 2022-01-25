@@ -1,6 +1,7 @@
 package voting
 
 import (
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -120,6 +121,19 @@ func (s ValidationService) Count(countRequest CountRequest) (CountResult, error)
 	}
 
 	return s.service.Count(countRequest)
+}
+
+func (s ValidationService) Export(exportRequest ExportRequest) (ExportResult, error) {
+	if !strings.EqualFold(exportRequest.Method, "blt") {
+		return ExportResult{}, ErrUnkownExportMethod(exportRequest.Method)
+	}
+
+	err := s.validatePollHasEnded(exportRequest.ShortId, exportRequest.ServerId)
+	if err != nil {
+		return ExportResult{}, err
+	}
+
+	return s.service.Export(exportRequest)
 }
 
 func (s ValidationService) validatePollHasEnded(shortId string, serverId string) error {

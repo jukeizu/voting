@@ -24,6 +24,10 @@ func ErrVoterNotPermitted(voter Voter) ValidationError {
 	return ValidationError{Message: fmt.Sprintf("not permitted. %s is not permitted to vote.", voter.Username)}
 }
 
+func ErrUnkownExportMethod(method string) ValidationError {
+	return ValidationError{Message: fmt.Sprintf("export method '%s' is not supported", method)}
+}
+
 type ValidationError struct {
 	Message string
 }

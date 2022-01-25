@@ -13,6 +13,7 @@ service Voting {
     rpc Voters(VotersRequest) returns (stream Voter) {}
     rpc Vote(VoteRequest) returns (VoteReply) {}
     rpc Count(CountRequest) returns (CountReply) {}
+    rpc Export(ExportRequest) returns (ExportReply) {}
 }
 
 message CreatePollRequest {
@@ -133,6 +134,20 @@ message CountRequest {
     int32 numToElect = 3;
     string method = 4;
     repeated string toExclude = 5;
+}
+
+message ExportRequest {
+    string shortId = 1;
+    string serverId = 2;
+    int32 numToElect = 3;
+    string method = 4;
+    repeated string toExclude = 5;
+}
+
+message ExportReply {
+    string content = 1;
+    Poll poll = 2;
+    string method = 3;
 }
 
 message CountReply {

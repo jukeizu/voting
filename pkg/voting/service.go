@@ -7,6 +7,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/shawntoffel/election"
+	"github.com/shawntoffel/election/export/blt"
 	"github.com/shawntoffel/electioncounter"
 )
 
@@ -22,6 +23,7 @@ type Service interface {
 	Voters(shortId string, serverId string) ([]Voter, error)
 	Vote(voteRequest VoteRequest) (VoteReply, error)
 	Count(countRequest CountRequest) (countResult CountResult, err error)
+	Export(exportRequest ExportRequest) (ExportResult, error)
 }
 
 var _ Service = &DefaultService{}
@@ -239,6 +241,37 @@ func (s DefaultService) Count(countRequest CountRequest) (countResult CountResul
 	countResult.Success = true
 
 	return
+}
+
+func (s DefaultService) Export(exportRequest ExportRequest) (ExportResult, error) {
+	poll, err := s.findPoll(exportRequest.ShortId, exportRequest.ServerId)
+	if err != nil {
+		return ExportResult{}, err
+	}
+
+	ballots, err := s.electionBallots(poll.Id)
+	if err != nil {
+		return ExportResult{}, err
+	}
+
+	candidates := s.electionCandidates(poll)
+
+	config := election.Config{
+		Ballots:             ballots,
+		Candidates:          candidates,
+		NumSeats:            exportRequest.NumToElect,
+		WithdrawnCandidates: exportRequest.ToExclude,
+	}
+
+	exporter := blt.Blt{}
+
+	result := ExportResult{
+		Content: exporter.Export(config),
+		Poll:    poll,
+		Method:  exportRequest.Method,
+	}
+
+	return result, nil
 }
 
 func (s DefaultService) findPoll(shortId string, serverId string) (Poll, error) {

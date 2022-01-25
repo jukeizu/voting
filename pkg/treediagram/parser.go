@@ -194,7 +194,7 @@ func ParseCountRequest(request contract.Request) (*votingpb.CountRequest, error)
 	shortID := parser.String("id", "", "The poll id. Defaults to the most recent poll in a server.")
 	method := parser.String("m", "meekstv", "The counting method.")
 	numToElect := parser.Int("n", 1, "Number of seats to fill.")
-	exclude := parser.String("exclude", "", "Comma delimited list of candidates to exclude before counting.")
+	exclude := parser.String("exclude", "", "Comma delimited list of candidate names to be excluded from the count.")
 
 	err = parser.Parse(args[1:])
 	if err != nil {
@@ -210,6 +210,41 @@ func ParseCountRequest(request contract.Request) (*votingpb.CountRequest, error)
 	}
 
 	return countRequest, nil
+}
+
+func ParseExportRequest(request contract.Request) (*votingpb.ExportRequest, error) {
+	args, err := shellwords.Parse(request.Content)
+	if err != nil {
+		return nil, err
+	}
+
+	outputBuffer := bytes.NewBuffer([]byte{})
+
+	parser := flag.NewFlagSet("electionexport", flag.ContinueOnError)
+	parser.SetOutput(outputBuffer)
+
+	shortID := parser.String("id", "", "The poll id. Defaults to the most recent poll in a server.")
+	method := parser.String("m", "blt", "The export method.")
+	numToElect := parser.Int("n", 1, "Number of seats to fill.")
+	exclude := parser.String("exclude", "", "Comma delimited list of excluded candidate names.")
+
+	err = parser.Parse(args[1:])
+	if err != nil {
+		return nil, ParseError{Message: outputBuffer.String()}
+	}
+
+	exportRequest := &votingpb.ExportRequest{
+		ShortId:    *shortID,
+		ServerId:   request.ServerId,
+		NumToElect: int32(*numToElect),
+		Method:     *method,
+	}
+
+	if len(*exclude) > 0 {
+		exportRequest.ToExclude = strings.Split(*exclude, ",")
+	}
+
+	return exportRequest, nil
 }
 
 func parseSortMethod(input string) (string, error) {

@@ -239,6 +239,33 @@ func FormatCountResult(countReply *votingpb.CountReply) *contract.Message {
 	return message
 }
 
+func FormatExportResult(exportReply *votingpb.ExportReply) *contract.Message {
+	title := exportReply.Poll.Title
+	if len(title) < 1 {
+		title = exportReply.Poll.ShortId
+	}
+
+	fileName := fmt.Sprintf("%s_%s.txt", title, exportReply.Method)
+
+	content := bytes.Buffer{}
+	content.WriteString(exportReply.Content)
+
+	file := &contract.File{
+		Name:  fileName,
+		Bytes: content.Bytes(),
+	}
+
+	message := &contract.Message{}
+
+	if len(file.Bytes) <= 2000000 {
+		message.Files = append(message.Files, file)
+	} else {
+		message.Content = "BLT is too large to upload :/"
+	}
+
+	return message
+}
+
 func FormatParseError(err error) (*contract.Response, error) {
 	switch err.(type) {
 	case ParseError:
