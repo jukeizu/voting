@@ -45,9 +45,7 @@ func (h Handler) CreatePoll(request contract.Request) (*contract.Response, error
 		return FormatClientError(err)
 	}
 
-	message := &contract.Message{
-		Embed: FormatNewPollReply(reply.Poll),
-	}
+	message := FormatNewPollReply(reply.Poll)
 
 	return &contract.Response{Messages: []*contract.Message{message}}, nil
 }
@@ -58,51 +56,19 @@ func (h Handler) Poll(request contract.Request) (*contract.Response, error) {
 		return FormatParseError(err)
 	}
 
-	pollReply, err := h.client.Poll(context.Background(), parsedPollRequest.pollRequest)
-	if err != nil {
-		return FormatClientError(err)
+	return h.poll(parsedPollRequest.pollRequest)
+}
+
+func (h Handler) InteractionPoll(request contract.Interaction) (*contract.Response, error) {
+	shortId := ParsePollShortId(request)
+
+	req := &votingpb.PollRequest{
+		ShortId:  shortId,
+		ServerId: request.ServerId,
+		VoterId:  request.User.Id,
 	}
 
-	if pollReply.Poll.HasEnded {
-		return contract.StringResponse("poll has ended"), nil
-	}
-
-	selectionRequest := &selectionpb.CreateSelectionRequest{
-		AppId:      AppId + ".poll",
-		InstanceId: pollReply.Poll.Id,
-		UserId:     request.Author.Id,
-		ServerId:   request.ServerId,
-		Randomize:  true,
-		BatchSize:  10,
-		SortMethod: parsedPollRequest.sortMethod,
-	}
-
-	for _, option := range pollReply.Poll.Options {
-		selectionOption := &selectionpb.Option{
-			OptionId: option.Id,
-			Content:  option.Content,
-			Metadata: map[string]string{"url": option.Url},
-		}
-
-		selectionRequest.Options = append(selectionRequest.Options, selectionOption)
-	}
-
-	selection, err := h.selectionClient.CreateSelection(context.Background(), selectionRequest)
-	if err != nil {
-		return FormatClientError(err)
-	}
-
-	redirect := &contract.Message{
-		Content:    fmt.Sprintf("<@!%s> The poll has been sent to your direct messages.", request.Author.Id),
-		IsRedirect: true,
-	}
-
-	message := &contract.Message{
-		Embed:            FormatPollReply(pollReply.Poll, selection),
-		IsPrivateMessage: true,
-	}
-
-	return &contract.Response{Messages: []*contract.Message{redirect, message}}, nil
+	return h.poll(req)
 }
 
 func (h Handler) PollStatus(request contract.Request) (*contract.Response, error) {
@@ -111,7 +77,20 @@ func (h Handler) PollStatus(request contract.Request) (*contract.Response, error
 		return FormatParseError(err)
 	}
 
-	return h.pollStatus(req.ShortId, req.ServerId)
+	return h.pollStatus(req.ShortId, req.ServerId, "", false)
+}
+
+func (h Handler) InteractionPollStatus(request contract.Interaction) (*contract.Response, error) {
+	shortId := ParsePollShortId(request)
+	h.logger.Info().Msg(shortId)
+
+	return h.pollStatus(shortId, request.ServerId, "", true)
+}
+
+func (h Handler) PollStatusRefresh(request contract.Interaction) (*contract.Response, error) {
+	shortId := ParsePollShortId(request)
+
+	return h.pollStatus(shortId, request.ServerId, request.MessageId, false)
 }
 
 func (h Handler) PollEnd(request contract.Request) (*contract.Response, error) {
@@ -125,7 +104,7 @@ func (h Handler) PollEnd(request contract.Request) (*contract.Response, error) {
 		return FormatClientError(err)
 	}
 
-	return h.pollStatus(req.ShortId, req.ServerId)
+	return h.pollStatus(req.ShortId, req.ServerId, "", false)
 }
 
 func (h Handler) PollOpen(request contract.Request) (*contract.Response, error) {
@@ -206,7 +185,7 @@ func (h Handler) Vote(request contract.Request) (*contract.Response, error) {
 	}
 
 	message := &contract.Message{
-		Content:          FormatVoteReply(pollReply.Poll, voteReply),
+		Embed:            FormatVoteReply(pollReply.Poll, voteReply),
 		IsPrivateMessage: true,
 	}
 
@@ -245,7 +224,50 @@ func (h Handler) Export(request contract.Request) (*contract.Response, error) {
 	return &contract.Response{Messages: []*contract.Message{message}}, nil
 }
 
-func (h Handler) pollStatus(shortID string, serverID string) (*contract.Response, error) {
+func (h Handler) poll(req *votingpb.PollRequest) (*contract.Response, error) {
+	pollReply, err := h.client.Poll(context.Background(), req)
+	if err != nil {
+		return FormatClientError(err)
+	}
+
+	if pollReply.Poll.HasEnded {
+		return h.pollStatus(pollReply.Poll.ShortId, pollReply.Poll.ServerId, "", true)
+	}
+
+	selectionRequest := &selectionpb.CreateSelectionRequest{
+		AppId:      AppId + ".poll",
+		InstanceId: pollReply.Poll.Id,
+		UserId:     req.VoterId,
+		ServerId:   req.ServerId,
+		Randomize:  true,
+		BatchSize:  10,
+		SortMethod: "number",
+	}
+
+	for _, option := range pollReply.Poll.Options {
+		selectionOption := &selectionpb.Option{
+			OptionId: option.Id,
+			Content:  option.Content,
+			Metadata: map[string]string{"url": option.Url},
+		}
+
+		selectionRequest.Options = append(selectionRequest.Options, selectionOption)
+	}
+
+	selection, err := h.selectionClient.CreateSelection(context.Background(), selectionRequest)
+	if err != nil {
+		return FormatClientError(err)
+	}
+
+	message := &contract.Message{
+		Embed:            FormatPollReply(pollReply.Poll, selection),
+		IsPrivateMessage: true,
+	}
+
+	return &contract.Response{Messages: []*contract.Message{message}}, nil
+}
+
+func (h Handler) pollStatus(shortID string, serverID string, messageId string, private bool) (*contract.Response, error) {
 	req := &votingpb.StatusRequest{
 		ShortId:  shortID,
 		ServerId: serverID,
@@ -281,7 +303,25 @@ func (h Handler) pollStatus(shortID string, serverID string) (*contract.Response
 	countReply, _ := h.client.Count(context.Background(), countRequest)
 
 	message := &contract.Message{
-		Embed: FormatPollStatusReply(status, voters, countReply),
+		Embed:            FormatPollStatusReply(status, voters, countReply),
+		IsPrivateMessage: private,
+		EditMessageId:    messageId,
+	}
+
+	if !status.Poll.HasEnded {
+		message.Compontents = &contract.Components{
+			ActionsRows: []*contract.ActionsRow{
+				&contract.ActionsRow{
+					Buttons: []*contract.Button{
+						&contract.Button{
+							Label:    "Refresh",
+							Style:    2,
+							CustomId: fmt.Sprintf("pollstatus-refresh.%s", req.ShortId),
+						},
+					},
+				},
+			},
+		}
 	}
 
 	return &contract.Response{Messages: []*contract.Message{message}}, nil
@@ -322,7 +362,10 @@ func (h Handler) Start() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/createpoll", h.makeLoggingHttpHandlerFunc("createpoll", h.CreatePoll))
 	mux.HandleFunc("/poll", h.makeLoggingHttpHandlerFunc("poll", h.Poll))
+	mux.HandleFunc("/interactionpoll", h.makeLoggingInteractionHttpHandlerFunc("interactionpoll", h.InteractionPoll))
 	mux.HandleFunc("/pollstatus", h.makeLoggingHttpHandlerFunc("pollstatus", h.PollStatus))
+	mux.HandleFunc("/interactionpollstatus", h.makeLoggingInteractionHttpHandlerFunc("interactionpollstatus", h.InteractionPollStatus))
+	mux.HandleFunc("/pollstatusrefresh", h.makeLoggingInteractionHttpHandlerFunc("pollstatusrefresh", h.PollStatusRefresh))
 	mux.HandleFunc("/pollend", h.makeLoggingHttpHandlerFunc("pollend", h.PollEnd))
 	mux.HandleFunc("/pollopen", h.makeLoggingHttpHandlerFunc("pollopen", h.PollOpen))
 	mux.HandleFunc("/vote", h.makeLoggingHttpHandlerFunc("vote", h.Vote))
@@ -342,6 +385,21 @@ func (h Handler) Stop() error {
 
 func (h Handler) makeLoggingHttpHandlerFunc(name string, f func(contract.Request) (*contract.Response, error)) http.HandlerFunc {
 	contractHandlerFunc := contract.MakeRequestHttpHandlerFunc(f)
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		defer func(begin time.Time) {
+			h.logger.Info().
+				Str("intent", name).
+				Str("took", time.Since(begin).String()).
+				Msg("called")
+		}(time.Now())
+
+		contractHandlerFunc.ServeHTTP(w, r)
+	}
+}
+
+func (h Handler) makeLoggingInteractionHttpHandlerFunc(name string, f func(contract.Interaction) (*contract.Response, error)) http.HandlerFunc {
+	contractHandlerFunc := contract.MakeInteractionHttpHandlerFunc(f)
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func(begin time.Time) {

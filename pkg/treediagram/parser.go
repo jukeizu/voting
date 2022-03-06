@@ -284,6 +284,15 @@ func ParseVoteRequest(request contract.Request, allowedUniqueVotes int) (string,
 	return strings.Join(parser.Args(), " "), nil
 }
 
+func ParsePollShortId(interaction contract.Interaction) string {
+	identifierParts := strings.Split(interaction.Identifier, ".")
+	if len(identifierParts) > 1 {
+		return identifierParts[1]
+	}
+
+	return ""
+}
+
 func parseEndTime(layout string, value string) (time.Time, error) {
 	if value == "" {
 		return time.Time{}, nil
