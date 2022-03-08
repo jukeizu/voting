@@ -2,7 +2,6 @@ package treediagram
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -77,20 +76,20 @@ func (h Handler) PollStatus(request contract.Request) (*contract.Response, error
 		return FormatParseError(err)
 	}
 
-	return h.pollStatus(req.ShortId, req.ServerId, "", false)
+	return h.pollStatus(req.ShortId, req.ServerId, "")
 }
 
 func (h Handler) InteractionPollStatus(request contract.Interaction) (*contract.Response, error) {
 	shortId := ParsePollShortId(request)
 	h.logger.Info().Msg(shortId)
 
-	return h.pollStatus(shortId, request.ServerId, "", true)
+	return h.pollStatus(shortId, request.ServerId, "")
 }
 
 func (h Handler) PollStatusRefresh(request contract.Interaction) (*contract.Response, error) {
 	shortId := ParsePollShortId(request)
 
-	return h.pollStatus(shortId, request.ServerId, request.MessageId, false)
+	return h.pollStatus(shortId, request.ServerId, request.MessageId)
 }
 
 func (h Handler) PollEnd(request contract.Request) (*contract.Response, error) {
@@ -104,7 +103,7 @@ func (h Handler) PollEnd(request contract.Request) (*contract.Response, error) {
 		return FormatClientError(err)
 	}
 
-	return h.pollStatus(req.ShortId, req.ServerId, "", false)
+	return h.pollStatus(req.ShortId, req.ServerId, "")
 }
 
 func (h Handler) PollOpen(request contract.Request) (*contract.Response, error) {
@@ -118,9 +117,7 @@ func (h Handler) PollOpen(request contract.Request) (*contract.Response, error) 
 		return FormatClientError(err)
 	}
 
-	message := &contract.Message{
-		Embed: FormatOpenPollReply(openPollReply),
-	}
+	message := FormatOpenPollReply(openPollReply)
 
 	return &contract.Response{Messages: []*contract.Message{message}}, nil
 }
@@ -161,8 +158,8 @@ func (h Handler) Vote(request contract.Request) (*contract.Response, error) {
 	voteRequest := &votingpb.VoteRequest{
 		ServerId: request.ServerId,
 		Voter: &votingpb.Voter{
-			Id:       request.Author.Id,
-			Username: request.Author.Name,
+			ExternalId: request.Author.Id,
+			Username:   request.Author.Name,
 		},
 	}
 
@@ -231,7 +228,7 @@ func (h Handler) poll(req *votingpb.PollRequest) (*contract.Response, error) {
 	}
 
 	if pollReply.Poll.HasEnded {
-		return h.pollStatus(pollReply.Poll.ShortId, pollReply.Poll.ServerId, "", true)
+		return h.pollStatus(pollReply.Poll.ShortId, pollReply.Poll.ServerId, "")
 	}
 
 	selectionRequest := &selectionpb.CreateSelectionRequest{
@@ -267,7 +264,7 @@ func (h Handler) poll(req *votingpb.PollRequest) (*contract.Response, error) {
 	return &contract.Response{Messages: []*contract.Message{message}}, nil
 }
 
-func (h Handler) pollStatus(shortID string, serverID string, messageId string, private bool) (*contract.Response, error) {
+func (h Handler) pollStatus(shortID string, serverID string, messageId string) (*contract.Response, error) {
 	req := &votingpb.StatusRequest{
 		ShortId:  shortID,
 		ServerId: serverID,
@@ -302,27 +299,7 @@ func (h Handler) pollStatus(shortID string, serverID string, messageId string, p
 
 	countReply, _ := h.client.Count(context.Background(), countRequest)
 
-	message := &contract.Message{
-		Embed:            FormatPollStatusReply(status, voters, countReply),
-		IsPrivateMessage: private,
-		EditMessageId:    messageId,
-	}
-
-	if !status.Poll.HasEnded {
-		message.Compontents = &contract.Components{
-			ActionsRows: []*contract.ActionsRow{
-				&contract.ActionsRow{
-					Buttons: []*contract.Button{
-						&contract.Button{
-							Label:    "Refresh",
-							Style:    2,
-							CustomId: fmt.Sprintf("pollstatus-refresh.%s", req.ShortId),
-						},
-					},
-				},
-			},
-		}
-	}
+	message := FormatPollStatusReply(status, voters, countReply, messageId)
 
 	return &contract.Response{Messages: []*contract.Message{message}}, nil
 }
