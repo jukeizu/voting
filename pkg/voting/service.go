@@ -257,6 +257,7 @@ func (s DefaultService) Export(exportRequest ExportRequest) (ExportResult, error
 	candidates := s.electionCandidates(poll)
 
 	config := election.Config{
+		Title:               poll.Title,
 		Ballots:             ballots,
 		Candidates:          candidates,
 		NumSeats:            exportRequest.NumToElect,

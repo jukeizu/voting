@@ -13,7 +13,7 @@ require (
 	github.com/oklog/run v1.0.0
 	github.com/rs/xid v1.2.1
 	github.com/rs/zerolog v1.14.3
-	github.com/shawntoffel/election v0.3.0
+	github.com/shawntoffel/election v0.3.2
 	github.com/shawntoffel/electioncounter v0.0.0-20171016070357-ac289770e4ac
 	github.com/shawntoffel/gossage v0.0.2
 	github.com/shawntoffel/math v0.0.1 // indirect

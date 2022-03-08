@@ -67,7 +67,7 @@ func FormatNewPollReply(poll *votingpb.Poll) *contract.Message {
 	}
 }
 
-func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Voter, countReply *votingpb.CountReply, editMessageId string) *contract.Message {
+func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Voter, countReply *votingpb.CountReply, editMessageId string, private bool) *contract.Message {
 	embed := &contract.Embed{
 		Color:        0x5865f2,
 		ThumbnailUrl: BallotBoxThumbnailURL,
@@ -114,8 +114,9 @@ func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Vote
 	}
 
 	message := &contract.Message{
-		Embed:         embed,
-		EditMessageId: editMessageId,
+		Embed:            embed,
+		EditMessageId:    editMessageId,
+		IsPrivateMessage: private,
 	}
 
 	if status.Poll.HasEnded {
