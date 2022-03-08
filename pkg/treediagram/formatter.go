@@ -42,6 +42,11 @@ func FormatNewPollReply(poll *votingpb.Poll) *contract.Message {
 		})
 	}
 
+	embed.Fields = append(embed.Fields, &contract.EmbedField{
+		Name:  "Started by",
+		Value: fmt.Sprintf("<@!%s>", poll.CreatorId),
+	})
+
 	return &contract.Message{
 		Embed: embed,
 		Compontents: &contract.Components{
@@ -55,11 +60,6 @@ func FormatNewPollReply(poll *votingpb.Poll) *contract.Message {
 								Name: "🗳️",
 							},
 						},
-						&contract.Button{
-							Label:    "View status",
-							Style:    2,
-							CustomId: "pollstatus." + poll.ShortId,
-						},
 					},
 				},
 			},
@@ -67,13 +67,14 @@ func FormatNewPollReply(poll *votingpb.Poll) *contract.Message {
 	}
 }
 
-func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Voter, countReply *votingpb.CountReply) *contract.Embed {
+func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Voter, countReply *votingpb.CountReply, editMessageId string) *contract.Message {
 	embed := &contract.Embed{
 		Color:        0x5865f2,
 		ThumbnailUrl: BallotBoxThumbnailURL,
 		Footer: &contract.EmbedFooter{
 			Text: status.Poll.ShortId,
 		},
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
 	}
 
 	poll := status.Poll
@@ -85,15 +86,17 @@ func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Vote
 		})
 	}
 
+	title := ""
+
 	if status.Poll.HasEnded {
-		embed.Title = "Poll has ended!"
+		title = "Poll has ended!"
 		embed.Footer.Text = "Use !electioncount for a custom count.\n\n" + status.Poll.ShortId
 		if countReply != nil {
 			results := generateCountResultsEmbedField(countReply)
 			embed.Fields = append(embed.Fields, results)
 		}
 	} else {
-		embed.Title = "Poll is open!"
+		title = "Poll is open!"
 
 		if hasExpiration(poll) {
 			embed.Fields = append(embed.Fields, &contract.EmbedField{
@@ -103,28 +106,56 @@ func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Vote
 		}
 	}
 
-	if status.VoterCount > 0 {
+	embed.Title = fmt.Sprintf("**%s**", title)
+
+	if len(voters) > 0 {
 		votersField := generateVotersEmbedField(status.VoterCount, voters)
 		embed.Fields = append(embed.Fields, votersField)
 	}
 
-	return embed
+	message := &contract.Message{
+		Embed:         embed,
+		EditMessageId: editMessageId,
+	}
+
+	if status.Poll.HasEnded {
+		message.Compontents = &contract.Components{}
+	} else {
+		message.Compontents = &contract.Components{
+			ActionsRows: []*contract.ActionsRow{
+				&contract.ActionsRow{
+					Buttons: []*contract.Button{
+						&contract.Button{
+							Label:    "Vote",
+							CustomId: fmt.Sprintf("poll.%s", status.Poll.ShortId),
+							Emoji: contract.ComponentEmoji{
+								Name: "🗳️",
+							},
+						},
+						&contract.Button{
+							Label:    "Refresh",
+							Style:    2,
+							CustomId: fmt.Sprintf("pollstatus-refresh.%s", status.Poll.ShortId),
+						},
+					},
+				},
+			},
+		}
+	}
+
+	return message
 }
 
 func FormatPollReply(poll *votingpb.Poll, reply *selectionpb.CreateSelectionReply) *contract.Embed {
 	embed := &contract.Embed{
 		Color:        0x5865f2,
-		Title:        generateTitle(poll),
+		Title:        "Vote for " + generateTitle(poll),
 		ThumbnailUrl: InboxTrayThumbnailURL,
 	}
 
-	description := fmt.Sprintf("You can vote for %d option", poll.AllowedUniqueVotes)
-	if poll.AllowedUniqueVotes != 1 {
-		description += "s"
+	if poll.AllowedUniqueVotes > 1 && int(poll.AllowedUniqueVotes) != len(poll.Options) {
+		embed.Description = fmt.Sprintf("You can vote for %d option", poll.AllowedUniqueVotes)
 	}
-	description += "."
-
-	embed.Description = description
 
 	for _, batch := range reply.Batches {
 		buffer := bytes.Buffer{}
@@ -168,7 +199,7 @@ func FormatVoteHelp(allowedVotes int32) string {
 	return buffer.String()
 }
 
-func FormatOpenPollReply(openPollReply *votingpb.OpenPollReply) *contract.Embed {
+func FormatOpenPollReply(openPollReply *votingpb.OpenPollReply) *contract.Message {
 	embed := &contract.Embed{
 		Color:        0x5865f2,
 		ThumbnailUrl: BallotBoxThumbnailURL,
@@ -177,14 +208,14 @@ func FormatOpenPollReply(openPollReply *votingpb.OpenPollReply) *contract.Embed 
 		},
 	}
 
-	text := "Poll is open!"
+	title := "Poll is open!"
 	if openPollReply.PreviouslyEnded {
-		text = "Poll has reopened!"
+		title = "Poll has reopened!"
 	} else if openPollReply.PreviousExpiration != openPollReply.Poll.Expires && hasExpiration(openPollReply.Poll) {
-		text = "End time has changed!"
+		title = "End time has changed!"
 	}
 
-	embed.Title = text
+	embed.Title = fmt.Sprintf("**%s**", title)
 
 	if openPollReply.Poll.Title != "" {
 		embed.Fields = append(embed.Fields, &contract.EmbedField{
@@ -200,13 +231,37 @@ func FormatOpenPollReply(openPollReply *votingpb.OpenPollReply) *contract.Embed 
 		})
 	}
 
-	return embed
+	embed.Fields = append(embed.Fields, &contract.EmbedField{
+		Name:  "Modified by",
+		Value: fmt.Sprintf("<@!%s>", openPollReply.Poll.CreatorId),
+	})
+
+	message := &contract.Message{
+		Embed: embed,
+		Compontents: &contract.Components{
+			ActionsRows: []*contract.ActionsRow{
+				&contract.ActionsRow{
+					Buttons: []*contract.Button{
+						&contract.Button{
+							Label:    "Vote",
+							CustomId: fmt.Sprintf("poll.%s", openPollReply.Poll.ShortId),
+							Emoji: contract.ComponentEmoji{
+								Name: "🗳️",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	return message
 }
 
 func FormatVoteReply(poll *votingpb.Poll, voteReply *votingpb.VoteReply) *contract.Embed {
 	embed := &contract.Embed{
 		Color: 0x5865f2,
-		Title: ":ballot_box_with_check: Vote submitted!",
+		Title: ":ballot_box_with_check: **Vote received!**",
 		Footer: &contract.EmbedFooter{
 			Text: poll.ShortId,
 		},
@@ -217,23 +272,13 @@ func FormatVoteReply(poll *votingpb.Poll, voteReply *votingpb.VoteReply) *contra
 		return embed
 	}
 
-	if poll.Title != "" {
-		embed.Fields = append(embed.Fields, &contract.EmbedField{
-			Name:  "Title",
-			Value: poll.Title,
-		})
-	}
-
 	buffer := bytes.Buffer{}
 
 	for _, voteReplyOption := range voteReply.Options {
 		buffer.WriteString(fmt.Sprintf("%d. %s\n", voteReplyOption.Rank+1, voteReplyOption.Option.Content))
 	}
 
-	embed.Fields = append(embed.Fields, &contract.EmbedField{
-		Name:  "Ballot",
-		Value: buffer.String(),
-	})
+	embed.Description = buffer.String()
 
 	return embed
 }
@@ -391,18 +436,14 @@ func generateTitle(poll *votingpb.Poll) string {
 func generateVotersEmbedField(voterCount int64, voters []*votingpb.Voter) *contract.EmbedField {
 	voterUsernames := []string{}
 	for _, voter := range voters {
-		voterUsernames = append(voterUsernames, voter.Username)
+		voterUsernames = append(voterUsernames, fmt.Sprintf("<@!%s>", voter.ExternalId))
 	}
 
 	votersField := &contract.EmbedField{
 		Value: strings.Join(voterUsernames, ", "),
 	}
 
-	if voterCount == 1 {
-		votersField.Name = "1 user voted"
-	} else {
-		votersField.Name = fmt.Sprintf("%d users voted", voterCount)
-	}
+	votersField.Name = fmt.Sprintf("Voters: %d", voterCount)
 
 	return votersField
 }

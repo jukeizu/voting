@@ -93,6 +93,7 @@ message StatusRequest {
 message Voter {
     string id = 1;
     string username = 2;
+    string externalId = 3;
 }
 
 message StatusReply {

@@ -202,7 +202,7 @@ func toVoter(pbVoter *votingpb.Voter) Voter {
 	}
 
 	voter := Voter{
-		ExternalId: pbVoter.Id,
+		ExternalId: pbVoter.ExternalId,
 		Username:   pbVoter.Username,
 	}
 
@@ -269,8 +269,9 @@ func toPbVoteReplyOption(voteReplyOption VoteReplyOption) *votingpb.VoteReplyOpt
 
 func toPbVoter(voter Voter) *votingpb.Voter {
 	pbVoter := &votingpb.Voter{
-		Id:       voter.Id,
-		Username: voter.Username,
+		Id:         voter.Id,
+		Username:   voter.Username,
+		ExternalId: voter.ExternalId,
 	}
 
 	return pbVoter
