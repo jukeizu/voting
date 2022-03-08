@@ -76,20 +76,20 @@ func (h Handler) PollStatus(request contract.Request) (*contract.Response, error
 		return FormatParseError(err)
 	}
 
-	return h.pollStatus(req.ShortId, req.ServerId, "")
+	return h.pollStatus(req.ShortId, req.ServerId)
 }
 
 func (h Handler) InteractionPollStatus(request contract.Interaction) (*contract.Response, error) {
 	shortId := ParsePollShortId(request)
 	h.logger.Info().Msg(shortId)
 
-	return h.pollStatus(shortId, request.ServerId, "")
+	return h.pollStatus(shortId, request.ServerId)
 }
 
 func (h Handler) PollStatusRefresh(request contract.Interaction) (*contract.Response, error) {
 	shortId := ParsePollShortId(request)
 
-	return h.pollStatus(shortId, request.ServerId, request.MessageId)
+	return h.pollStatusEdit(shortId, request.ServerId, request.MessageId)
 }
 
 func (h Handler) PollEnd(request contract.Request) (*contract.Response, error) {
@@ -103,7 +103,7 @@ func (h Handler) PollEnd(request contract.Request) (*contract.Response, error) {
 		return FormatClientError(err)
 	}
 
-	return h.pollStatus(req.ShortId, req.ServerId, "")
+	return h.pollStatus(req.ShortId, req.ServerId)
 }
 
 func (h Handler) PollOpen(request contract.Request) (*contract.Response, error) {
@@ -228,7 +228,7 @@ func (h Handler) poll(req *votingpb.PollRequest) (*contract.Response, error) {
 	}
 
 	if pollReply.Poll.HasEnded {
-		return h.pollStatus(pollReply.Poll.ShortId, pollReply.Poll.ServerId, "")
+		return h.pollStatus(pollReply.Poll.ShortId, pollReply.Poll.ServerId)
 	}
 
 	selectionRequest := &selectionpb.CreateSelectionRequest{
@@ -264,7 +264,11 @@ func (h Handler) poll(req *votingpb.PollRequest) (*contract.Response, error) {
 	return &contract.Response{Messages: []*contract.Message{message}}, nil
 }
 
-func (h Handler) pollStatus(shortID string, serverID string, messageId string) (*contract.Response, error) {
+func (h Handler) pollStatus(shortID string, serverID string) (*contract.Response, error) {
+	return h.pollStatusEdit(shortID, serverID, "")
+}
+
+func (h Handler) pollStatusEdit(shortID string, serverID string, messageId string) (*contract.Response, error) {
 	req := &votingpb.StatusRequest{
 		ShortId:  shortID,
 		ServerId: serverID,
