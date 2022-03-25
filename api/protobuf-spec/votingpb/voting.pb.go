@@ -1444,13 +1444,13 @@ type CountReply struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Success   bool               `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Message   string             `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	Poll      *Poll              `protobuf:"bytes,3,opt,name=poll,proto3" json:"poll,omitempty"`
-	Method    string             `protobuf:"bytes,4,opt,name=method,proto3" json:"method,omitempty"`
-	Elected   []*VoteReplyOption `protobuf:"bytes,5,rep,name=elected,proto3" json:"elected,omitempty"`
-	Events    []*CountEvent      `protobuf:"bytes,6,rep,name=events,proto3" json:"events,omitempty"`
-	Summaries []*CountEvent      `protobuf:"bytes,7,rep,name=summaries,proto3" json:"summaries,omitempty"`
+	Success bool               `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message string             `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Poll    *Poll              `protobuf:"bytes,3,opt,name=poll,proto3" json:"poll,omitempty"`
+	Method  string             `protobuf:"bytes,4,opt,name=method,proto3" json:"method,omitempty"`
+	Elected []*VoteReplyOption `protobuf:"bytes,5,rep,name=elected,proto3" json:"elected,omitempty"`
+	Events  []*CountEvent      `protobuf:"bytes,6,rep,name=events,proto3" json:"events,omitempty"`
+	Rounds  []*RoundSummary    `protobuf:"bytes,7,rep,name=rounds,proto3" json:"rounds,omitempty"`
 }
 
 func (x *CountReply) Reset() {
@@ -1527,9 +1527,9 @@ func (x *CountReply) GetEvents() []*CountEvent {
 	return nil
 }
 
-func (x *CountReply) GetSummaries() []*CountEvent {
+func (x *CountReply) GetRounds() []*RoundSummary {
 	if x != nil {
-		return x.Summaries
+		return x.Rounds
 	}
 	return nil
 }
@@ -1539,7 +1539,8 @@ type CountEvent struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Description string `protobuf:"bytes,1,opt,name=description,proto3" json:"description,omitempty"`
+	Type        string `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
 }
 
 func (x *CountEvent) Reset() {
@@ -1574,9 +1575,182 @@ func (*CountEvent) Descriptor() ([]byte, []int) {
 	return file_voting_proto_rawDescGZIP(), []int{23}
 }
 
+func (x *CountEvent) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
 func (x *CountEvent) GetDescription() string {
 	if x != nil {
 		return x.Description
+	}
+	return ""
+}
+
+type RoundSummary struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Number     int32               `protobuf:"varint,1,opt,name=number,proto3" json:"number,omitempty"`
+	Excess     int64               `protobuf:"varint,2,opt,name=excess,proto3" json:"excess,omitempty"`
+	Surplus    int64               `protobuf:"varint,3,opt,name=surplus,proto3" json:"surplus,omitempty"`
+	Quota      int64               `protobuf:"varint,4,opt,name=quota,proto3" json:"quota,omitempty"`
+	Candidates []*CandidateSummary `protobuf:"bytes,5,rep,name=candidates,proto3" json:"candidates,omitempty"`
+}
+
+func (x *RoundSummary) Reset() {
+	*x = RoundSummary{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_voting_proto_msgTypes[24]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RoundSummary) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RoundSummary) ProtoMessage() {}
+
+func (x *RoundSummary) ProtoReflect() protoreflect.Message {
+	mi := &file_voting_proto_msgTypes[24]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RoundSummary.ProtoReflect.Descriptor instead.
+func (*RoundSummary) Descriptor() ([]byte, []int) {
+	return file_voting_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *RoundSummary) GetNumber() int32 {
+	if x != nil {
+		return x.Number
+	}
+	return 0
+}
+
+func (x *RoundSummary) GetExcess() int64 {
+	if x != nil {
+		return x.Excess
+	}
+	return 0
+}
+
+func (x *RoundSummary) GetSurplus() int64 {
+	if x != nil {
+		return x.Surplus
+	}
+	return 0
+}
+
+func (x *RoundSummary) GetQuota() int64 {
+	if x != nil {
+		return x.Quota
+	}
+	return 0
+}
+
+func (x *RoundSummary) GetCandidates() []*CandidateSummary {
+	if x != nil {
+		return x.Candidates
+	}
+	return nil
+}
+
+type CandidateSummary struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id     string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name   string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Rank   int32  `protobuf:"varint,3,opt,name=rank,proto3" json:"rank,omitempty"`
+	Votes  int64  `protobuf:"varint,4,opt,name=votes,proto3" json:"votes,omitempty"`
+	Weight int64  `protobuf:"varint,5,opt,name=weight,proto3" json:"weight,omitempty"`
+	Status string `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
+}
+
+func (x *CandidateSummary) Reset() {
+	*x = CandidateSummary{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_voting_proto_msgTypes[25]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CandidateSummary) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CandidateSummary) ProtoMessage() {}
+
+func (x *CandidateSummary) ProtoReflect() protoreflect.Message {
+	mi := &file_voting_proto_msgTypes[25]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CandidateSummary.ProtoReflect.Descriptor instead.
+func (*CandidateSummary) Descriptor() ([]byte, []int) {
+	return file_voting_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *CandidateSummary) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CandidateSummary) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CandidateSummary) GetRank() int32 {
+	if x != nil {
+		return x.Rank
+	}
+	return 0
+}
+
+func (x *CandidateSummary) GetVotes() int64 {
+	if x != nil {
+		return x.Votes
+	}
+	return 0
+}
+
+func (x *CandidateSummary) GetWeight() int64 {
+	if x != nil {
+		return x.Weight
+	}
+	return 0
+}
+
+func (x *CandidateSummary) GetStatus() string {
+	if x != nil {
+		return x.Status
 	}
 	return ""
 }
@@ -1737,7 +1911,7 @@ var file_voting_proto_rawDesc = []byte{
 	0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x76, 0x6f, 0x74, 0x69, 0x6e, 0x67, 0x70, 0x62, 0x2e, 0x50, 0x6f,
 	0x6c, 0x6c, 0x52, 0x04, 0x70, 0x6f, 0x6c, 0x6c, 0x12, 0x16, 0x0a, 0x06, 0x6d, 0x65, 0x74, 0x68,
 	0x6f, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64,
-	0x22, 0x93, 0x02, 0x0a, 0x0a, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12,
+	0x22, 0x8f, 0x02, 0x0a, 0x0a, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x12,
 	0x18, 0x0a, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08,
 	0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73,
 	0x73, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73,
@@ -1751,13 +1925,34 @@ var file_voting_proto_rawDesc = []byte{
 	0x63, 0x74, 0x65, 0x64, 0x12, 0x2c, 0x0a, 0x06, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x18, 0x06,
 	0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x76, 0x6f, 0x74, 0x69, 0x6e, 0x67, 0x70, 0x62, 0x2e,
 	0x43, 0x6f, 0x75, 0x6e, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x06, 0x65, 0x76, 0x65, 0x6e,
-	0x74, 0x73, 0x12, 0x32, 0x0a, 0x09, 0x73, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x69, 0x65, 0x73, 0x18,
-	0x07, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x76, 0x6f, 0x74, 0x69, 0x6e, 0x67, 0x70, 0x62,
-	0x2e, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x09, 0x73, 0x75, 0x6d,
-	0x6d, 0x61, 0x72, 0x69, 0x65, 0x73, 0x22, 0x2e, 0x0a, 0x0a, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x45,
-	0x76, 0x65, 0x6e, 0x74, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74,
-	0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72,
-	0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x32, 0xe6, 0x04, 0x0a, 0x06, 0x56, 0x6f, 0x74, 0x69, 0x6e,
+	0x74, 0x73, 0x12, 0x2e, 0x0a, 0x06, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x73, 0x18, 0x07, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x16, 0x2e, 0x76, 0x6f, 0x74, 0x69, 0x6e, 0x67, 0x70, 0x62, 0x2e, 0x52, 0x6f,
+	0x75, 0x6e, 0x64, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x52, 0x06, 0x72, 0x6f, 0x75, 0x6e,
+	0x64, 0x73, 0x22, 0x42, 0x0a, 0x0a, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x12, 0x12, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
+	0x74, 0x79, 0x70, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74,
+	0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72,
+	0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0xaa, 0x01, 0x0a, 0x0c, 0x52, 0x6f, 0x75, 0x6e, 0x64,
+	0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x12, 0x16, 0x0a, 0x06, 0x6e, 0x75, 0x6d, 0x62, 0x65,
+	0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x6e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x12,
+	0x16, 0x0a, 0x06, 0x65, 0x78, 0x63, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52,
+	0x06, 0x65, 0x78, 0x63, 0x65, 0x73, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x72, 0x70, 0x6c,
+	0x75, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x07, 0x73, 0x75, 0x72, 0x70, 0x6c, 0x75,
+	0x73, 0x12, 0x14, 0x0a, 0x05, 0x71, 0x75, 0x6f, 0x74, 0x61, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03,
+	0x52, 0x05, 0x71, 0x75, 0x6f, 0x74, 0x61, 0x12, 0x3a, 0x0a, 0x0a, 0x63, 0x61, 0x6e, 0x64, 0x69,
+	0x64, 0x61, 0x74, 0x65, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x76, 0x6f,
+	0x74, 0x69, 0x6e, 0x67, 0x70, 0x62, 0x2e, 0x43, 0x61, 0x6e, 0x64, 0x69, 0x64, 0x61, 0x74, 0x65,
+	0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x52, 0x0a, 0x63, 0x61, 0x6e, 0x64, 0x69, 0x64, 0x61,
+	0x74, 0x65, 0x73, 0x22, 0x90, 0x01, 0x0a, 0x10, 0x43, 0x61, 0x6e, 0x64, 0x69, 0x64, 0x61, 0x74,
+	0x65, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04,
+	0x72, 0x61, 0x6e, 0x6b, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x72, 0x61, 0x6e, 0x6b,
+	0x12, 0x14, 0x0a, 0x05, 0x76, 0x6f, 0x74, 0x65, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52,
+	0x05, 0x76, 0x6f, 0x74, 0x65, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74,
+	0x18, 0x05, 0x20, 0x01, 0x28, 0x03, 0x52, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x16,
+	0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
+	0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x32, 0xe6, 0x04, 0x0a, 0x06, 0x56, 0x6f, 0x74, 0x69, 0x6e,
 	0x67, 0x12, 0x46, 0x0a, 0x0a, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x50, 0x6f, 0x6c, 0x6c, 0x12,
 	0x1b, 0x2e, 0x76, 0x6f, 0x74, 0x69, 0x6e, 0x67, 0x70, 0x62, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74,
 	0x65, 0x50, 0x6f, 0x6c, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x19, 0x2e, 0x76,
@@ -1812,7 +2007,7 @@ func file_voting_proto_rawDescGZIP() []byte {
 	return file_voting_proto_rawDescData
 }
 
-var file_voting_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_voting_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_voting_proto_goTypes = []interface{}{
 	(*CreatePollRequest)(nil), // 0: votingpb.CreatePollRequest
 	(*CreatePollReply)(nil),   // 1: votingpb.CreatePollReply
@@ -1838,6 +2033,8 @@ var file_voting_proto_goTypes = []interface{}{
 	(*ExportReply)(nil),       // 21: votingpb.ExportReply
 	(*CountReply)(nil),        // 22: votingpb.CountReply
 	(*CountEvent)(nil),        // 23: votingpb.CountEvent
+	(*RoundSummary)(nil),      // 24: votingpb.RoundSummary
+	(*CandidateSummary)(nil),  // 25: votingpb.CandidateSummary
 }
 var file_voting_proto_depIdxs = []int32{
 	2,  // 0: votingpb.CreatePollRequest.options:type_name -> votingpb.Option
@@ -1855,32 +2052,33 @@ var file_voting_proto_depIdxs = []int32{
 	6,  // 12: votingpb.CountReply.poll:type_name -> votingpb.Poll
 	18, // 13: votingpb.CountReply.elected:type_name -> votingpb.VoteReplyOption
 	23, // 14: votingpb.CountReply.events:type_name -> votingpb.CountEvent
-	23, // 15: votingpb.CountReply.summaries:type_name -> votingpb.CountEvent
-	0,  // 16: votingpb.Voting.CreatePoll:input_type -> votingpb.CreatePollRequest
-	3,  // 17: votingpb.Voting.Poll:input_type -> votingpb.PollRequest
-	4,  // 18: votingpb.Voting.VoterPoll:input_type -> votingpb.VoterPollRequest
-	7,  // 19: votingpb.Voting.EndPoll:input_type -> votingpb.EndPollRequest
-	9,  // 20: votingpb.Voting.OpenPoll:input_type -> votingpb.OpenPollRequest
-	11, // 21: votingpb.Voting.Status:input_type -> votingpb.StatusRequest
-	14, // 22: votingpb.Voting.Voters:input_type -> votingpb.VotersRequest
-	16, // 23: votingpb.Voting.Vote:input_type -> votingpb.VoteRequest
-	19, // 24: votingpb.Voting.Count:input_type -> votingpb.CountRequest
-	20, // 25: votingpb.Voting.Export:input_type -> votingpb.ExportRequest
-	1,  // 26: votingpb.Voting.CreatePoll:output_type -> votingpb.CreatePollReply
-	5,  // 27: votingpb.Voting.Poll:output_type -> votingpb.PollReply
-	5,  // 28: votingpb.Voting.VoterPoll:output_type -> votingpb.PollReply
-	8,  // 29: votingpb.Voting.EndPoll:output_type -> votingpb.EndPollReply
-	10, // 30: votingpb.Voting.OpenPoll:output_type -> votingpb.OpenPollReply
-	13, // 31: votingpb.Voting.Status:output_type -> votingpb.StatusReply
-	12, // 32: votingpb.Voting.Voters:output_type -> votingpb.Voter
-	17, // 33: votingpb.Voting.Vote:output_type -> votingpb.VoteReply
-	22, // 34: votingpb.Voting.Count:output_type -> votingpb.CountReply
-	21, // 35: votingpb.Voting.Export:output_type -> votingpb.ExportReply
-	26, // [26:36] is the sub-list for method output_type
-	16, // [16:26] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	24, // 15: votingpb.CountReply.rounds:type_name -> votingpb.RoundSummary
+	25, // 16: votingpb.RoundSummary.candidates:type_name -> votingpb.CandidateSummary
+	0,  // 17: votingpb.Voting.CreatePoll:input_type -> votingpb.CreatePollRequest
+	3,  // 18: votingpb.Voting.Poll:input_type -> votingpb.PollRequest
+	4,  // 19: votingpb.Voting.VoterPoll:input_type -> votingpb.VoterPollRequest
+	7,  // 20: votingpb.Voting.EndPoll:input_type -> votingpb.EndPollRequest
+	9,  // 21: votingpb.Voting.OpenPoll:input_type -> votingpb.OpenPollRequest
+	11, // 22: votingpb.Voting.Status:input_type -> votingpb.StatusRequest
+	14, // 23: votingpb.Voting.Voters:input_type -> votingpb.VotersRequest
+	16, // 24: votingpb.Voting.Vote:input_type -> votingpb.VoteRequest
+	19, // 25: votingpb.Voting.Count:input_type -> votingpb.CountRequest
+	20, // 26: votingpb.Voting.Export:input_type -> votingpb.ExportRequest
+	1,  // 27: votingpb.Voting.CreatePoll:output_type -> votingpb.CreatePollReply
+	5,  // 28: votingpb.Voting.Poll:output_type -> votingpb.PollReply
+	5,  // 29: votingpb.Voting.VoterPoll:output_type -> votingpb.PollReply
+	8,  // 30: votingpb.Voting.EndPoll:output_type -> votingpb.EndPollReply
+	10, // 31: votingpb.Voting.OpenPoll:output_type -> votingpb.OpenPollReply
+	13, // 32: votingpb.Voting.Status:output_type -> votingpb.StatusReply
+	12, // 33: votingpb.Voting.Voters:output_type -> votingpb.Voter
+	17, // 34: votingpb.Voting.Vote:output_type -> votingpb.VoteReply
+	22, // 35: votingpb.Voting.Count:output_type -> votingpb.CountReply
+	21, // 36: votingpb.Voting.Export:output_type -> votingpb.ExportReply
+	27, // [27:37] is the sub-list for method output_type
+	17, // [17:27] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_voting_proto_init() }
@@ -2177,6 +2375,30 @@ func file_voting_proto_init() {
 				return nil
 			}
 		}
+		file_voting_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RoundSummary); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_voting_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CandidateSummary); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -2184,7 +2406,7 @@ func file_voting_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_voting_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   24,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -279,12 +279,12 @@ func toPbVoter(voter Voter) *votingpb.Voter {
 
 func toPbCountReply(countResult CountResult) *votingpb.CountReply {
 	countReply := &votingpb.CountReply{
-		Success:   countResult.Success,
-		Message:   countResult.Message,
-		Poll:      toPbPoll(countResult.Poll),
-		Method:    countResult.Method,
-		Events:    toPbCountEvents(countResult.Events),
-		Summaries: toPbCountEvents(countResult.Summaries),
+		Success: countResult.Success,
+		Message: countResult.Message,
+		Poll:    toPbPoll(countResult.Poll),
+		Method:  countResult.Method,
+		Events:  toPbCountEvents(countResult.Events),
+		Rounds:  toPbRoundSummaries(countResult.Rounds),
 	}
 
 	for _, elected := range countResult.Elected {
@@ -299,6 +299,7 @@ func toPbCountEvents(countEvents []CountEvent) []*votingpb.CountEvent {
 
 	for _, countEvent := range countEvents {
 		pbCountEvent := &votingpb.CountEvent{
+			Type:        countEvent.Type,
 			Description: countEvent.Description,
 		}
 
@@ -306,6 +307,43 @@ func toPbCountEvents(countEvents []CountEvent) []*votingpb.CountEvent {
 	}
 
 	return pbCountEvents
+}
+
+func toPbRoundSummaries(rounds []RoundSummary) []*votingpb.RoundSummary {
+	roundSummaries := []*votingpb.RoundSummary{}
+
+	for _, r := range rounds {
+		roundSummary := &votingpb.RoundSummary{
+			Number:     int32(r.Number),
+			Excess:     r.Excess,
+			Surplus:    r.Surplus,
+			Quota:      r.Quota,
+			Candidates: toPbCandidateSummaries(r.Candidates),
+		}
+
+		roundSummaries = append(roundSummaries, roundSummary)
+	}
+
+	return roundSummaries
+}
+
+func toPbCandidateSummaries(candidates []CandidateSummary) []*votingpb.CandidateSummary {
+	candidateSummaries := []*votingpb.CandidateSummary{}
+
+	for _, c := range candidates {
+		candidateSummary := &votingpb.CandidateSummary{
+			Id:     c.Id,
+			Name:   c.Name,
+			Rank:   int32(c.Rank),
+			Votes:  c.Votes,
+			Weight: c.Weight,
+			Status: c.Status,
+		}
+
+		candidateSummaries = append(candidateSummaries, candidateSummary)
+	}
+
+	return candidateSummaries
 }
 
 func toPbExportReply(exportResult ExportResult) *votingpb.ExportReply {

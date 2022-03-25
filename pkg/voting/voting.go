@@ -94,17 +94,35 @@ type ExportResult struct {
 }
 
 type CountResult struct {
-	Success   bool
-	Message   string
-	Poll      Poll
-	Method    string
-	Elected   []VoteReplyOption
-	Events    []CountEvent
-	Summaries []CountEvent
+	Success bool
+	Message string
+	Poll    Poll
+	Method  string
+	Elected []VoteReplyOption
+	Events  []CountEvent
+	Rounds  []RoundSummary
 }
 
 type CountEvent struct {
+	Type        string
 	Description string
+}
+
+type RoundSummary struct {
+	Number     int
+	Excess     int64
+	Surplus    int64
+	Quota      int64
+	Candidates []CandidateSummary
+}
+
+type CandidateSummary struct {
+	Id     string
+	Name   string
+	Rank   int
+	Votes  int64
+	Weight int64
+	Status string
 }
 
 type OpenPollResult struct {
