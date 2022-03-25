@@ -226,13 +226,13 @@ func (s DefaultService) Count(countRequest CountRequest) (countResult CountResul
 	}
 
 	countResult = CountResult{
-		Poll:      poll,
-		Method:    countRequest.Method,
-		Events:    s.toCountEvents(result.Events),
-		Summaries: s.toCountEvents(result.Summaries),
+		Poll:   poll,
+		Method: countRequest.Method,
+		Events: s.toCountEvents(result.Summary.Events),
+		Rounds: s.toRoundSummaries(result.Summary.Rounds),
 	}
 
-	elected, err := s.toVoteReplyOptions(result.Candidates)
+	elected, err := s.toVoteReplyOptions(result.Elected)
 	if err != nil {
 		return CountResult{}, err
 	}
@@ -359,6 +359,7 @@ func (s DefaultService) toCountEvents(events election.Events) []CountEvent {
 
 	for _, e := range events {
 		countEvent := CountEvent{
+			Type:        e.Type,
 			Description: e.Description,
 		}
 
@@ -366,4 +367,41 @@ func (s DefaultService) toCountEvents(events election.Events) []CountEvent {
 	}
 
 	return countEvents
+}
+
+func (s DefaultService) toRoundSummaries(rounds election.RoundSummaries) []RoundSummary {
+	roundSummaries := []RoundSummary{}
+
+	for _, r := range rounds {
+		roundSummary := RoundSummary{
+			Number:     r.Number,
+			Excess:     r.Excess,
+			Surplus:    r.Surplus,
+			Quota:      r.Quota,
+			Candidates: s.toCandidateSummaries(r.Candidates),
+		}
+
+		roundSummaries = append(roundSummaries, roundSummary)
+	}
+
+	return roundSummaries
+}
+
+func (s DefaultService) toCandidateSummaries(candidates []election.CandidateSummary) []CandidateSummary {
+	candidateSummaries := []CandidateSummary{}
+
+	for _, c := range candidates {
+		candidateSummary := CandidateSummary{
+			Id:     c.Id,
+			Name:   c.Name,
+			Rank:   c.Rank,
+			Votes:  c.Votes,
+			Weight: c.Weight,
+			Status: c.Status,
+		}
+
+		candidateSummaries = append(candidateSummaries, candidateSummary)
+	}
+
+	return candidateSummaries
 }

@@ -158,9 +158,27 @@ message CountReply {
     string method = 4;
     repeated VoteReplyOption elected = 5;
     repeated CountEvent events = 6;
-    repeated CountEvent summaries = 7;
+    repeated RoundSummary rounds = 7;
 }
 
 message CountEvent {
-    string description = 1;
+    string type = 1;
+    string description = 2;
+}
+
+message RoundSummary {
+    int32 number = 1;
+    int64 excess = 2;
+    int64 surplus = 3;
+    int64 quota = 4;
+    repeated CandidateSummary candidates = 5;
+}
+
+message CandidateSummary {
+    string id = 1;
+    string name = 2;
+    int32 rank = 3;
+    int64 votes = 4;
+    int64 weight = 5;
+    string status = 6;
 }
