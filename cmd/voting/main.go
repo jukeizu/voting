@@ -41,7 +41,7 @@ var (
 	httpPort                = "10002"
 	dbAddress               = "root@localhost:26257"
 	serviceAddress          = "localhost:" + grpcPort
-	selectionServiceAddress = "localhost:50055" //+ grpcPort
+	selectionServiceAddress = "localhost:" + grpcPort
 )
 
 func parseConfig() {
