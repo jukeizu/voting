@@ -7,7 +7,6 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/shawntoffel/election"
-	"github.com/shawntoffel/election/export/blt"
 	"github.com/shawntoffel/electioncounter"
 )
 
@@ -264,10 +263,10 @@ func (s DefaultService) Export(exportRequest ExportRequest) (ExportResult, error
 		WithdrawnCandidates: exportRequest.ToExclude,
 	}
 
-	exporter := blt.Blt{}
+	exporter := election.NewExporter(config)
 
 	result := ExportResult{
-		Content: exporter.Export(config),
+		Content: exporter.ExportBlt(),
 		Poll:    poll,
 		Method:  exportRequest.Method,
 	}
@@ -293,26 +292,23 @@ func (s DefaultService) findPollShortId(shortId string, serverId string) (string
 }
 
 func (s DefaultService) electionBallots(pollId string) (election.Ballots, error) {
-	ballots := election.Ballots{}
-
 	voterIds, err := s.ballotService.VoterIds(pollId)
 	if err != nil {
-		return ballots, err
+		return election.Ballots{}, err
 	}
 
-	for _, voterId := range voterIds {
-		ballot := election.NewBallot()
+	ballots := make(election.Ballots, len(voterIds))
 
+	for i, voterId := range voterIds {
 		options, err := s.ballotService.VoterBallot(pollId, voterId)
 		if err != nil {
 			return ballots, err
 		}
 
-		for _, option := range options {
-			ballot.PushBack(option)
+		ballots[i] = election.Ballot{
+			Count:       1,
+			Preferences: options,
 		}
-
-		ballots = append(ballots, ballot)
 	}
 
 	return ballots, nil

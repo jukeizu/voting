@@ -13,8 +13,8 @@ require (
 	github.com/oklog/run v1.0.0
 	github.com/rs/xid v1.2.1
 	github.com/rs/zerolog v1.14.3
-	github.com/shawntoffel/election v0.5.0
-	github.com/shawntoffel/electioncounter v0.2.0
+	github.com/shawntoffel/election v0.6.0
+	github.com/shawntoffel/electioncounter v0.3.0
 	github.com/shawntoffel/gossage v0.0.2
 	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf
 	golang.org/x/net v0.0.0-20200506145744-7e3656a0809f // indirect
