@@ -7,7 +7,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/shawntoffel/election"
-	"github.com/shawntoffel/electioncounter"
+	"github.com/shawntoffel/meekstv"
 )
 
 var MaxStatusVoterCount = int64(50)
@@ -217,9 +217,10 @@ func (s DefaultService) Count(countRequest CountRequest) (countResult CountResul
 		}
 	}()
 
-	electionCounter := electioncounter.NewElectionCounter()
+	counter := meekstv.NewMeekStv()
+	counter.Initialize(config)
 
-	result, err := electionCounter.Count(countRequest.Method, config)
+	result, err := counter.Count()
 	if err != nil {
 		return CountResult{}, err
 	}

@@ -120,6 +120,10 @@ func (s ValidationService) Count(countRequest CountRequest) (CountResult, error)
 		return CountResult{}, err
 	}
 
+	if !strings.EqualFold(countRequest.Method, "meekstv") {
+		return CountResult{}, ErrUnknownCountMethod(countRequest.Method)
+	}
+
 	return s.service.Count(countRequest)
 }
 

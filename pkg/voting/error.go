@@ -28,6 +28,10 @@ func ErrUnkownExportMethod(method string) ValidationError {
 	return ValidationError{Message: fmt.Sprintf("export method '%s' is not supported", method)}
 }
 
+func ErrUnknownCountMethod(method string) ValidationError {
+	return ValidationError{Message: fmt.Sprintf("counting method '%s' is not supported", method)}
+}
+
 type ValidationError struct {
 	Message string
 }
