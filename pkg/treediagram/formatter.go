@@ -423,15 +423,11 @@ func FormatClientError(err error) (*contract.Response, error) {
 }
 
 func generateTitle(poll *votingpb.Poll) string {
-	title := ""
-
 	if poll.Title != "" {
-		title += fmt.Sprintf("**%s** ", poll.Title)
-	} else {
-		title = "Ballot"
+		return poll.Title
 	}
 
-	return title
+	return "Ballot"
 }
 
 func generateVotersEmbedField(voterCount int64, voters []*votingpb.Voter) *contract.EmbedField {
