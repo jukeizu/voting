@@ -3,6 +3,7 @@ package treediagram
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -431,10 +432,14 @@ func generateTitle(poll *votingpb.Poll) string {
 }
 
 func generateVotersEmbedField(voterCount int64, voters []*votingpb.Voter) *contract.EmbedField {
-	voterUsernames := []string{}
-	for _, voter := range voters {
-		voterUsernames = append(voterUsernames, fmt.Sprintf("<@!%s>", voter.ExternalId))
+	voterUsernames := make([]string, len(voters))
+	for i, voter := range voters {
+		voterUsernames[i] = voter.Username
 	}
+
+	sort.Slice(voterUsernames, func(i, j int) bool {
+		return strings.ToLower(voterUsernames[i]) < strings.ToLower(voterUsernames[j])
+	})
 
 	votersField := &contract.EmbedField{
 		Value: strings.Join(voterUsernames, ", "),
