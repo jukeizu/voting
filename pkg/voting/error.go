@@ -32,6 +32,10 @@ func ErrUnknownCountMethod(method string) ValidationError {
 	return ValidationError{Message: fmt.Sprintf("counting method '%s' is not supported", method)}
 }
 
+func ErrMaxOpenPolls(poll Poll) ValidationError {
+	return ValidationError{Message: fmt.Sprintf("cannot start a new poll until the previous poll has ended:\n\nid: `%s`\ntitle: `%s`\ncreated by: <@!%s>", poll.ShortId, poll.Title, poll.CreatorId)}
+}
+
 type ValidationError struct {
 	Message string
 }
