@@ -18,12 +18,12 @@ const DefaultStatusMaxNumToElect = 4
 
 type Handler struct {
 	logger          zerolog.Logger
-	client          votingpb.VotingClient
+	client          votingpb.VotingServiceClient
 	selectionClient selectionpb.SelectionClient
 	httpServer      *http.Server
 }
 
-func NewHandler(logger zerolog.Logger, client votingpb.VotingClient, selectionClient selectionpb.SelectionClient, addr string) Handler {
+func NewHandler(logger zerolog.Logger, client votingpb.VotingServiceClient, selectionClient selectionpb.SelectionClient, addr string) Handler {
 	logger = logger.With().Str("component", AppId).Logger()
 
 	httpServer := http.Server{
@@ -279,7 +279,7 @@ func (h Handler) pollStatusEdit(shortID string, serverID string, messageId strin
 		return FormatClientError(err)
 	}
 
-	voters := []*votingpb.Voter{}
+	voters := []*votingpb.VotersResponse{}
 	if status.VoterCount <= 30 {
 		v, err := h.voters(req.ShortId, req.ServerId)
 		if err != nil {
@@ -308,8 +308,8 @@ func (h Handler) pollStatusEdit(shortID string, serverID string, messageId strin
 	return &contract.Response{Messages: []*contract.Message{message}}, nil
 }
 
-func (h Handler) voters(shortId string, serverId string) ([]*votingpb.Voter, error) {
-	voters := []*votingpb.Voter{}
+func (h Handler) voters(shortId string, serverId string) ([]*votingpb.VotersResponse, error) {
+	voters := []*votingpb.VotersResponse{}
 
 	votersRequest := &votingpb.VotersRequest{
 		ShortId:  shortId,

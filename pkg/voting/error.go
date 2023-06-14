@@ -17,6 +17,9 @@ func ErrTooManyVotes(max int32) ValidationError {
 }
 
 func ErrPollNotFound(shortId string) NotFoundError {
+	if shortId == "" {
+		return NotFoundError{Message: "couldn't find a poll"}
+	}
 	return NotFoundError{Message: "couldn't find poll with id: " + shortId}
 }
 

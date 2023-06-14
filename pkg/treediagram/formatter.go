@@ -68,7 +68,7 @@ func FormatNewPollReply(poll *votingpb.Poll) *contract.Message {
 	}
 }
 
-func FormatPollStatusReply(status *votingpb.StatusReply, voters []*votingpb.Voter, countReply *votingpb.CountReply, editMessageId string, private bool) *contract.Message {
+func FormatPollStatusReply(status *votingpb.StatusResponse, voters []*votingpb.VotersResponse, countReply *votingpb.CountResponse, editMessageId string, private bool) *contract.Message {
 	embed := &contract.Embed{
 		Color:        0x5865f2,
 		ThumbnailUrl: BallotBoxThumbnailURL,
@@ -201,7 +201,7 @@ func FormatVoteHelp(allowedVotes int32) string {
 	return buffer.String()
 }
 
-func FormatOpenPollReply(openPollReply *votingpb.OpenPollReply) *contract.Message {
+func FormatOpenPollReply(openPollReply *votingpb.OpenPollResponse) *contract.Message {
 	embed := &contract.Embed{
 		Color:        0x5865f2,
 		ThumbnailUrl: BallotBoxThumbnailURL,
@@ -260,7 +260,7 @@ func FormatOpenPollReply(openPollReply *votingpb.OpenPollReply) *contract.Messag
 	return message
 }
 
-func FormatVoteReply(poll *votingpb.Poll, voteReply *votingpb.VoteReply) *contract.Embed {
+func FormatVoteReply(poll *votingpb.Poll, voteReply *votingpb.VoteResponse) *contract.Embed {
 	embed := &contract.Embed{
 		Color: 0x5865f2,
 		Title: ":ballot_box_with_check: **Vote received!**",
@@ -285,7 +285,7 @@ func FormatVoteReply(poll *votingpb.Poll, voteReply *votingpb.VoteReply) *contra
 	return embed
 }
 
-func FormatCountResult(countReply *votingpb.CountReply) *contract.Message {
+func FormatCountResult(countReply *votingpb.CountResponse) *contract.Message {
 	embed := &contract.Embed{
 		Title: ":ballot_box: Election Result",
 		Color: 0x5865f2,
@@ -362,7 +362,7 @@ func FormatCountResult(countReply *votingpb.CountReply) *contract.Message {
 	return message
 }
 
-func FormatExportResult(exportReply *votingpb.ExportReply) *contract.Message {
+func FormatExportResult(exportReply *votingpb.ExportResponse) *contract.Message {
 	title := exportReply.Poll.Title
 	if len(title) < 1 {
 		title = exportReply.Poll.ShortId
@@ -431,7 +431,7 @@ func generateTitle(poll *votingpb.Poll) string {
 	return "Ballot"
 }
 
-func generateVotersEmbedField(voterCount int64, voters []*votingpb.Voter) *contract.EmbedField {
+func generateVotersEmbedField(voterCount int64, voters []*votingpb.VotersResponse) *contract.EmbedField {
 	voterUsernames := make([]string, len(voters))
 	for i, voter := range voters {
 		voterUsernames[i] = voter.Username
@@ -450,7 +450,7 @@ func generateVotersEmbedField(voterCount int64, voters []*votingpb.Voter) *contr
 	return votersField
 }
 
-func generateCountResultsEmbedField(countReply *votingpb.CountReply) *contract.EmbedField {
+func generateCountResultsEmbedField(countReply *votingpb.CountResponse) *contract.EmbedField {
 	buffer := bytes.Buffer{}
 
 	for _, candidate := range countReply.Elected {
@@ -469,8 +469,8 @@ func hasExpiration(poll *votingpb.Poll) bool {
 	return poll.Expires > (time.Time{}).Unix()
 }
 
-func chunkCandidates(candidates []*votingpb.VoteReplyOption, chunkSize int) [][]*votingpb.VoteReplyOption {
-	chunked := [][]*votingpb.VoteReplyOption{}
+func chunkCandidates(candidates []*votingpb.VoteResponseOption, chunkSize int) [][]*votingpb.VoteResponseOption {
+	chunked := [][]*votingpb.VoteResponseOption{}
 
 	numCandidates := len(candidates)
 
