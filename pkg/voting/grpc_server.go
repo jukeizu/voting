@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var _ votingpb.VotingServer = &GrpcServer{}
+var _ votingpb.VotingServiceServer = &GrpcServer{}
 
 type GrpcServer struct {
 	service Service
@@ -19,7 +19,7 @@ func NewGrpcServer(service Service) GrpcServer {
 	return GrpcServer{service}
 }
 
-func (s GrpcServer) CreatePoll(ctx context.Context, req *votingpb.CreatePollRequest) (*votingpb.CreatePollReply, error) {
+func (s GrpcServer) CreatePoll(ctx context.Context, req *votingpb.CreatePollRequest) (*votingpb.CreatePollResponse, error) {
 	pollReq := createPollRequestToPoll(req)
 
 	poll, err := s.service.CreatePoll(pollReq)
@@ -27,66 +27,66 @@ func (s GrpcServer) CreatePoll(ctx context.Context, req *votingpb.CreatePollRequ
 		return nil, toStatusErr(err)
 	}
 
-	pollReply := toPbPoll(poll)
+	pollResponse := toPbPoll(poll)
 
-	return &votingpb.CreatePollReply{Poll: pollReply}, nil
+	return &votingpb.CreatePollResponse{Poll: pollResponse}, nil
 }
 
-func (s GrpcServer) Poll(ctx context.Context, req *votingpb.PollRequest) (*votingpb.PollReply, error) {
+func (s GrpcServer) Poll(ctx context.Context, req *votingpb.PollRequest) (*votingpb.PollResponse, error) {
 	poll, err := s.service.Poll(req.ShortId, req.VoterId, req.ServerId)
 	if err != nil {
 		return nil, toStatusErr(err)
 	}
 
-	pollReply := toPbPoll(poll)
+	pollResponse := toPbPoll(poll)
 
-	return &votingpb.PollReply{Poll: pollReply}, nil
+	return &votingpb.PollResponse{Poll: pollResponse}, nil
 }
 
-func (s GrpcServer) VoterPoll(ctx context.Context, req *votingpb.VoterPollRequest) (*votingpb.PollReply, error) {
+func (s GrpcServer) VoterPoll(ctx context.Context, req *votingpb.VoterPollRequest) (*votingpb.VoterPollResponse, error) {
 	poll, err := s.service.VoterPoll(req.VoterId, req.ServerId)
 	if err != nil {
 		return nil, toStatusErr(err)
 	}
 
-	pollReply := toPbPoll(poll)
+	pollResponse := toPbPoll(poll)
 
-	return &votingpb.PollReply{Poll: pollReply}, nil
+	return &votingpb.VoterPollResponse{Poll: pollResponse}, nil
 }
 
-func (s GrpcServer) EndPoll(ctx context.Context, req *votingpb.EndPollRequest) (*votingpb.EndPollReply, error) {
+func (s GrpcServer) EndPoll(ctx context.Context, req *votingpb.EndPollRequest) (*votingpb.EndPollResponse, error) {
 	poll, err := s.service.EndPoll(req.ShortId, req.ServerId, req.RequesterId)
 	if err != nil {
 		return nil, toStatusErr(err)
 	}
 
-	pollReply := toPbPoll(poll)
+	pollResponse := toPbPoll(poll)
 
-	return &votingpb.EndPollReply{Poll: pollReply}, nil
+	return &votingpb.EndPollResponse{Poll: pollResponse}, nil
 }
 
-func (s GrpcServer) OpenPoll(ctx context.Context, req *votingpb.OpenPollRequest) (*votingpb.OpenPollReply, error) {
+func (s GrpcServer) OpenPoll(ctx context.Context, req *votingpb.OpenPollRequest) (*votingpb.OpenPollResponse, error) {
 	openPollResult, err := s.service.OpenPoll(req.ShortId, req.ServerId, req.RequesterId, time.Unix(req.Expires, 0))
 	if err != nil {
 		return nil, toStatusErr(err)
 	}
 
-	pollReply := toPbPoll(openPollResult.Poll)
+	pollResponse := toPbPoll(openPollResult.Poll)
 
-	return &votingpb.OpenPollReply{
-		Poll:               pollReply,
+	return &votingpb.OpenPollResponse{
+		Poll:               pollResponse,
 		PreviouslyEnded:    openPollResult.PreviouslyEnded,
 		PreviousExpiration: openPollResult.PreviousExpiration.UTC().Unix(),
 	}, nil
 }
 
-func (s GrpcServer) Status(ctx context.Context, req *votingpb.StatusRequest) (*votingpb.StatusReply, error) {
+func (s GrpcServer) Status(ctx context.Context, req *votingpb.StatusRequest) (*votingpb.StatusResponse, error) {
 	status, err := s.service.Status(req.ShortId, req.ServerId)
 	if err != nil {
 		return nil, toStatusErr(err)
 	}
 
-	reply := &votingpb.StatusReply{
+	reply := &votingpb.StatusResponse{
 		Poll:       toPbPoll(status.Poll),
 		VoterCount: status.VoterCount,
 	}
@@ -95,7 +95,7 @@ func (s GrpcServer) Status(ctx context.Context, req *votingpb.StatusRequest) (*v
 
 }
 
-func (s GrpcServer) Voters(req *votingpb.VotersRequest, stream votingpb.Voting_VotersServer) error {
+func (s GrpcServer) Voters(req *votingpb.VotersRequest, stream votingpb.VotingService_VotersServer) error {
 	voters, err := s.service.Voters(req.ShortId, req.ServerId)
 	if err != nil {
 		return toStatusErr(err)
@@ -111,7 +111,7 @@ func (s GrpcServer) Voters(req *votingpb.VotersRequest, stream votingpb.Voting_V
 	return nil
 }
 
-func (s GrpcServer) Vote(ctx context.Context, req *votingpb.VoteRequest) (*votingpb.VoteReply, error) {
+func (s GrpcServer) Vote(ctx context.Context, req *votingpb.VoteRequest) (*votingpb.VoteResponse, error) {
 	voteRequest := VoteRequest{
 		ShortId:  req.ShortId,
 		ServerId: req.ServerId,
@@ -119,15 +119,15 @@ func (s GrpcServer) Vote(ctx context.Context, req *votingpb.VoteRequest) (*votin
 		Options:  toBallotOptions(req.Options),
 	}
 
-	voteReply, err := s.service.Vote(voteRequest)
+	voteResponse, err := s.service.Vote(voteRequest)
 	if err != nil {
 		return nil, toStatusErr(err)
 	}
 
-	return toPbVoteReply(voteReply), nil
+	return toPbVoteResponse(voteResponse), nil
 }
 
-func (s GrpcServer) Count(ctx context.Context, req *votingpb.CountRequest) (*votingpb.CountReply, error) {
+func (s GrpcServer) Count(ctx context.Context, req *votingpb.CountRequest) (*votingpb.CountResponse, error) {
 	countRequest := CountRequest{
 		ShortId:    req.ShortId,
 		ServerId:   req.ServerId,
@@ -141,10 +141,10 @@ func (s GrpcServer) Count(ctx context.Context, req *votingpb.CountRequest) (*vot
 		return nil, toStatusErr(err)
 	}
 
-	return toPbCountReply(countResult), nil
+	return toPbCountResponse(countResult), nil
 }
 
-func (s GrpcServer) Export(ctx context.Context, req *votingpb.ExportRequest) (*votingpb.ExportReply, error) {
+func (s GrpcServer) Export(ctx context.Context, req *votingpb.ExportRequest) (*votingpb.ExportResponse, error) {
 	exportRequest := ExportRequest{
 		ShortId:    req.ShortId,
 		ServerId:   req.ServerId,
@@ -157,7 +157,7 @@ func (s GrpcServer) Export(ctx context.Context, req *votingpb.ExportRequest) (*v
 	if err != nil {
 		return nil, toStatusErr(err)
 	}
-	return toPbExportReply(result), nil
+	return toPbExportResponse(result), nil
 }
 
 func createPollRequestToPoll(req *votingpb.CreatePollRequest) Poll {
@@ -245,30 +245,30 @@ func toPbOption(option Option) *votingpb.Option {
 	return pbOption
 }
 
-func toPbVoteReply(voteReply VoteReply) *votingpb.VoteReply {
-	pbVoteReply := &votingpb.VoteReply{
-		Success: voteReply.Success,
-		Message: voteReply.Message,
+func toPbVoteResponse(voteResponse VoteReply) *votingpb.VoteResponse {
+	pbVoteResponse := &votingpb.VoteResponse{
+		Success: voteResponse.Success,
+		Message: voteResponse.Message,
 	}
 
-	for _, voteReplyOption := range voteReply.Options {
-		pbVoteReply.Options = append(pbVoteReply.Options, toPbVoteReplyOption(voteReplyOption))
+	for _, voteResponseOption := range voteResponse.Options {
+		pbVoteResponse.Options = append(pbVoteResponse.Options, toPbVoteResponseOption(voteResponseOption))
 	}
 
-	return pbVoteReply
+	return pbVoteResponse
 }
 
-func toPbVoteReplyOption(voteReplyOption VoteReplyOption) *votingpb.VoteReplyOption {
-	pbVoteReplyOption := &votingpb.VoteReplyOption{
-		Rank:   voteReplyOption.Rank,
-		Option: toPbOption(voteReplyOption.Option),
+func toPbVoteResponseOption(voteResponseOption VoteReplyOption) *votingpb.VoteResponseOption {
+	pbVoteResponseOption := &votingpb.VoteResponseOption{
+		Rank:   voteResponseOption.Rank,
+		Option: toPbOption(voteResponseOption.Option),
 	}
 
-	return pbVoteReplyOption
+	return pbVoteResponseOption
 }
 
-func toPbVoter(voter Voter) *votingpb.Voter {
-	pbVoter := &votingpb.Voter{
+func toPbVoter(voter Voter) *votingpb.VotersResponse {
+	pbVoter := &votingpb.VotersResponse{
 		Id:         voter.Id,
 		Username:   voter.Username,
 		ExternalId: voter.ExternalId,
@@ -277,8 +277,8 @@ func toPbVoter(voter Voter) *votingpb.Voter {
 	return pbVoter
 }
 
-func toPbCountReply(countResult CountResult) *votingpb.CountReply {
-	countReply := &votingpb.CountReply{
+func toPbCountResponse(countResult CountResult) *votingpb.CountResponse {
+	countResponse := &votingpb.CountResponse{
 		Success: countResult.Success,
 		Message: countResult.Message,
 		Poll:    toPbPoll(countResult.Poll),
@@ -288,10 +288,10 @@ func toPbCountReply(countResult CountResult) *votingpb.CountReply {
 	}
 
 	for _, elected := range countResult.Elected {
-		countReply.Elected = append(countReply.Elected, toPbVoteReplyOption(elected))
+		countResponse.Elected = append(countResponse.Elected, toPbVoteResponseOption(elected))
 	}
 
-	return countReply
+	return countResponse
 }
 
 func toPbCountEvents(countEvents []CountEvent) []*votingpb.CountEvent {
@@ -346,14 +346,14 @@ func toPbCandidateSummaries(candidates []CandidateSummary) []*votingpb.Candidate
 	return candidateSummaries
 }
 
-func toPbExportReply(exportResult ExportResult) *votingpb.ExportReply {
-	exportReply := &votingpb.ExportReply{
+func toPbExportResponse(exportResult ExportResult) *votingpb.ExportResponse {
+	exportResponse := &votingpb.ExportResponse{
 		Content: exportResult.Content,
 		Poll:    toPbPoll(exportResult.Poll),
 		Method:  exportResult.Method,
 	}
 
-	return exportReply
+	return exportResponse
 }
 
 func toStatusErr(err error) error {

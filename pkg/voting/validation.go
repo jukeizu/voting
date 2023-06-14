@@ -29,6 +29,11 @@ func NewValidationService(
 }
 
 func (s ValidationService) CreatePoll(poll Poll) (Poll, error) {
+	existing, err := s.service.Poll("", "", poll.ServerId)
+	if err == nil && !existing.HasEnded() {
+		return Poll{}, ErrMaxOpenPolls(existing)
+	}
+
 	if len(poll.Options) < 1 {
 		return Poll{}, ErrNoOptions
 

@@ -10,7 +10,6 @@ import (
 	"time"
 
 	grpczerolog "github.com/cheapRoc/grpc-zerolog"
-	_ "github.com/jnewmano/grpc-json-proxy/codec"
 	"github.com/jukeizu/selection/api/protobuf-spec/selectionpb"
 	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
 	"github.com/jukeizu/voting/internal/startup"
@@ -27,6 +26,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/reflection"
 )
 
 var Version = ""
@@ -179,7 +179,8 @@ func main() {
 
 		votingServer := voting.NewGrpcServer(votingService)
 
-		votingpb.RegisterVotingServer(grpcServer, votingServer)
+		votingpb.RegisterVotingServiceServer(grpcServer, votingServer)
+		reflection.Register(grpcServer)
 
 		grpcAddr := ":" + grpcPort
 
@@ -191,7 +192,7 @@ func main() {
 	}
 
 	if flagHandler {
-		client := votingpb.NewVotingClient(clientConn)
+		client := votingpb.NewVotingServiceClient(clientConn)
 		selectionClient := selectionpb.NewSelectionClient(selectionClientConn)
 
 		httpAddr := ":" + httpPort
