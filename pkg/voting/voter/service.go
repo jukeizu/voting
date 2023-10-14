@@ -36,6 +36,10 @@ func (s DefaultService) Voter(id string) (voting.Voter, error) {
 	return s.repository.Voter(id)
 }
 
+func (s DefaultService) VoterByExternalId(id string) (voting.Voter, error) {
+	return s.repository.VoterByExternalId(id)
+}
+
 func (s DefaultService) Voters(ids []string) ([]voting.Voter, error) {
 	return s.repository.Voters(ids)
 }

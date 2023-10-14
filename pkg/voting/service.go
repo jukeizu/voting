@@ -16,6 +16,7 @@ type Service interface {
 	CreatePoll(poll Poll) (Poll, error)
 	Poll(shortId string, voterId string, serverId string) (Poll, error)
 	VoterPoll(voterId string, serverId string) (Poll, error)
+	VoterBallot(shortId string, voterId string, serverId string) ([]BallotOption, error)
 	EndPoll(shortId string, serverId string, userId string) (Poll, error)
 	OpenPoll(shortId string, serverId string, userId string, expires time.Time) (OpenPollResult, error)
 	Status(shortId string, serverId string) (Status, error)
@@ -88,6 +89,20 @@ func (s DefaultService) VoterPoll(voterId string, serverId string) (Poll, error)
 	}
 
 	return s.findPoll(pollId, serverId)
+}
+
+func (s DefaultService) VoterBallot(shortId string, voterId string, serverId string) ([]BallotOption, error) {
+	poll, err := s.findPoll(shortId, serverId)
+	if err != nil {
+		return []BallotOption{}, err
+	}
+
+	voter, err := s.voterService.VoterByExternalId(voterId)
+	if err != nil {
+		return []BallotOption{}, err
+	}
+
+	return s.ballotService.VoterBallot(poll.Id, voter.Id)
 }
 
 func (s DefaultService) EndPoll(shortId string, serverId string, userId string) (Poll, error) {
@@ -306,9 +321,14 @@ func (s DefaultService) electionBallots(pollId string) (election.Ballots, error)
 			return ballots, err
 		}
 
+		optionIds := make([]string, len(options))
+		for i, option := range options {
+			optionIds[i] = option.OptionId
+		}
+
 		ballots[i] = election.Ballot{
 			Count:       1,
-			Preferences: options,
+			Preferences: optionIds,
 		}
 	}
 

@@ -18,6 +18,7 @@ type Repository interface {
 	Migrate() error
 	Create(voter voting.Voter) (voting.Voter, error)
 	Voter(id string) (voting.Voter, error)
+	VoterByExternalId(externalId string) (voting.Voter, error)
 	Voters(ids []string) ([]voting.Voter, error)
 }
 
@@ -77,6 +78,21 @@ func (r *repository) Voter(id string) (voting.Voter, error) {
 	voter := voting.Voter{}
 
 	err := r.Db.QueryRow(q, id).Scan(
+		&voter.Id,
+		&voter.ExternalId,
+		&voter.Username,
+		&voter.CanVote,
+	)
+
+	return voter, err
+}
+
+func (r *repository) VoterByExternalId(externalId string) (voting.Voter, error) {
+	q := `SELECT id, externalId, username, canvote FROM voter WHERE externalId = $1`
+
+	voter := voting.Voter{}
+
+	err := r.Db.QueryRow(q, externalId).Scan(
 		&voter.Id,
 		&voter.ExternalId,
 		&voter.Username,

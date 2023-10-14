@@ -38,6 +38,6 @@ func (s DefaultService) VoterIds(pollId string) ([]string, error) {
 	return s.repository.VoterIds(pollId)
 }
 
-func (s DefaultService) VoterBallot(pollId string, voterId string) ([]string, error) {
+func (s DefaultService) VoterBallot(pollId string, voterId string) ([]voting.BallotOption, error) {
 	return s.repository.VoterBallot(pollId, voterId)
 }
