@@ -63,6 +63,8 @@ github.com/shawntoffel/math v0.0.1 h1:bTb6ZmruitLfcdrqmRlQ4x3J8y/uX7RcwDNjvt7ZWt
 github.com/shawntoffel/math v0.0.1/go.mod h1:IkZ69AVi0koRMNdl/oqI19q0+EOIYG7tUgGky6D1pAQ=
 github.com/shawntoffel/meekstv v0.2.3 h1:fMxB382XfoHJ/Knd1l/je8boC2uDqPAwM/uPEPzgHZw=
 github.com/shawntoffel/meekstv v0.2.3/go.mod h1:TquxSjrTU+QBeLiZ1CqVWX5LiaRhxRz8sT5Il7hgkbA=
+github.com/shawntoffel/meekstv v0.3.0 h1:I7lAiWi2tQnZF99S0zu5b1z6guPX9VtHjCUY+noEK2M=
+github.com/shawntoffel/meekstv v0.3.0/go.mod h1:TquxSjrTU+QBeLiZ1CqVWX5LiaRhxRz8sT5Il7hgkbA=
 github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf h1:Z2X3Os7oRzpdJ75iPqWZc0HeJWFYNCvKsfpQwFpRNTA=
 github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf/go.mod h1:M8agBzgqHIhgj7wEn9/0hJUZcrvt9VY+Ln+S1I5Mha0=
 github.com/zenazn/goji v0.9.0/go.mod h1:7S9M489iMyHBNxwZnk9/EHS098H4/F6TATF2mIxtB1Q=

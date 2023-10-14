@@ -20,7 +20,7 @@ type Repository interface {
 	CreateBallotOptions(ballot voting.Ballot) error
 	VoterCount(pollId string) (int64, error)
 	VoterIds(pollId string) ([]string, error)
-	VoterBallot(pollId string, voterId string) ([]string, error)
+	VoterBallot(pollId string, voterId string) ([]voting.BallotOption, error)
 }
 
 type repository struct {
@@ -144,31 +144,36 @@ func (r *repository) VoterIds(pollId string) ([]string, error) {
 	return voterIds, nil
 }
 
-func (r *repository) VoterBallot(pollId string, voterId string) ([]string, error) {
-	q := `SELECT optionId FROM ballot_option 
+func (r *repository) VoterBallot(pollId string, voterId string) ([]voting.BallotOption, error) {
+	q := `SELECT "rank", optionId FROM ballot_option 
 		WHERE pollid = $1 AND voterid = $2 AND void = false
 		ORDER by rank`
 
-	optionIds := []string{}
+	ballotOptions := []voting.BallotOption{}
 
 	rows, err := r.Db.Query(q, pollId, voterId)
 	if err != nil {
-		return optionIds, err
+		return ballotOptions, err
 	}
 
 	defer rows.Close()
 	for rows.Next() {
-		optionId := ""
+		var rank int32
+		var optionId string
 		err := rows.Scan(
+			&rank,
 			&optionId,
 		)
 		if err != nil {
-			return optionIds, err
+			return ballotOptions, err
 		}
 
-		optionIds = append(optionIds, optionId)
+		ballotOptions = append(ballotOptions, voting.BallotOption{
+			Rank:     rank,
+			OptionId: optionId,
+		})
 	}
 
-	return optionIds, nil
+	return ballotOptions, nil
 
 }

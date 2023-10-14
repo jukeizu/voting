@@ -151,6 +151,7 @@ type SessionService interface {
 type VoterService interface {
 	Create(voter Voter) (Voter, error)
 	Voter(id string) (Voter, error)
+	VoterByExternalId(externalId string) (Voter, error)
 	Voters(ids []string) ([]Voter, error)
 }
 
@@ -158,5 +159,5 @@ type BallotService interface {
 	Submit(Ballot) (BallotResult, error)
 	VoterCount(pollId string) (int64, error)
 	VoterIds(pollId string) ([]string, error)
-	VoterBallot(pollId string, voterId string) ([]string, error)
+	VoterBallot(pollId string, voterId string) ([]BallotOption, error)
 }

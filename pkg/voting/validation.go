@@ -54,6 +54,10 @@ func (s ValidationService) VoterPoll(voterId string, serverId string) (Poll, err
 	return s.service.VoterPoll(voterId, serverId)
 }
 
+func (s ValidationService) VoterBallot(shortId string, voterId string, serverId string) ([]BallotOption, error) {
+	return s.service.VoterBallot(shortId, voterId, serverId)
+}
+
 func (s ValidationService) EndPoll(shortId string, serverId string, userId string) (Poll, error) {
 	poll, err := s.service.Poll(shortId, "", serverId)
 	if err != nil {

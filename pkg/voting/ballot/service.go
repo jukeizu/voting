@@ -1,6 +1,8 @@
 package ballot
 
 import (
+	"database/sql"
+
 	"github.com/jukeizu/voting/pkg/voting"
 	"github.com/rs/zerolog"
 )
@@ -38,6 +40,10 @@ func (s DefaultService) VoterIds(pollId string) ([]string, error) {
 	return s.repository.VoterIds(pollId)
 }
 
-func (s DefaultService) VoterBallot(pollId string, voterId string) ([]string, error) {
-	return s.repository.VoterBallot(pollId, voterId)
+func (s DefaultService) VoterBallot(pollId string, voterId string) ([]voting.BallotOption, error) {
+	ballotOptions, err := s.repository.VoterBallot(pollId, voterId)
+	if err == sql.ErrNoRows {
+		return []voting.BallotOption{}, nil
+	}
+	return ballotOptions, err
 }

@@ -14,7 +14,7 @@ require (
 	github.com/rs/zerolog v1.14.3
 	github.com/shawntoffel/election v0.6.0
 	github.com/shawntoffel/gossage v0.0.2
-	github.com/shawntoffel/meekstv v0.2.3
+	github.com/shawntoffel/meekstv v0.3.0
 	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf
 	google.golang.org/grpc v1.29.1
 	google.golang.org/protobuf v1.22.0

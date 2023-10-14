@@ -54,6 +54,15 @@ func (s GrpcServer) VoterPoll(ctx context.Context, req *votingpb.VoterPollReques
 	return &votingpb.VoterPollResponse{Poll: pollResponse}, nil
 }
 
+func (s GrpcServer) VoterBallot(ctx context.Context, req *votingpb.VoterBallotRequest) (*votingpb.VoterBallotResponse, error) {
+	ballotOptions, err := s.service.VoterBallot(req.ShortId, req.VoterId, req.ServerId)
+	if err != nil {
+		return nil, toStatusErr(err)
+	}
+
+	return &votingpb.VoterBallotResponse{Options: toPbBallotOptions(ballotOptions)}, nil
+}
+
 func (s GrpcServer) EndPoll(ctx context.Context, req *votingpb.EndPollRequest) (*votingpb.EndPollResponse, error) {
 	poll, err := s.service.EndPoll(req.ShortId, req.ServerId, req.RequesterId)
 	if err != nil {
@@ -307,6 +316,18 @@ func toPbCountEvents(countEvents []CountEvent) []*votingpb.CountEvent {
 	}
 
 	return pbCountEvents
+}
+
+func toPbBallotOptions(ballotOptions []BallotOption) []*votingpb.BallotOption {
+	pbBallotOptions := []*votingpb.BallotOption{}
+	for _, ballotOption := range ballotOptions {
+		pbBallotOption := &votingpb.BallotOption{
+			Rank:     ballotOption.Rank,
+			OptionId: ballotOption.OptionId,
+		}
+		pbBallotOptions = append(pbBallotOptions, pbBallotOption)
+	}
+	return pbBallotOptions
 }
 
 func toPbRoundSummaries(rounds []RoundSummary) []*votingpb.RoundSummary {
