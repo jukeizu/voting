@@ -1,6 +1,7 @@
 package voting
 
 import (
+	"database/sql"
 	"fmt"
 	"runtime/debug"
 	"time"
@@ -98,6 +99,9 @@ func (s DefaultService) VoterBallot(shortId string, voterId string, serverId str
 	}
 
 	voter, err := s.voterService.VoterByExternalId(voterId)
+	if err == sql.ErrNoRows {
+		return []BallotOption{}, nil
+	}
 	if err != nil {
 		return []BallotOption{}, err
 	}
