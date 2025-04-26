@@ -1,5 +1,5 @@
 TAG=$(shell git describe --tags --always)
-VERSION=1.0.0-alpha.1-$(TAG:v%=%)
+VERSION=$(TAG:v%=%)
 REPO=jukeizu/voting
 GO=go
 BUILD=GOARCH=amd64 $(GO) build -ldflags="-s -w -X main.Version=$(VERSION)" 
