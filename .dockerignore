@@ -1,4 +1,4 @@
 bin/
 Dockerfile
 *.md
-.travis.yml
+.pgdata/

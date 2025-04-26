@@ -1,13 +1,13 @@
 TAG=$(shell git describe --tags --always)
-VERSION=$(TAG:v%=%)
+VERSION=1.0.0-alpha.1-$(TAG:v%=%)
 REPO=jukeizu/voting
 GO=go
 BUILD=GOARCH=amd64 $(GO) build -ldflags="-s -w -X main.Version=$(VERSION)" 
-PROTOFILES=$(wildcard .protobuf/voting/v1/*.proto)
-PROTOPBDEST="../../../api/protobuf-spec"
+PROTOFILES=$(wildcard .protobuf/voting/*/*.proto)
 PBFILES=$(patsubst %.proto,%.pb.go, $(PROTOFILES))
+PROTOPBDEST="../../../api/protobuf-spec/$(patsubst %.proto,%pb, $(notdir $<))"
 
-.PHONY: all deps test build build-linux docker-build docker-save docker-deploy proto clean $(PROTOFILES)
+.PHONY: all deps test build build-linux run docker-build docker-save docker-deploy proto clean $(PROTOFILES)
 
 all: deps test build 
 deps:
@@ -23,19 +23,22 @@ build:
 build-linux:
 	CGO_ENABLED=0 GOOS=linux $(BUILD) -a -installsuffix cgo -o bin/voting ./cmd/...
 
+run: build
+	./bin/voting-$(VERSION) -migrate
+
 docker-build:
 	docker build -t $(REPO):$(VERSION) .
 
 docker-save:
 	mkdir -p bin && docker save -o bin/image.tar $(REPO):$(VERSION)
 
-docker-deploy:
+docker-push:
 	docker push $(REPO):$(VERSION)
 
 proto: $(PBFILES)
 
 %.pb.go: %.proto
-	cd $(dir $<) && mkdir -p $(PROTOPBDEST)/$(patsubst %.proto,%pb, $(notdir $<)) && protoc $(notdir $<) --go_out=plugins=grpc:$(PROTOPBDEST)/$(patsubst %.proto,%pb, $(notdir $<))
+	cd $(dir $<) && mkdir -p $(PROTOPBDEST) && protoc $(notdir $<) --go_out=$(PROTOPBDEST) --go-grpc_out=$(PROTOPBDEST) 
 
 clean:
-	@find bin -type f ! -name '*.toml' -delete -print
+	@rm -f bin/*
