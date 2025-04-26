@@ -1,31 +1,22 @@
 module github.com/jukeizu/voting
 
-go 1.20
+go 1.23
 
 require (
 	github.com/cheapRoc/grpc-zerolog v0.0.0-20180425150930-27ca9d023ead
-	github.com/golang/protobuf v1.4.1
-	github.com/jukeizu/contract v0.3.10
-	github.com/jukeizu/selection v0.1.1
-	github.com/lib/pq v1.1.1
-	github.com/mattn/go-shellwords v1.0.5
-	github.com/oklog/run v1.0.0
-	github.com/rs/xid v1.2.1
-	github.com/rs/zerolog v1.14.3
-	github.com/shawntoffel/election v0.6.0
-	github.com/shawntoffel/gossage v0.0.2
-	github.com/shawntoffel/meekstv v0.3.0
-	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf
-	google.golang.org/grpc v1.29.1
-	google.golang.org/protobuf v1.22.0
+	github.com/lib/pq v1.10.9
+	github.com/rs/zerolog v1.33.0
+	github.com/shawntoffel/gossage v0.1.0
+	github.com/shawntoffel/meekstv v0.5.2
+	google.golang.org/grpc v1.70.0
+	google.golang.org/protobuf v1.36.5
 )
 
 require (
-	github.com/golang-jwt/jwt/v4 v4.4.1 // indirect
-	github.com/shawntoffel/goblt v0.0.2 // indirect
-	github.com/shawntoffel/math v0.0.1 // indirect
-	golang.org/x/net v0.0.0-20200506145744-7e3656a0809f // indirect
-	golang.org/x/sys v0.0.0-20200508214444-3aab700007d7 // indirect
-	golang.org/x/text v0.3.2 // indirect
-	google.golang.org/genproto v0.0.0-20200507105951-43844f6eee31 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	golang.org/x/net v0.35.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250207221924-e9438ea467c6 // indirect
 )

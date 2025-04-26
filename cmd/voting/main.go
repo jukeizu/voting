@@ -1,252 +1,131 @@
 package main
 
 import (
-	"errors"
+	"context"
 	"flag"
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
-	"time"
 
 	grpczerolog "github.com/cheapRoc/grpc-zerolog"
-	"github.com/jukeizu/selection/api/protobuf-spec/selectionpb"
-	"github.com/jukeizu/voting/api/protobuf-spec/votingpb"
-	"github.com/jukeizu/voting/internal/startup"
-	"github.com/jukeizu/voting/pkg/treediagram"
-	"github.com/jukeizu/voting/pkg/voting"
-	"github.com/jukeizu/voting/pkg/voting/ballot"
-	"github.com/jukeizu/voting/pkg/voting/poll"
-	"github.com/jukeizu/voting/pkg/voting/session"
-	"github.com/jukeizu/voting/pkg/voting/voter"
-	"github.com/oklog/run"
-	"github.com/rs/xid"
+	"github.com/jukeizu/voting/internal/application/counting"
+	"github.com/jukeizu/voting/internal/application/polling"
+	"github.com/jukeizu/voting/internal/application/registration"
+	"github.com/jukeizu/voting/internal/application/voting"
+	"github.com/jukeizu/voting/internal/database"
+	"github.com/jukeizu/voting/internal/infrastructure"
 	"github.com/rs/zerolog"
 	"github.com/shawntoffel/gossage"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
-	"google.golang.org/grpc/keepalive"
-	"google.golang.org/grpc/reflection"
 )
 
 var Version = ""
 
+const (
+	connectionStringEnvVarName = "VOTING_DB_CONNECTION_STRING"
+	defaultConnectionString    = "postgresql://postgres:password@localhost:5432/%s?sslmode=disable"
+	consoleLogFormat           = "console"
+)
+
 var (
 	flagMigrate = false
 	flagVersion = false
-	flagServer  = false
-	flagHandler = false
+	flagDebug   = false
 
-	grpcPort                = "50052"
-	httpPort                = "10002"
-	dbAddress               = "root@localhost:26257"
-	serviceAddress          = "localhost:" + grpcPort
-	selectionServiceAddress = "localhost:" + grpcPort
+	grpcPort      = "50052"
+	flagLogFormat = consoleLogFormat
 )
 
-func parseConfig() {
+func init() {
 	flag.StringVar(&grpcPort, "grpc.port", grpcPort, "grpc port for server")
-	flag.StringVar(&httpPort, "http.port", httpPort, "http port for handler")
-	flag.StringVar(&dbAddress, "db", dbAddress, "Database connection address")
-	flag.StringVar(&serviceAddress, "service.addr", serviceAddress, "address of service if not local")
-	flag.StringVar(&selectionServiceAddress, "selection.addr", selectionServiceAddress, "address of selection service if not local")
-	flag.BoolVar(&flagServer, "server", false, "Run as server")
-	flag.BoolVar(&flagHandler, "handler", false, "Run as handler")
-	flag.BoolVar(&flagMigrate, "migrate", false, "Run db migrations")
+	flag.BoolVar(&flagMigrate, "migrate", flagMigrate, "Run db migrations")
+	flag.BoolVar(&flagDebug, "D", false, "enable debug logging")
+	flag.StringVar(&flagLogFormat, "log-format", flagLogFormat, "log format: console, json")
 	flag.BoolVar(&flagVersion, "v", false, "version")
-
 	flag.Parse()
 }
 
 func main() {
-	parseConfig()
-
 	if flagVersion {
 		fmt.Println(Version)
 		os.Exit(0)
 	}
 
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if flagDebug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
 	logger := zerolog.New(os.Stdout).With().Timestamp().
-		Str("instance", xid.New().String()).
 		Str("component", "voting").
 		Str("version", Version).
 		Logger()
 
+	if strings.EqualFold(flagLogFormat, consoleLogFormat) {
+		logger = logger.Output(zerolog.ConsoleWriter{Out: os.Stdout})
+	}
+
 	grpcLoggerV2 := grpczerolog.New(logger.With().Str("transport", "grpc").Logger())
 	grpclog.SetLoggerV2(grpcLoggerV2)
 
-	if !flagServer && !flagHandler {
-		flagServer = true
-		flagHandler = true
+	gossage.Logger = func(format string, a ...interface{}) {
+		msg := fmt.Sprintf(format, a...)
+		logger.Info().Str("component", "migrator").Msg(msg)
 	}
 
-	pollRepository, err := poll.NewRepository(dbAddress)
+	dbAddress := readSecretEnvOrDefault(connectionStringEnvVarName, defaultConnectionString)
+	db, err := database.New(dbAddress, flagMigrate)
 	if err != nil {
-		logger.Error().Err(err).Caller().Msg("could not create poll repository")
+		logger.Error().Err(err).Caller().Msg("could not open database")
 		os.Exit(1)
 	}
 
-	sessionRepository, err := session.NewRepository(dbAddress)
-	if err != nil {
-		logger.Error().Err(err).Caller().Msg("could not create session repository")
-		os.Exit(1)
-	}
+	regRepo := registration.NewRepository(db)
+	regHandler := registration.NewValidatingHandler(registration.NewHandler(regRepo))
 
-	voterRepository, err := voter.NewRepository(dbAddress)
-	if err != nil {
-		logger.Error().Err(err).Caller().Msg("could not create voter repository")
-		os.Exit(1)
-	}
+	pollRepo := polling.NewRepository(db)
+	pollHandler := polling.NewValidatingHandler(polling.NewHandler(pollRepo), pollRepo)
 
-	ballotRepository, err := ballot.NewRepository(dbAddress)
-	if err != nil {
-		logger.Error().Err(err).Caller().Msg("could not create ballot repository")
-		os.Exit(1)
-	}
+	votingRepo := voting.NewRepository(db)
+	votingHandler := voting.NewValidatingHandler(voting.NewHandler(votingRepo, pollRepo), votingRepo, pollRepo)
 
-	if flagMigrate {
-		gossage.Logger = func(format string, a ...interface{}) {
-			msg := fmt.Sprintf(format, a...)
-			logger.Info().Str("component", "migrator").Msg(msg)
-		}
+	countingRepo := counting.NewRepository(db)
+	countingHandler := counting.NewValidatingHandler(counting.NewHandler(countingRepo, pollRepo), countingRepo, pollRepo)
 
-		err = pollRepository.Migrate()
-		if err != nil {
-			logger.Error().Err(err).Caller().Msg("could not migrate poll repository")
-			os.Exit(1)
-		}
-
-		err = sessionRepository.Migrate()
-		if err != nil {
-			logger.Error().Err(err).Caller().Msg("could not migrate session repository")
-			os.Exit(1)
-		}
-
-		err = voterRepository.Migrate()
-		if err != nil {
-			logger.Error().Err(err).Caller().Msg("could not migrate voter repository")
-			os.Exit(1)
-		}
-
-		err = ballotRepository.Migrate()
-		if err != nil {
-			logger.Error().Err(err).Caller().Msg("could not migrate ballot repository")
-			os.Exit(1)
-		}
-	}
-
-	clientConn, err := grpc.Dial(serviceAddress, grpc.WithInsecure(),
-		grpc.WithKeepaliveParams(
-			keepalive.ClientParameters{
-				Time:                30 * time.Second,
-				Timeout:             10 * time.Second,
-				PermitWithoutStream: true,
-			},
-		),
+	server := infrastructure.NewGrpcServer(
+		logger,
+		regHandler,
+		pollHandler,
+		votingHandler,
+		countingHandler,
 	)
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	err = server.Start(ctx, ":"+grpcPort)
 	if err != nil {
-		logger.Error().Err(err).Str("serviceAddress", serviceAddress).Msg("could not dial service address")
-		os.Exit(1)
-	}
-
-	selectionClientConn, err := grpc.Dial(selectionServiceAddress, grpc.WithInsecure(),
-		grpc.WithKeepaliveParams(
-			keepalive.ClientParameters{
-				Time:                30 * time.Second,
-				Timeout:             10 * time.Second,
-				PermitWithoutStream: true,
-			},
-		),
-	)
-	if err != nil {
-		logger.Error().Err(err).Str("serviceAddress", serviceAddress).Msg("could not dial service address")
-		os.Exit(1)
-	}
-
-	g := run.Group{}
-
-	if flagServer {
-		grpcServer := newGrpcServer(logger)
-
-		server := startup.NewServer(logger, grpcServer)
-
-		pollService := poll.NewDefaultService(logger, pollRepository)
-		sessionService := session.NewDefaultService(logger, sessionRepository)
-		voterService := voter.NewDefaultService(logger, voterRepository)
-		ballotService := ballot.NewDefaultService(logger, ballotRepository)
-		votingService := voting.NewDefaultService(logger, pollService, sessionService, voterService, ballotService)
-		votingService = voting.NewValidationService(logger, votingService, pollService, voterService)
-
-		votingServer := voting.NewGrpcServer(votingService)
-
-		votingpb.RegisterVotingServiceServer(grpcServer, votingServer)
-		reflection.Register(grpcServer)
-
-		grpcAddr := ":" + grpcPort
-
-		g.Add(func() error {
-			return server.Start(grpcAddr)
-		}, func(error) {
-			server.Stop()
-		})
-	}
-
-	if flagHandler {
-		client := votingpb.NewVotingServiceClient(clientConn)
-		selectionClient := selectionpb.NewSelectionClient(selectionClientConn)
-
-		httpAddr := ":" + httpPort
-
-		handler := treediagram.NewHandler(logger, client, selectionClient, httpAddr)
-
-		g.Add(func() error {
-			return handler.Start()
-		}, func(error) {
-			err := handler.Stop()
-			if err != nil {
-				logger.Error().Err(err).Caller().Msg("couldn't stop handler")
-			}
-		})
-	}
-
-	cancel := make(chan struct{})
-	g.Add(func() error {
-		return interrupt(cancel)
-	}, func(error) {
-		close(cancel)
-	})
-
-	logger.Info().Err(g.Run()).Msg("stopped")
-}
-
-func interrupt(cancel <-chan struct{}) error {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
-
-	select {
-	case <-cancel:
-		return errors.New("stopping")
-	case sig := <-c:
-		return fmt.Errorf("%s", sig)
+		logger.Error().Err(err).Msg("failed to start server")
 	}
 }
 
-func newGrpcServer(logger zerolog.Logger) *grpc.Server {
-	grpcServer := grpc.NewServer(
-		grpc.KeepaliveParams(
-			keepalive.ServerParameters{
-				Time:    5 * time.Minute,
-				Timeout: 10 * time.Second,
-			},
-		),
-		grpc.KeepaliveEnforcementPolicy(
-			keepalive.EnforcementPolicy{
-				MinTime:             5 * time.Second,
-				PermitWithoutStream: true,
-			},
-		),
-		startup.LoggingInterceptor(logger),
-	)
+func readSecretEnvOrDefault(name string, defaultValue string) string {
+	env := os.Getenv(name)
+	if len(env) > 0 {
+		return env
+	}
 
-	return grpcServer
+	file := os.Getenv(name + "_FILE")
+	if len(file) < 1 {
+		return defaultValue
+	}
+
+	bytes, err := os.ReadFile(file)
+	if err != nil {
+		return ""
+	}
+
+	return string(bytes)
 }
